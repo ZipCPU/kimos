@@ -1,0 +1,52 @@
+################################################################################
+##
+## Filename:	autodata/eth0bus.txt
+## {{{
+## Project:	KIMOS, a Mercury KX2 demonstration project
+##
+## Purpose:	Makes a debugging bus available via UDP over the ethernet.
+##		It uses roughly the same logic as the WBUBUS to handle the
+##	payload.  As with WBUBUS, this bus takes 7-bit transfer codes with
+##	the high bit set--even though the console port is ignored.
+##
+##	A proper network console will require the stack running on the CPU.
+##	That's not handled here.
+##
+## Creator:	Dan Gisselquist, Ph.D.
+##		Gisselquist Technology, LLC
+##
+################################################################################
+## }}}
+## Copyright (C) 2024, Gisselquist Technology, LLC
+## {{{
+## This file is part of the KIMOS project.
+##
+## The KIMOS project is free software and gateware: you can redistribute it
+## and/or modify it under the terms of the GNU General Public License as
+## published by the Free Software Foundation, either version 3 of the License,
+## or (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program.  (It's in the $(ROOT)/doc directory, run make with no
+## target there if the PDF file isn't present.)  If not, see
+## <http://www.gnu.org/licenses/> for a copy.
+## }}}
+## License:	GPL, v3, as defined and found on www.gnu.org,
+## {{{
+##		http://www.gnu.org/licenses/gpl.html
+##
+################################################################################
+##
+## }}}
+@PREFIX=eth0bus
+@INCLUDEFILE=../../common/autodata/netbus.txt
+@DEVID=ETH0BUS
+@ACCESS=ETH0BUS_ACCESS
+@DEPENDS=ETH0_ACCESS
+@NET=eth0
+
