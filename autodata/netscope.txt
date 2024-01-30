@@ -1,0 +1,68 @@
+################################################################################
+##
+## Filename:	autodata/netscope.txt
+## {{{
+## Project:	KIMOS, a Mercury KX2 demonstration project
+##
+## Purpose:	Describes how to connect the network debugging port to a
+##		(compressed) wishbone scope, then to be connected to the bus
+##	by autofpga.
+##
+## Creator:	Dan Gisselquist, Ph.D.
+##		Gisselquist Technology, LLC
+##
+################################################################################
+## }}}
+## Copyright (C) 2024, Gisselquist Technology, LLC
+## {{{
+## This file is part of the KIMOS project.
+##
+## The KIMOS project is free software and gateware: you can redistribute it
+## and/or modify it under the terms of the GNU General Public License as
+## published by the Free Software Foundation, either version 3 of the License,
+## or (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program.  (It's in the $(ROOT)/doc directory, run make with no
+## target there if the PDF file isn't present.)  If not, see
+## <http://www.gnu.org/licenses/> for a copy.
+## }}}
+## License:	GPL, v3, as defined and found on www.gnu.org,
+## {{{
+##		http://www.gnu.org/licenses/gpl.html
+##
+################################################################################
+##
+## }}}
+@PREFIX=netscope
+@DEVID=NETSCOPE
+@TARGET=net
+@TRIGGER=net_debug[31]
+@LOG_CAPTURE_SIZE=14
+@INCLUDEFILE=wbscopc.txt
+@INT.NETSCOPE.PIC=altpic
+@INT.NETSCOPE.WIRE=@$(PREFIX)_int
+@SYNCHRONOUS=0
+@DATA_CLOCK=net_debug_clk
+@$DEFHOLDOFF= (1<<20)-1
+@MAIN.DEFNS=
+@XDC.INSERT=
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netscopei/waddr*}]            -to [get_cells -hier -filter {NAME =~ *netscopei/o_bus_data*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netscopei/waddr*}]            -to [get_cells -hier -filter {NAME =~ *netscopei/this_addr*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netscopei/qd_data*}]          -to [get_cells -hier -filter {NAME =~ *netscopei/this_addr*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netscopei/qd_data*}]          -to [get_cells -hier -filter {NAME =~ *netscopei/o_bus_data*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netscopei/dr_primed*}]        -to [get_cells -hier -filter {NAME =~ *netscopei/ASYNC_STATUS.q_oflags*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netscopei/dr_triggered*}]     -to [get_cells -hier -filter {NAME =~ *netscopei/ASYNC_STATUS.q_oflags*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netscopei/r_reset_complete*}] -to [get_cells -hier -filter {NAME =~ *netscopei/q_reset_complete*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netscopei/dr_stop_pipe*}]     -to [get_cells -hier -filter {NAME =~ *netscopei/ASYNC_STATUS.q_oflags*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netscopei/br_config*}]        -to [get_cells -hier -filter {NAME =~ *netscopei/q_iflags*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netscopei/br_holdoff*}]       -to [get_cells -hier -filter {NAME =~ *netscopei/dr_stopped*}] 8.0
+##
+## set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netscopei/waddr*}]   -to [get_cells -hier -filter {NAME =~ *netscopei/o_wb_data*}] 8.0
+## set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netscopei/qd_data*}] -to [get_cells -hier -filter {NAME =~ *netscopei/o_wb_data*}] 8.0
+## set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netscopei/qd_data*}] -to [get_cells -hier -filter {NAME =~ *netscopei/o_wb_data*}] 8.0

@@ -1,0 +1,98 @@
+################################################################################
+##
+## Filename:	autodata/vsim.txt
+## {{{
+## Project:	KIMOS, a Mercury KX2 demonstration project
+##
+## Purpose:	Connects a simulation crontrol port to the design.  This port
+##		will be tied off in hardware, but otherwise will be useful
+##	to control the design from the simulation.  Not just useful, but
+##	necessary for loading the CPU from the simulator.
+##
+## Creator:	Dan Gisselquist, Ph.D.
+##		Gisselquist Technology, LLC
+##
+################################################################################
+## }}}
+## Copyright (C) 2024, Gisselquist Technology, LLC
+## {{{
+## This file is part of the KIMOS project.
+##
+## The KIMOS project is free software and gateware: you can redistribute it
+## and/or modify it under the terms of the GNU General Public License as
+## published by the Free Software Foundation, either version 3 of the License,
+## or (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program.  (It's in the $(ROOT)/doc directory, run make with no
+## target there if the PDF file isn't present.)  If not, see
+## <http://www.gnu.org/licenses/> for a copy.
+## }}}
+## License:	GPL, v3, as defined and found on www.gnu.org,
+## {{{
+##		http://www.gnu.org/licenses/gpl.html
+##
+################################################################################
+##
+## }}}
+@PREFIX=sim
+@MASTER.TYPE=CPU
+@MASTER.BUS=wbu
+@TOP.MAIN=
+		// Unused Verilator simulation inputs
+		1'b0, 1'b0
+@MAIN.PORTLIST=
+`ifdef	VERILATOR
+		// Veri1ator only simulation interface
+		@$(PREFIX)_we, @$(PREFIX)_addr, @$(PREFIX)_data,
+		@$(PREFIX)_sel, @$(PREFIX)_stall, @$(PREFIX)_ack,
+		@$(PREFIX)_idata, @$(PREFIX)_err,
+`endif
+		@$(PREFIX)_cyc, @$(PREFIX)_stb
+@MAIN.IODECL=
+`ifdef	VERILATOR
+	input	wire					@$(PREFIX)_we;
+	input	wire	[@$(MASTER.BUS.AWID)-1:0]	@$(PREFIX)_addr;
+	input	wire	[@$(MASTER.BUS.WIDTH)-1:0]	@$(PREFIX)_data;
+	input	wire	[@$(MASTER.BUS.WIDTH)/8-1:0]	@$(PREFIX)_sel;
+	output	wire			@$(PREFIX)_stall;
+	output	wire			@$(PREFIX)_ack;
+	output	wire	[@$(MASTER.BUS.WIDTH)-1:0]	@$(PREFIX)_idata;
+	output	wire			@$(PREFIX)_err;
+`endif
+	input	wire	@$(PREFIX)_cyc, @$(PREFIX)_stb;
+@MAIN.DEFNS=
+`ifndef	VERILATOR
+	wire	ign_unused_@$(PREFIX);
+`endif
+@MAIN.INSERT=
+	////////////////////////////////////////////////////////////////////////
+	//
+	// Simulation bus access port
+	// {{{
+	assign	@$(MASTER.PREFIX)_cyc = @$(PREFIX)_cyc;
+	assign	@$(MASTER.PREFIX)_stb = @$(PREFIX)_stb;
+`ifdef	VERILATOR
+	assign	@$(MASTER.PREFIX)_we   = @$(PREFIX)_we;
+	assign	@$(MASTER.PREFIX)_addr = @$(PREFIX)_addr;
+	assign	@$(MASTER.PREFIX)_data = @$(PREFIX)_data;
+	assign	@$(MASTER.PREFIX)_sel  = @$(PREFIX)_sel;
+	assign	@$(PREFIX)_stall = @$(MASTER.PREFIX)_stall;
+	assign	@$(PREFIX)_ack   = @$(MASTER.PREFIX)_ack;
+	assign	@$(PREFIX)_idata = @$(MASTER.PREFIX)_idata;
+	assign	@$(PREFIX)_err   = @$(MASTER.PREFIX)_err;
+`else
+	assign	@$(MASTER.PREFIX)_we   = 0;
+	assign	@$(MASTER.PREFIX)_addr = 0;
+	assign	@$(MASTER.PREFIX)_data = 0;
+	assign	@$(MASTER.PREFIX)_sel  = 0; 
+	assign	ign_unused_@$(PREFIX) = { 1'b0,
+			@$(MASTER.PREFIX)_stall, @$(MASTER.PREFIX)_ack,
+			@$(MASTER.PREFIX)_idata, @$(MASTER.PREFIX)_err };
+`endif
+	// }}}

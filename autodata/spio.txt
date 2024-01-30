@@ -1,0 +1,108 @@
+################################################################################
+##
+## Filename:	autodata/spio.txt
+## {{{
+## Project:	KIMOS, a Mercury KX2 demonstration project
+##
+## Purpose:	To describe how to interact with the special purpose device
+##		controller (spio) for the Nexys Video Board (SW, BTN, LEDs)
+##
+## Creator:	Dan Gisselquist, Ph.D.
+##		Gisselquist Technology, LLC
+##
+################################################################################
+## }}}
+## Copyright (C) 2024, Gisselquist Technology, LLC
+## {{{
+## This file is part of the KIMOS project.
+##
+## The KIMOS project is free software and gateware: you can redistribute it
+## and/or modify it under the terms of the GNU General Public License as
+## published by the Free Software Foundation, either version 3 of the License,
+## or (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program.  (It's in the $(ROOT)/doc directory, run make with no
+## target there if the PDF file isn't present.)  If not, see
+## <http://www.gnu.org/licenses/> for a copy.
+## }}}
+## License:	GPL, v3, as defined and found on www.gnu.org,
+## {{{
+##		http://www.gnu.org/licenses/gpl.html
+##
+################################################################################
+##
+## }}}
+@PREFIX=spio
+@DEVID=SPIO
+@NADDR=1
+@SLAVE.TYPE=SINGLE
+@SLAVE.BUS=wb
+@ACCESS=@$(DEVID)_ACCESS
+@INT.SPIO.WIRE=@$(PREFIX)_int
+@INT.SPIO.PIC=buspic
+@NLED=6
+@NBTN=3
+@NSW=1
+@TOP.PORTLIST=
+		// SPIO interface
+		i_btn, i_water_ingress, i_housing_interlock, o_led
+@TOP.IODECL=
+	// @$(DEVID) interface
+	input	wire			i_btn,
+					i_water_ingress,
+					i_housing_interlock;
+	output	wire	[@$(NLED)-1:0]	o_led;
+@TOP.DEFNS=
+	wire	[@$(NLED)-1:0]	w_led;
+	wire	[@$(NBTN)-1:0]	w_btn;
+@TOP.INSERT=
+	assign	o_led = { w_led[@$(NLED)-1:2], (w_led[1] && clocks_locked),
+			w_led[0] && !s_reset };
+
+	assign	w_btn = { i_housing_interlock, i_water_ingress, !i_btn };
+@TOP.MAIN=
+		w_btn, w_led
+@MAIN.PORTLIST=
+		// SPIO interface
+		i_btn, o_led
+@MAIN.IODECL=
+	// @$(DEVID) interface
+	input	wire	[@$(NBTN)-1:0]	i_btn;
+	output	wire	[@$(NLED)-1:0]	o_led;
+@MAIN.DEFNS=
+	wire	[@$(NLED)-1:0]	w_led;
+	wire			w_sw;	// Since this design has no switches
+@MAIN.INSERT=
+	//
+	// Special purpose I/O driver (buttons, LEDs, and switches)
+	//
+	assign	w_sw = 1'b0;
+
+	spio #(
+		.NBTN(@$(NBTN)), .NLEDS(@$(NLED)), .NSW(@$(NSW))
+	) @$(PREFIX)i(
+		.i_clk(i_clk), .i_reset(i_reset),
+		@$(SLAVE.ANSIPORTLIST),
+		.i_sw(i_sw), .i_btn(w_btn), .o_led(w_led),
+		.o_int(@$(PREFIX)_int)
+	);
+
+	assign	o_led = ~w_led;
+
+@MAIN.ALT=
+	assign	o_led = -1;
+@REGS.N=1
+@REGS.0= 0 R_@$(DEVID) @$(DEVID)
+@BDEF.DEFN=
+#define	SPIO_BTN0	0x0010000
+#define	SPIO_BTN1	0x0020000
+@BDEF.IONAME=_@$(PREFIX)
+@BDEF.IOTYPE=unsigned
+@BDEF.OSDEF= _BOARD_HAS_@$(DEVID)
+@BDEF.OSVAL= static volatile @$(BDEF.IOTYPE) *const @$(BDEF.IONAME) = ((@$(BDEF.IOTYPE) *)@$[0x%08x](REGBASE));
