@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename: 	txespeed.v
+// Filename:	rtl/net/txespeed.v
 // {{{
-// Project:	Demonstration Mercury KX2 project
+// Project:	KIMOS, a Mercury KX2 demonstration project
 //
 // Purpose:	The RGMII ethernet core runs at 125MHz, no less.  It can
 //		handle 1Gbps ethernet natively.  However, in order to handle
@@ -28,10 +28,9 @@
 // This file is part of the KIMOS project.
 //
 // The KIMOS project is free software and gateware: you can redistribute it
-// and/or
-// modify it under the terms of the GNU General Public License as published
-// by the Free Software Foundation, either version 3 of the License, or (at
-// your option) any later version.
+// and/or modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation, either version 3 of the License,
+// or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
 // ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or

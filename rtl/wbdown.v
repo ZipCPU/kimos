@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename:	wbdown.v
+// Filename:	rtl/wbdown.v
 // {{{
-// Project:	Demonstration Mercury KX2 project
+// Project:	KIMOS, a Mercury KX2 demonstration project
 //
 // Purpose:	Downconvert a Wishbone bus from a wider width to a smaller one.
 //
@@ -16,10 +16,9 @@
 // This file is part of the KIMOS project.
 //
 // The KIMOS project is free software and gateware: you can redistribute it
-// and/or
-// modify it under the terms of the GNU General Public License as published
-// by the Free Software Foundation, either version 3 of the License, or (at
-// your option) any later version.
+// and/or modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation, either version 3 of the License,
+// or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
 // ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or
@@ -32,6 +31,9 @@
 // <http://www.gnu.org/licenses/> for a copy.
 // }}}
 // License:	GPL, v3, as defined and found on www.gnu.org,
+// {{{
+//		http://www.gnu.org/licenses/gpl.html
+//
 ////////////////////////////////////////////////////////////////////////////////
 //
 `default_nettype none

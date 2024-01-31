@@ -2,7 +2,7 @@
 //
 // Filename: 	tfrvalue.v
 // {{{
-// Project:	Demonstration Mercury KX2 project
+// Project:	KIMOS, a Mercury KX2 demonstration project
 //
 // Purpose:	Illustrates a slow method of moving data across clock domains,
 //		together with a formal proof of the same.  This is the "faster"
