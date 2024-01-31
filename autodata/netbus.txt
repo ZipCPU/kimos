@@ -142,5 +142,5 @@
 	assign	@$(PREFIX)_tvalid = 1'b0;
 	assign	@$(PREFIX)_tdata  = 32'h0;
 @RTL.MAKE.GROUP= NETBUS
-@RTL.MAKE.SUBD=../../common/rtl/proto
+@RTL.MAKE.SUBD=proto
 @RTL.MAKE.FILES= netdebug.v netdbgrx.v netdbgtx.v

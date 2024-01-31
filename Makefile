@@ -142,7 +142,6 @@ autodata: check-autofpga
 	$(call copyif-changed,$(AUTOD)/board.h,sw/zlib/board.h)
 	$(call copyif-changed,$(AUTOD)/board.h,sw/board/board.h)
 	$(call copyif-changed,$(AUTOD)/bkram.ld,sw/board/bkram.ld)
-	$(call copyif-changed,$(AUTOD)/bootrom.ld,sw/board/bootrom.ld)
 	$(call copyif-changed,$(AUTOD)/board.ld,sw/board/board.ld)
 	$(call copyif-changed,$(AUTOD)/sdram.ld,sw/board/sdram.ld)
 	$(call copyif-changed,$(AUTOD)/rtl.make.inc,rtl/make.inc)

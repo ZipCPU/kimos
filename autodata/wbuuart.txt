@@ -40,7 +40,7 @@
 @PREFIX=uart
 @NADDR=	4
 @SLAVE.TYPE=	OTHER
-@SLAVE.BUS=wb
+@SLAVE.BUS=wb32
 @ACCESS= BUSCONSOLE_ACCESS
 @INT.UARTRX.WIRE=uartrx_int
 @INT.UARTTX.WIRE=uarttx_int
@@ -102,5 +102,5 @@ typedef struct  CONSOLE_S {
 @BDEF.OSDEF=	_BOARD_HAS_BUSCONSOLE
 @BDEF.OSVAL=static volatile CONSOLE *const _@$(PREFIX) = ((CONSOLE *)@$[0x%08x](REGBASE));
 @RTL.MAKE.GROUP= CONSOLE
-@RTL.MAKE.SUBD=../../common/rtl/wbuart
+@RTL.MAKE.SUBD=wbuart
 @RTL.MAKE.FILES= txuartlite.v rxuartlite.v ufifo.v

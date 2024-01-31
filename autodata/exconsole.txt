@@ -1,6 +1,6 @@
 ################################################################################
 ##
-## Filename:	autodata/wbuconsole.txt
+## Filename:	autodata/exconsole.txt
 ## {{{
 ## Project:	KIMOS, a Mercury KX2 demonstration project
 ##
@@ -8,15 +8,14 @@
 ##		the CPU.  The debugging bus will be given 7-bit transfer codes
 ##	with the high bit set, the console the same codes but with bit 8 clear.
 ##
-##	This particular version of the console uses the wbu (wishbone to UART)
-##	debugging bus.
+##	This particular version of the console uses the exbus debugging bus.
 ##
 ## Creator:	Dan Gisselquist, Ph.D.
 ##		Gisselquist Technology, LLC
 ##
 ################################################################################
 ## }}}
-## Copyright (C) 2022-2024, Gisselquist Technology, LLC
+## Copyright (C) 2023-2024, Gisselquist Technology, LLC
 ## {{{
 ## This file is part of the KIMOS project.
 ##
@@ -53,10 +52,7 @@
 @BUS.WIDTH=32
 @BUS.TYPE=wb
 @BUS.OPT_DBLBUFFER=1
-## @$BAUDRATE=2000000	// This was what worked before
 @$BAUDRATE=1000000
-## @$BAUDRATE=115200
-## @$BAUDRATE=9600
 @OFF_TIL_ACCESS=1'b0
 @CLOCK.NAME=clk
 @CLOCK.RESET=i_reset
@@ -96,11 +92,9 @@
 	wire		@$(PREFIX)_rx_stb;
 	wire		@$(PREFIX)_tx_stb, @$(PREFIX)_tx_busy;
 
-	// Definitions for the WB-UART converter.  We really only need one
-	// (more) non-bus wire--one to use to select if we are interacting
-	// with the ZipCPU or not.
 	// Verilator lint_off UNUSED
-	wire	[0:0]	wbubus_dbg;
+	wire	[0:0]	ex_reset;
+	wire	[1:0]	ex_gpio;
 	// Verilator lint_on  UNUSED
 	// }}}
 @MAIN.INSERT=
@@ -145,47 +139,47 @@
 	// Verilator lint_off UNUSED
 	wire	[29:0]	@$(MASTER.PREFIX)_tmp_addr;
 	// Verilator lint_on  UNUSED
-	wbuconsole #(
+	exbuswb #(
 		// {{{
-		.LGWATCHDOG(@$(DEVID)WATCHDOG),
-		.CMD_PORT_OFF_UNTIL_ACCESSED(@$(OFF_TIL_ACCESS))
+		// .LGWATCHDOG(@$(DEVID)WATCHDOG)
+		.ADDRESS_WIDTH(@$(BUS_ADDRESS_WIDTH))
 		// }}}
 	) genbus(
 		// {{{
 		.i_clk(@$(CLOCK.WIRE)), .i_reset(@$(CLOCK.RESET)),
+		.o_reset(ex_reset),
 		.i_rx_stb(@$(PREFIX)_rx_stb), .i_rx_data(@$(PREFIX)_rx_data),
+		.o_tx_stb(@$(PREFIX)_tx_stb), .o_tx_data(@$(PREFIX)_tx_data),
+			.i_tx_busy(@$(PREFIX)_tx_busy),
+		//
+		.i_gpio(2'b00), .o_gpio(ex_gpio),
+		//
+		.i_console_stb(w_console_tx_stb),
+			.i_console_byte(w_console_tx_data),
+			.o_console_busy(w_console_busy),
+		.o_console_stb(w_console_rx_stb),
+			.o_console_byte(w_console_rx_data),
+		//
 		.o_wb_cyc(@$(MASTER.PREFIX)_cyc), .o_wb_stb(@$(MASTER.PREFIX)_stb),
 			.o_wb_we(@$(MASTER.PREFIX)_we),
-			.o_wb_addr(@$(MASTER.PREFIX)_tmp_addr),
+			.o_wb_addr(@$(MASTER.PREFIX)_addr),
 			.o_wb_data(@$(MASTER.PREFIX)_data),
 		.i_wb_stall(@$(MASTER.PREFIX)_stall),
 			.i_wb_ack(@$(MASTER.PREFIX)_ack),
 		.i_wb_data(@$(MASTER.PREFIX)_idata),
 		.i_wb_err(@$(MASTER.PREFIX)_err),
-		.i_interrupt(w_bus_int),
-		.o_tx_stb(@$(PREFIX)_tx_stb), .o_tx_data(@$(PREFIX)_tx_data),
-			.i_tx_busy(@$(PREFIX)_tx_busy),
-		//
-		.i_console_stb(w_console_tx_stb),
-			.i_console_data(w_console_tx_data),
-			.o_console_busy(w_console_busy),
-		.o_console_stb(w_console_rx_stb),
-			.o_console_data(w_console_rx_data),
-		//
-		.o_dbg(wbubus_dbg[0])
+		.i_interrupt(w_bus_int)
 		// }}}
 	);
 
 	assign	@$(MASTER.PREFIX)_sel = 4'hf;
-	assign	@$(MASTER.PREFIX)_addr = @$(MASTER.PREFIX)_tmp_addr[(@$BUS_ADDRESS_WIDTH-1):0];
 	// }}}
 @REGDEFS.H.DEFNS=
 #define	BAUDRATE	@$[%d](BAUDRATE)
 @RTL.MAKE.GROUP= WBUBUS
-@RTL.MAKE.SUBD=../../common/rtl/wbubus
-@RTL.MAKE.FILES= wbuconsole.v wbufifo.v wbucompactlines.v wbucompress.v
-	wbudecompress.v wbudeword.v wbuexec.v wbuidleint.v wbuinput.v
-	wbuoutput.v wbureadcw.v wbusixchar.v wbutohex.v wbconsole.v
+@RTL.MAKE.SUBD=exbus
+@RTL.MAKE.FILES= exbuswb.v excompress.v exdecompress.v exdeword.v
+	exidle.v exmkword.v exwb.v
 @SIM.INCLUDE=
 #include "dbluartsim.h"
 @SIM.CLOCK=@$(CLOCK.NAME)

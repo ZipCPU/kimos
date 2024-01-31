@@ -42,7 +42,7 @@
 @DEVID=SPIO
 @NADDR=1
 @SLAVE.TYPE=SINGLE
-@SLAVE.BUS=wb
+@SLAVE.BUS=wb32
 @ACCESS=@$(DEVID)_ACCESS
 @INT.SPIO.WIRE=@$(PREFIX)_int
 @INT.SPIO.PIC=buspic
@@ -89,7 +89,7 @@
 	) @$(PREFIX)i(
 		.i_clk(i_clk), .i_reset(i_reset),
 		@$(SLAVE.ANSIPORTLIST),
-		.i_sw(i_sw), .i_btn(w_btn), .o_led(w_led),
+		.i_sw(w_sw), .i_btn(i_btn), .o_led(i_led),
 		.o_int(@$(PREFIX)_int)
 	);
 

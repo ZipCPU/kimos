@@ -42,7 +42,7 @@
 @ACCESS=VERSION_ACCESS
 @NADDR=1
 @SLAVE.TYPE=SINGLE
-@SLAVE.BUS=wb
+@SLAVE.BUS=wb32
 @MAIN.INCLUDE=
 `include "builddate.v"
 @MAIN.INSERT=
@@ -62,7 +62,7 @@
 @DEVID=BUILDTIME
 @NADDR=1
 @SLAVE.TYPE=SINGLE
-@SLAVE.BUS=wb
+@SLAVE.BUS=wb32
 @MAIN.DEFNS=
 // BUILDTIME doesnt need to include builddate.v a second time
 // `include "builddate.v"

@@ -75,5 +75,5 @@
 
 	// }}}
 @RTL.MAKE.GROUP=UPSZ
-@RTL.MAKE.SUBD=../../common/rtl
+@RTL.MAKE.SUBD=
 @RTL.MAKE.FILES=wbupsz.v

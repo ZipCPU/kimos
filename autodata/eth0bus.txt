@@ -44,7 +44,7 @@
 ##
 ## }}}
 @PREFIX=eth0bus
-@INCLUDEFILE=../../common/autodata/netbus.txt
+@INCLUDEFILE=netbus.txt
 @DEVID=ETH0BUS
 @ACCESS=ETH0BUS_ACCESS
 @DEPENDS=ETH0_ACCESS

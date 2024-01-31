@@ -41,7 +41,7 @@
 @DEVID=I2CCPU
 @NADDR=4
 @ACCESS=@$(DEVID)_ACCESS
-@SLAVE.BUS=wb
+@SLAVE.BUS=wb32
 @SLAVE.TYPE=DOUBLE
 @SLAVE.PREFIX=wb_@$(PREFIX)s
 @MASTER.TYPE=CPU
@@ -180,7 +180,7 @@ typedef struct  @$(DEVID)_S        {
 ## Makefile insert info
 ##
 @RTL.MAKE.GROUP=@$(DEVID)
-@RTL.MAKE.SUBD=../../common/rtl/wbi2c
+@RTL.MAKE.SUBD=wbi2c
 ## RTL.MAKE.FILES *shoul* also include dblfetch, but that's a part of the CPU
 ## directory, so we don't include it here a second time
 @RTL.MAKE.FILES=wbi2ccpu.v axisi2c.v
