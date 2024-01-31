@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename: 	stream2pkt.v
+// Filename:	rtl/net/stream2pkt.v
 // {{{
-// Project:	Demonstration Mercury KX2 project
+// Project:	KIMOS, a Mercury KX2 demonstration project
 //
 // Purpose:	Converts an AXI stream back into a AXI packet stream.  Specific
 //		to the AXI stream is the fact that the first word in the stream
@@ -30,10 +30,9 @@
 // This file is part of the KIMOS project.
 //
 // The KIMOS project is free software and gateware: you can redistribute it
-// and/or
-// modify it under the terms of the GNU General Public License as published
-// by the Free Software Foundation, either version 3 of the License, or (at
-// your option) any later version.
+// and/or modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation, either version 3 of the License,
+// or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
 // ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or

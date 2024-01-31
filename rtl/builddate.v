@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename: 	builddate.v
+// Filename:	rtl/builddate.v
 // {{{
-// Project:	Demonstration Mercury KX2 project
+// Project:	KIMOS, a Mercury KX2 demonstration project
 //
 // Purpose:	This file records the date of the last build.  Running "make"
 //		in the main directory will create this file.  The `define found
@@ -19,10 +19,9 @@
 // This file is part of the KIMOS project.
 //
 // The KIMOS project is free software and gateware: you can redistribute it
-// and/or
-// modify it under the terms of the GNU General Public License as published
-// by the Free Software Foundation, either version 3 of the License, or (at
-// your option) any later version.
+// and/or modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation, either version 3 of the License,
+// or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
 // ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or
@@ -30,7 +29,7 @@
 // for more details.
 //
 // You should have received a copy of the GNU General Public License along
-// with this program.  (It's in the 1000 4 24 27 30 46 122 133 134 1000ROOT)/doc directory, run make with no
+// with this program.  (It's in the $(ROOT)/doc directory, run make with no
 // target there if the PDF file isn't present.)  If not, see
 // <http://www.gnu.org/licenses/> for a copy.
 // }}}

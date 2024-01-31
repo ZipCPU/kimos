@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename: 	clkcounter.v
+// Filename:	rtl/clkcounter.v
 // {{{
-// Project:	Demonstration Mercury KX2 project
+// Project:	KIMOS, a Mercury KX2 demonstration project
 //
 // Purpose:	Given a clock, asynchronous to the main or system clock, and
 //		given a PPS strobe that is synchronous to the main clock, count
@@ -18,10 +18,9 @@
 // This file is part of the KIMOS project.
 //
 // The KIMOS project is free software and gateware: you can redistribute it
-// and/or
-// modify it under the terms of the GNU General Public License as published
-// by the Free Software Foundation, either version 3 of the License, or (at
-// your option) any later version.
+// and/or modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation, either version 3 of the License,
+// or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful, but WITHOUT
 // ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or

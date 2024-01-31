@@ -2,7 +2,7 @@
 //
 // Filename: 	sfifo.v
 // {{{
-// Project:	Demonstration Mercury KX2 project
+// Project:	KIMOS, a Mercury KX2 demonstration project
 //
 // Purpose:	A synchronous data FIFO.
 //

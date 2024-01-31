@@ -2,7 +2,7 @@
 ##
 ## Filename:	Makefile
 ## {{{
-## Project:	Demonstration Mercury KX2 project
+## Project:	KIMOS, a Mercury KX2 demonstration project
 ##
 ## Purpose:	A master project makefile.  It tries to build all targets
 ##		within the project, mostly by directing subdirectory makes.

@@ -2,7 +2,7 @@
 ##
 ## Filename:	autodata/cpunet.txt
 ## {{{
-## Project:	Demonstration Mercury KX2 project
+## Project:	KIMOS, a Mercury KX2 demonstration project
 ##
 ## Purpose:	Controls two virtual packet FIFOs for the CPU.  In each of
 ##		these, the CPU controls one end--whether the read or write
