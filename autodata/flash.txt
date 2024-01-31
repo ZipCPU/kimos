@@ -45,7 +45,11 @@
 @$NBYTES=(1<<@$LGFLASHSZ)
 @NBYTES.FORMAT=0x%08x
 @SLAVE.TYPE=MEMORY
-@SLAVE.BUS=wb
+@SLAVE.BUS=wbflash
+@BUS.NAME=wbflash
+@BUS.WIDTH=32
+@BUS.TYPE=wb
+@BUS.CLOCK=clk
 @NDUMMY=6
 @RDDELAY=1
 @STARTUP_SCRIPT="spansion.hex"
@@ -225,3 +229,6 @@
 #endif // @$(ACCESS)
 @SIM.LOAD=
 			m_@$(MEM.NAME)->load(start, &buf[offset], wlen);
+@PREFIX=crossflash
+@INCLUDEFILE=crossbus.txt
+@MASTER.BUS=wbflash

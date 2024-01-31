@@ -49,7 +49,7 @@
 ## this must be a SLAVE.TYPE=OTHER
 ##
 @SLAVE.TYPE=OTHER
-@SLAVE.BUS=wb
+@SLAVE.BUS=wb32
 @SLAVE.ANSPREFIX=cfg_
 @MAIN.INSERT=
 	// The Flash control interface is defined by the flash instantiation
@@ -78,5 +78,5 @@
 @BDEF.OSVAL=static volatile @$(BDEF.IOTYPE) * const @$(BDEF.IONAME) = ((@$BDEF.IOTYPE *)(@$[0x%08x](REGBASE)));
 ##
 @RTL.MAKE.GROUP= FLASH
-@RTL.MAKE.SUBD=  ../../common/rtl
+@RTL.MAKE.SUBD=
 @RTL.MAKE.FILES= qflexpress.v

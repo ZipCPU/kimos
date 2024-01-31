@@ -48,10 +48,8 @@
 @ACCESS=INCLUDE_ZIPCPU
 @DBGBUS=wbu
 @MASTER.TYPE=CPU
-@MASTER.BUS=wb
+@MASTER.BUS=wbwide
 @MASTER.BUS.OPT_DBLBUFFER=1'b0
-@BUS.NAME=wb
-@BUS.CLOCK=clk
 @SCOPE.TRIGGER=zip_trigger
 @SCOPE.DATA=zip_debug
 @CPURESET=i_cpu_reset
@@ -437,7 +435,7 @@
 		wbwatchdog.v busdelay.v
 		zipdma_ctrl.v zipdma_fsm.v zipdma_mm2s.v zipdma_rxgears.v
 		zipdma_s2mm.v zipdma_txgears.v zipdma.v
-@RTL.MAKE.SUBD= ../../common/rtl/cpu
+@RTL.MAKE.SUBD=cpu
 ##
 ################################################################################
 ##

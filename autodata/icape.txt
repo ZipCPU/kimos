@@ -42,7 +42,7 @@
 @NADDR=32
 @ACCESS=CFG_ACCESS
 @SLAVE.TYPE=OTHER
-@SLAVE.BUS=wb
+@SLAVE.BUS=wb32
 @MAIN.PARAM=
 `ifndef	VERILATOR
 	localparam	ICAPE_LGDIV=3;
@@ -124,5 +124,5 @@
 @BDEF.OSDEF=_BOARD_HAS_ICAPTETWO
 @BDEF.OSVAL=static volatile @$THIS.BDEF.IOTYPE *const _icape = ((unsigned *)@$[0x%08x](THIS.BASE));
 @RTL.MAKE.GROUP=ICAP
-@RTL.MAKE.SUBD=../../common/rtl
+@RTL.MAKE.SUBD=
 @RTL.MAKE.FILES=wbicapetwo.v

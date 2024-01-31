@@ -45,7 +45,7 @@
 @$NUMIO=4
 @ACCESS=SDIO_ACCESS
 @SLAVE.TYPE=OTHER
-@SLAVE.BUS=wb
+@SLAVE.BUS=wbflash
 ## @SCOPE.TRIGGER=@$(PREFIX)_debug[31]
 ## @SCOPE.DATA=@$(PREFIX)_debug
 @INT.SDCARD.WIRE= @$(PREFIX)_int
@@ -375,7 +375,7 @@ struct @$(DEVID)_S;
 		} }
 #endif
 @RTL.MAKE.GROUP= SDIO
-@RTL.MAKE.SUBD=../../common/rtl/sdspi
+@RTL.MAKE.SUBD=sdspi
 @RTL.MAKE.FILES= sdio_top.v sdio.v sdfrontend.v sdckgen.v sdwb.v sdtxframe.v sdrxframe.v
 @XDC.INSERT=
 set_property -dict { PULLTYPE PULLUP } [get_ports io_@$(TOP.IOPREFIX)_cmd]

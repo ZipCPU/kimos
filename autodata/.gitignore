@@ -1,0 +1,8 @@
+*.dbg
+*.ld
+*.h
+*.v
+main_tb.cpp
+regdefs.*
+rtl.make.inc
+build.xdc

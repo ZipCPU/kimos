@@ -69,7 +69,7 @@
 @LD.PERM=	wx
 @LD.NAME=	@$(MEM.NAME)
 @RTL.MAKE.GROUP= @$(DEVID)
-@RTL.MAKE.SUBD= ../../common/rtl
+@RTL.MAKE.SUBD=
 @RTL.MAKE.FILES= memdev.v
 @$NADDRHX = @$NADDR
 @NADDRHX.FORMAT= 0x%x

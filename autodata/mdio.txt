@@ -43,7 +43,7 @@
 @NADDR=32
 @ACCESS=NETCTRL_ACCESS
 @SLAVE.TYPE=OTHER
-@SLAVE.BUS=wb
+@SLAVE.BUS=wb32
 @TOP.PORTLIST=
 		// Toplevel ethernet MDIO ports
 		o_eth_mdclk, io_eth_mdio
@@ -180,6 +180,6 @@ typedef struct ENETMDIO_S {
 #else
 		m_core->i_mdio = ((m_core->o_mdwe)&&(!m_core->o_mdio))?0:1;
 #endif // @$(ACCESS)
-@RTL.MAKE.SUBD=../../common/rtl/net
+@RTL.MAKE.SUBD=net
 @RTL.MAKE.GROUP=ENETMDIO
 @RTL.MAKE.FILES=enetctrl.v
