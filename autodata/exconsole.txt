@@ -74,13 +74,6 @@
 	// Clock    : @$[%9d](CLOCK.FREQUENCY)
 	localparam [23:0] BUSUART = @$SETUP;	// @$[%9d](BAUDRATE) baud
 	localparam	@$(DEVID)BITS = $clog2(BUSUART);
-	//
-	// Maximum command is 6 bytes, where each byte takes 10 baud clocks
-	// and each baud clock requires @$(DEVID)BITS to represent.  Here,
-	// we'll add one more for good measure.
-	localparam	@$(DEVID)WATCHDOG_RAW = @$(DEVID)BITS + 9;
-	localparam	@$(DEVID)WATCHDOG = (@$(DEVID)WATCHDOG_RAW > 19)
-				? @$(DEVID)WATCHDOG_RAW : 19;
 	// }}}
 @MAIN.DEFNS=
 	////////////////////////////////////////////////////////////////////////
@@ -148,8 +141,8 @@
 		// {{{
 		.i_clk(@$(CLOCK.WIRE)), .i_reset(@$(CLOCK.RESET)),
 		.o_reset(ex_reset),
-		.i_rx_stb(@$(PREFIX)_rx_stb), .i_rx_data(@$(PREFIX)_rx_data),
-		.o_tx_stb(@$(PREFIX)_tx_stb), .o_tx_data(@$(PREFIX)_tx_data),
+		.i_rx_stb(@$(PREFIX)_rx_stb), .i_rx_byte(@$(PREFIX)_rx_data),
+		.o_tx_stb(@$(PREFIX)_tx_stb), .o_tx_byte(@$(PREFIX)_tx_data),
 			.i_tx_busy(@$(PREFIX)_tx_busy),
 		//
 		.i_gpio(2'b00), .o_gpio(ex_gpio),
@@ -164,6 +157,7 @@
 			.o_wb_we(@$(MASTER.PREFIX)_we),
 			.o_wb_addr(@$(MASTER.PREFIX)_addr),
 			.o_wb_data(@$(MASTER.PREFIX)_data),
+			.o_wb_sel(@$(MASTER.PREFIX)_sel),
 		.i_wb_stall(@$(MASTER.PREFIX)_stall),
 			.i_wb_ack(@$(MASTER.PREFIX)_ack),
 		.i_wb_data(@$(MASTER.PREFIX)_idata),
@@ -171,15 +165,13 @@
 		.i_interrupt(w_bus_int)
 		// }}}
 	);
-
-	assign	@$(MASTER.PREFIX)_sel = 4'hf;
 	// }}}
 @REGDEFS.H.DEFNS=
 #define	BAUDRATE	@$[%d](BAUDRATE)
 @RTL.MAKE.GROUP= WBUBUS
 @RTL.MAKE.SUBD=exbus
 @RTL.MAKE.FILES= exbuswb.v excompress.v exdecompress.v exdeword.v
-	exidle.v exmkword.v exwb.v
+	exidle.v exmkword.v exwb.v exfifo.v
 @SIM.INCLUDE=
 #include "dbluartsim.h"
 @SIM.CLOCK=@$(CLOCK.NAME)

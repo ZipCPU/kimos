@@ -47,16 +47,14 @@
 @INT.SPIO.WIRE=@$(PREFIX)_int
 @INT.SPIO.PIC=buspic
 @NLED=6
-@NBTN=3
+@NBTN=1
 @NSW=1
 @TOP.PORTLIST=
 		// SPIO interface
-		i_btn, i_water_ingress, i_housing_interlock, o_led
+		i_btn, o_led
 @TOP.IODECL=
 	// @$(DEVID) interface
 	input	wire			i_btn,
-					i_water_ingress,
-					i_housing_interlock;
 	output	wire	[@$(NLED)-1:0]	o_led;
 @TOP.DEFNS=
 	wire	[@$(NLED)-1:0]	w_led;
@@ -65,7 +63,7 @@
 	assign	o_led = { w_led[@$(NLED)-1:2], (w_led[1] && clocks_locked),
 			w_led[0] && !s_reset };
 
-	assign	w_btn = { i_housing_interlock, i_water_ingress, !i_btn };
+	assign	w_btn = { !i_btn };
 @TOP.MAIN=
 		w_btn, w_led
 @MAIN.PORTLIST=
@@ -89,7 +87,7 @@
 	) @$(PREFIX)i(
 		.i_clk(i_clk), .i_reset(i_reset),
 		@$(SLAVE.ANSIPORTLIST),
-		.i_sw(w_sw), .i_btn(i_btn), .o_led(i_led),
+		.i_sw(w_sw), .i_btn(i_btn), .o_led(w_led),
 		.o_int(@$(PREFIX)_int)
 	);
 

@@ -168,8 +168,8 @@ set_property -dict {PACKAGE_PIN C22   IOSTANDARD LVCMOS18    } [get_ports {i_btn
 # set_property -dict {PACKAGE_PIN AF22  IOSTANDARD LVCMOS18  } [get_ports { o_en_6p5v }];
 # set_property -dict {PACKAGE_PIN V21   IOSTANDARD LVCMOS18  } [get_ports {IO0_D20_P}];
 # set_property -dict {PACKAGE_PIN W21   IOSTANDARD LVCMOS18  } [get_ports {IO0_D21_N}];
-set_property -dict {PACKAGE_PIN U24   IOSTANDARD LVCMOS18  } [get_ports {i_water_ingress}];	# IO_B12_L2_U24_P
-set_property -dict {PACKAGE_PIN U25   IOSTANDARD LVCMOS18  } [get_ports {i_housing_interlock}];	# IO_B12_L2_U25_N
+# set_property -dict {PACKAGE_PIN U24   IOSTANDARD LVCMOS18  } [get_ports {i_water_ingress}];	# IO_B12_L2_U24_P
+# set_property -dict {PACKAGE_PIN U25   IOSTANDARD LVCMOS18  } [get_ports {i_housing_interlock}];	# IO_B12_L2_U25_N
 # set_property -dict {PACKAGE_PIN AC24  IOSTANDARD LVCMOS18  } [get_ports {IO0_CLK1_N}];
 # set_property -dict {PACKAGE_PIN AC23  IOSTANDARD LVCMOS18  } [get_ports {IO0_CLK0_P}];
 ## }}}

@@ -74,7 +74,7 @@ i_sdcard_cd_n,
 		// UART/host to wishbone interface
 		i_wbu_uart_rx, o_wbu_uart_tx,
 		// SPIO interface
-		i_btn, i_water_ingress, i_housing_interlock, o_led);
+		i_btn, o_led);
 	//
 	// Declaring any top level parameters.
 	//
@@ -124,13 +124,6 @@ i_sdcard_cd_n,
 	// Clock    : 100000000
 	localparam [23:0] BUSUART = 24'h64;	//   1000000 baud
 	localparam	DBGBUSBITS = $clog2(BUSUART);
-	//
-	// Maximum command is 6 bytes, where each byte takes 10 baud clocks
-	// and each baud clock requires DBGBUSBITS to represent.  Here,
-	// we'll add one more for good measure.
-	localparam	DBGBUSWATCHDOG_RAW = DBGBUSBITS + 9;
-	localparam	DBGBUSWATCHDOG = (DBGBUSWATCHDOG_RAW > 19)
-				? DBGBUSWATCHDOG_RAW : 19;
 	// }}}
 `ifndef	VERILATOR
 	localparam	ICAPE_LGDIV=3;
@@ -179,8 +172,6 @@ i_sdcard_cd_n,
 	output	wire		o_wbu_uart_tx;
 	// SPIO interface
 	input	wire			i_btn,
-					i_water_ingress,
-					i_housing_interlock;
 	output	wire	[6-1:0]	o_led;
 
 
@@ -258,7 +249,7 @@ i_sdcard_cd_n,
 	reg		pre_reset;
 	// }}}
 	wire	[6-1:0]	w_led;
-	wire	[3-1:0]	w_btn;
+	wire	[1-1:0]	w_btn;
 
 
 	//
@@ -624,7 +615,7 @@ i_sdcard_cd_n,
 	assign	o_led = { w_led[6-1:2], (w_led[1] && clocks_locked),
 			w_led[0] && !s_reset };
 
-	assign	w_btn = { i_housing_interlock, i_water_ingress, !i_btn };
+	assign	w_btn = { !i_btn };
 
 
 
