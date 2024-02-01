@@ -150,9 +150,9 @@ module	exbuswb #(
 	);
 	// }}}
 
-	// wbufifo: Incoming FIFO, in_* -> ififo_data, ififo_valid, ififo_err
+	// exfifo: Incoming FIFO, in_* -> ififo_data, ififo_valid, ififo_err
 	// {{{
-	wbufifo #(
+	exfifo #(
 		// {{{
 		.BW(CW), .LGFLEN(5)
 		// }}}
@@ -194,9 +194,9 @@ module	exbuswb #(
 	);
 	// }}}
 
-	// wbufifo: Outgoing FIFO, bus_* -> ofifo_data, ofifo_valid, ofifo_err
+	// exfifo: Outgoing FIFO, bus_* -> ofifo_data, ofifo_valid, ofifo_err
 	// {{{
-	wbufifo #(
+	exfifo #(
 		// {{{
 		.BW(35), .LGFLEN(5)
 		// }}}

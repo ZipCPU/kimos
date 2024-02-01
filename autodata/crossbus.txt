@@ -49,7 +49,8 @@
 ## @$SLAVE.AWID=@$(MASTER.AWID) >> (@$(SLAVE.BUS_WIDTH)-@$(MASTER.BUS.WIDTH))
 @MASTER.TYPE=SUBBUS
 @MASTER.BUS=wb32
-@MASTER.ANSPREFIX=
+@OPT_LITTLE_ENDIAN=1'b0
+@OPT_LOWLOGIC=1'b0
 @MAIN.INSERT=
 	wbdown #(
 		// {{{
@@ -58,12 +59,39 @@
 		// Master address width   : @$(MASTER.BUS.AWID)
 		.ADDRESS_WIDTH(@$(SLAVE.AWID)+$clog2(@$(SLAVE.BUS.WIDTH)/8)),
 		.WIDE_DW(@$(SLAVE.BUS.WIDTH)),
-		.SMALL_DW(@$(MASTER.BUS.WIDTH))
+		.SMALL_DW(@$(MASTER.BUS.WIDTH)),
+		.OPT_LITTLE_ENDIAN(@$(OPT_LITTLE_ENDIAN)),
+		.OPT_LOWLOGIC(@$(OPT_LOWLOGIC))
 		// }}}
 	) u_@$(PREFIX) (
 		// {{{
-		.i_clk(i_clk), .i_reset(i_reset),
-		@$(SLAVE.ANSIPORTLIST),
-		@$(MASTER.ANSIPORTLIST)
+		.i_clk(@$(MASTER.BUS.CLOCK.WIRE)),
+		.i_reset(@$(MASTER.BUS.CLOCK.RESET)),
+		// Slave/incoming
+		// {{{
+		.i_wcyc(  @$(SLAVE.PREFIX)_cyc),
+		.i_wstb(  @$(SLAVE.PREFIX)_stb),
+		.i_wwe(   @$(SLAVE.PREFIX)_we),
+		.i_waddr( @$(SLAVE.PREFIX)_addr[@$(SLAVE.AWID)-1:0]),
+		.i_wdata( @$(SLAVE.PREFIX)_data),
+		.i_wsel(  @$(SLAVE.PREFIX)_sel),
+		.o_wstall(@$(SLAVE.PREFIX)_stall),
+		.o_wack(  @$(SLAVE.PREFIX)_ack),
+		.o_wdata( @$(SLAVE.PREFIX)_idata),
+		.o_werr(  @$(SLAVE.PREFIX)_err),
+		// }}}
+		// Master/down-range/outgoing
+		// {{{
+		.o_scyc(  @$(MASTER.PREFIX)_cyc),
+		.o_sstb(  @$(MASTER.PREFIX)_stb),
+		.o_swe(   @$(MASTER.PREFIX)_we),
+		.o_saddr( @$(MASTER.PREFIX)_addr[@$(MASTER.BUS.AWID)-1:0]),
+		.o_sdata( @$(MASTER.PREFIX)_data),
+		.o_ssel(  @$(MASTER.PREFIX)_sel),
+		.i_sstall(@$(MASTER.PREFIX)_stall),
+		.i_sack(  @$(MASTER.PREFIX)_ack),
+		.i_sdata( @$(MASTER.PREFIX)_idata),
+		.i_serr(  @$(MASTER.PREFIX)_err)
+		// }}}
 		// }}}
 	);

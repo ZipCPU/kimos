@@ -237,13 +237,6 @@ module	main(i_clk, i_reset,
 	// Clock    : 100000000
 	localparam [23:0] BUSUART = 24'h64;	//   1000000 baud
 	localparam	DBGBUSBITS = $clog2(BUSUART);
-	//
-	// Maximum command is 6 bytes, where each byte takes 10 baud clocks
-	// and each baud clock requires DBGBUSBITS to represent.  Here,
-	// we'll add one more for good measure.
-	localparam	DBGBUSWATCHDOG_RAW = DBGBUSBITS + 9;
-	localparam	DBGBUSWATCHDOG = (DBGBUSWATCHDOG_RAW > 19)
-				? DBGBUSWATCHDOG_RAW : 19;
 	// }}}
 `ifndef	VERILATOR
 	localparam	ICAPE_LGDIV=3;
@@ -336,7 +329,7 @@ module	main(i_clk, i_reset,
 	input	wire		i_wbu_uart_rx;
 	output	wire		o_wbu_uart_tx;
 	// SPIO interface
-	input	wire	[3-1:0]	i_btn;
+	input	wire	[1-1:0]	i_btn;
 	output	wire	[6-1:0]	o_led;
 // }}}
 	// Make Verilator happy
@@ -1633,21 +1626,40 @@ module	main(i_clk, i_reset,
 		// Master address width   : 25
 		.ADDRESS_WIDTH(21+$clog2(512/8)),
 		.WIDE_DW(512),
-		.SMALL_DW(32)
+		.SMALL_DW(32),
+		.OPT_LITTLE_ENDIAN(1'b0),
+		.OPT_LOWLOGIC(1'b0)
 		// }}}
 	) u_crossflash (
 		// {{{
-		.i_clk(i_clk), .i_reset(i_reset),
-		.i_wcyc(wbwide_crossflash_cyc), .i_wstb(wbwide_crossflash_stb), .i_wwe(wbwide_crossflash_we),
-			.i_waddr(wbwide_crossflash_addr[21-1:0]),
-			.i_wdata(wbwide_crossflash_data), // 512 bits wide
-			.i_wsel(wbwide_crossflash_sel),  // 512/8 bits wide
-		.o_wstall(wbwide_crossflash_stall),.o_wack(wbwide_crossflash_ack), .o_wdata(wbwide_crossflash_idata), .o_werr(wbwide_crossflash_err),
-		.o_cyc(wbflash_crossflash_cyc), .o_stb(wbflash_crossflash_stb), .o_we(wbflash_crossflash_we),
-			.o_addr(wbflash_crossflash_addr[25-1:0]),
-			.o_data(wbflash_crossflash_data), // 32 bits wide
-			.o_sel(wbflash_crossflash_sel),  // 32/8 bits wide
-		.i_stall(wbflash_crossflash_stall), .i_ack(wbflash_crossflash_ack), .i_data(wbflash_crossflash_idata), .i_err(wbflash_crossflash_err)
+		.i_clk(i_clk),
+		.i_reset(i_reset),
+		// Slave/incoming
+		// {{{
+		.i_wcyc(  wbwide_crossflash_cyc),
+		.i_wstb(  wbwide_crossflash_stb),
+		.i_wwe(   wbwide_crossflash_we),
+		.i_waddr( wbwide_crossflash_addr[21-1:0]),
+		.i_wdata( wbwide_crossflash_data),
+		.i_wsel(  wbwide_crossflash_sel),
+		.o_wstall(wbwide_crossflash_stall),
+		.o_wack(  wbwide_crossflash_ack),
+		.o_wdata( wbwide_crossflash_idata),
+		.o_werr(  wbwide_crossflash_err),
+		// }}}
+		// Master/down-range/outgoing
+		// {{{
+		.o_scyc(  wbflash_crossflash_cyc),
+		.o_sstb(  wbflash_crossflash_stb),
+		.o_swe(   wbflash_crossflash_we),
+		.o_saddr( wbflash_crossflash_addr[25-1:0]),
+		.o_sdata( wbflash_crossflash_data),
+		.o_ssel(  wbflash_crossflash_sel),
+		.i_sstall(wbflash_crossflash_stall),
+		.i_sack(  wbflash_crossflash_ack),
+		.i_sdata( wbflash_crossflash_idata),
+		.i_serr(  wbflash_crossflash_err)
+		// }}}
 		// }}}
 	);
 `ifdef	BKRAM_ACCESS
@@ -1950,8 +1962,8 @@ module	main(i_clk, i_reset,
 		// {{{
 		.i_clk(i_clk), .i_reset(i_reset),
 		.o_reset(ex_reset),
-		.i_rx_stb(wbu_rx_stb), .i_rx_data(wbu_rx_data),
-		.o_tx_stb(wbu_tx_stb), .o_tx_data(wbu_tx_data),
+		.i_rx_stb(wbu_rx_stb), .i_rx_byte(wbu_rx_data),
+		.o_tx_stb(wbu_tx_stb), .o_tx_byte(wbu_tx_data),
 			.i_tx_busy(wbu_tx_busy),
 		//
 		.i_gpio(2'b00), .o_gpio(ex_gpio),
@@ -1966,6 +1978,7 @@ module	main(i_clk, i_reset,
 			.o_wb_we(wbu_we),
 			.o_wb_addr(wbu_addr),
 			.o_wb_data(wbu_data),
+			.o_wb_sel(wbu_sel),
 		.i_wb_stall(wbu_stall),
 			.i_wb_ack(wbu_ack),
 		.i_wb_data(wbu_idata),
@@ -1973,8 +1986,6 @@ module	main(i_clk, i_reset,
 		.i_interrupt(w_bus_int)
 		// }}}
 	);
-
-	assign	wbu_sel = 4'hf;
 	// }}}
 	// }}}
 `else	// WBUBUS_MASTER
@@ -1992,21 +2003,40 @@ module	main(i_clk, i_reset,
 		// Master address width   : 9
 		.ADDRESS_WIDTH(5+$clog2(512/8)),
 		.WIDE_DW(512),
-		.SMALL_DW(32)
+		.SMALL_DW(32),
+		.OPT_LITTLE_ENDIAN(1'b0),
+		.OPT_LOWLOGIC(1'b0)
 		// }}}
 	) u_crossbus (
 		// {{{
-		.i_clk(i_clk), .i_reset(i_reset),
-		.i_wcyc(wbwide_crossbus_cyc), .i_wstb(wbwide_crossbus_stb), .i_wwe(wbwide_crossbus_we),
-			.i_waddr(wbwide_crossbus_addr[5-1:0]),
-			.i_wdata(wbwide_crossbus_data), // 512 bits wide
-			.i_wsel(wbwide_crossbus_sel),  // 512/8 bits wide
-		.o_wstall(wbwide_crossbus_stall),.o_wack(wbwide_crossbus_ack), .o_wdata(wbwide_crossbus_idata), .o_werr(wbwide_crossbus_err),
-		.o_cyc(wb32_crossbus_cyc), .o_stb(wb32_crossbus_stb), .o_we(wb32_crossbus_we),
-			.o_addr(wb32_crossbus_addr[9-1:0]),
-			.o_data(wb32_crossbus_data), // 32 bits wide
-			.o_sel(wb32_crossbus_sel),  // 32/8 bits wide
-		.i_stall(wb32_crossbus_stall), .i_ack(wb32_crossbus_ack), .i_data(wb32_crossbus_idata), .i_err(wb32_crossbus_err)
+		.i_clk(i_clk),
+		.i_reset(i_reset),
+		// Slave/incoming
+		// {{{
+		.i_wcyc(  wbwide_crossbus_cyc),
+		.i_wstb(  wbwide_crossbus_stb),
+		.i_wwe(   wbwide_crossbus_we),
+		.i_waddr( wbwide_crossbus_addr[5-1:0]),
+		.i_wdata( wbwide_crossbus_data),
+		.i_wsel(  wbwide_crossbus_sel),
+		.o_wstall(wbwide_crossbus_stall),
+		.o_wack(  wbwide_crossbus_ack),
+		.o_wdata( wbwide_crossbus_idata),
+		.o_werr(  wbwide_crossbus_err),
+		// }}}
+		// Master/down-range/outgoing
+		// {{{
+		.o_scyc(  wb32_crossbus_cyc),
+		.o_sstb(  wb32_crossbus_stb),
+		.o_swe(   wb32_crossbus_we),
+		.o_saddr( wb32_crossbus_addr[9-1:0]),
+		.o_sdata( wb32_crossbus_data),
+		.o_ssel(  wb32_crossbus_sel),
+		.i_sstall(wb32_crossbus_stall),
+		.i_sack(  wb32_crossbus_ack),
+		.i_sdata( wb32_crossbus_idata),
+		.i_serr(  wb32_crossbus_err)
+		// }}}
 		// }}}
 	);
 `ifdef	BUSPIC_ACCESS
@@ -2131,14 +2161,14 @@ module	main(i_clk, i_reset,
 	assign	w_sw = 1'b0;
 
 	spio #(
-		.NBTN(3), .NLEDS(6), .NSW(1)
+		.NBTN(1), .NLEDS(6), .NSW(1)
 	) spioi(
 		.i_clk(i_clk), .i_reset(i_reset),
 		.i_wb_cyc(wb32_spio_cyc), .i_wb_stb(wb32_spio_stb), .i_wb_we(wb32_spio_we),
 			.i_wb_data(wb32_spio_data), // 32 bits wide
 			.i_wb_sel(wb32_spio_sel),  // 32/8 bits wide
 		.o_wb_stall(wb32_spio_stall),.o_wb_ack(wb32_spio_ack), .o_wb_data(wb32_spio_idata),
-		.i_sw(w_sw), .i_btn(i_btn), .o_led(i_led),
+		.i_sw(w_sw), .i_btn(i_btn), .o_led(w_led),
 		.o_int(spio_int)
 	);
 
