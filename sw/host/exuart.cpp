@@ -508,7 +508,6 @@ int	main(int argc, char **argv) {
 			if (p[1].fd == skt) {
 				lbcmd.accept(skt);
 				if (idle_count >= 5) {
-					char	idle_buf[6];
 					for(int k=0; k<6; k++)
 						lbcmd.m_buf[k] = (char)last_idle;
 					lbcmd.write(skt, 5);

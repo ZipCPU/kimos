@@ -52,11 +52,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "design.h"
+#include <assert.h>
+#include "port.h"
 #include "regdefs.h"
 #include "devbus.h"
-#include "netbus.h"
-#include "ttybus.h"
+// #include "netbus.h"
+#include "exbus.h"
 
 DEVBUS	*connect_devbus(const char *ustr) {
 	const char *str, *start = NULL;
@@ -65,7 +66,7 @@ DEVBUS	*connect_devbus(const char *ustr) {
 
 	str = ustr;
 	if (NULL == ustr || '\0' == ustr[0])
-		str = getenv("SONARDEV");
+		str = getenv("KIMOSDEV");
 	if (NULL == str) {
 		fprintf(stderr, "ERR: No device defined\n");
 		exit(EXIT_FAILURE);
@@ -73,18 +74,24 @@ DEVBUS	*connect_devbus(const char *ustr) {
 
 	if (0==strncasecmp(str, "UART://", 7)) {
 		tty_flag = true; start = &str[7];
+	} else if (0==strncasecmp(str, "EXBUS://", 9)) {
+		tty_flag = true; start = &str[9];
 	} else if (0==strncasecmp(str, "TTYBUS://", 9)) {
 		tty_flag = true; start = &str[9];
 	} else if (0==strncasecmp(str, "SIM://", 6)) {
 		tty_flag = true; start = &str[6];
-	} else if (0==strncasecmp(str, "NET://", 6)) {
+	}
+/*
+	else if (0==strncasecmp(str, "NET://", 6)) {
 		tty_flag = false; start = &str[6];
 	} else if (0==strncasecmp(str, "UDP://", 6)) {
 		tty_flag = false; start = &str[6];
 	} else if (0==strncasecmp(str, "NETBUS://", 9)) {
 		tty_flag = false; start = &str[9];
-	} else {
-		tty_flag = false; start = str;
+	}
+*/
+	else {
+		tty_flag = true; start = str;
 	}
 
 	char		*host, *ptr;
@@ -94,7 +101,7 @@ DEVBUS	*connect_devbus(const char *ustr) {
 	ptr = strchr(host, ':');
 
 	if (NULL == ptr)
-		udp_port = (tty_flag) ? UARTDBGPORT : UDP_DBGPORT;
+		udp_port = FPGAPORT; // (tty_flag) ? UARTDBGPORT : UDP_DBGPORT;
 	else {
 		udp_port = atoi(ptr + 1);
 		*ptr = '\0';
@@ -102,11 +109,13 @@ DEVBUS	*connect_devbus(const char *ustr) {
 
 	if (tty_flag) {
 		// {{{
-		devbus = new TTYBUS(new NETCOMMS(host, udp_port));
+		devbus = new EXBUS(new NETCOMMS(host, udp_port));
 		// }}}
 	} else {
 		// {{{
-		devbus = new NETBUS(host, udp_port);
+		// devbus = new NETBUS(host, udp_port);
+		assert(tty_flag);
+		exit(EXIT_FAILURE);
 		// }}}
 	}
 

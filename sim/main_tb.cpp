@@ -175,7 +175,7 @@ public:
 	}
 
 	void	tick(void) {
-		TESTB<Vmain>::tick(); // Clock.size = 4
+		TESTB<Vmain>::tick(); // Clock.size = 3
 	}
 
 
@@ -277,18 +277,6 @@ public:
 		// No SIM.TICK tags defined
 		m_changed = false;
 	}
-
-	// Evaluating clock pixclk
-
-	// sim_pixclk_tick() will be called from TESTB<Vmain>::tick()
-	//   following any falling edge of clock pixclk
-	virtual	void	sim_pixclk_tick(void) {
-		//
-		// SIM.TICK tags go here for SIM.CLOCK=pixclk
-		//
-		// No SIM.TICK tags defined
-		m_changed = false;
-	}
 	//
 	// Step until clock clk ticks
 	//
@@ -315,15 +303,6 @@ public:
 		do {
 			tick();
 		} while(!m_clk_125mhz.rising_edge());
-	}
-
-	//
-	// Step until clock pixclk ticks
-	//
-	virtual	void	tick_pixclk(void) {
-		do {
-			tick();
-		} while(!m_pixclk.rising_edge());
 	}
 
 	//

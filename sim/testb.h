@@ -77,7 +77,6 @@ public:
 	TBCLOCK	m_clk;
 	TBCLOCK	m_clk_200mhz;
 	TBCLOCK	m_clk_125mhz;
-	TBCLOCK	m_pixclk;
 
 	TESTB(void) {
 		// {{{
@@ -91,7 +90,6 @@ public:
 		m_clk.init(10000);	//  100.00 MHz
 		m_clk_200mhz.init(5000);	//  200.00 MHz
 		m_clk_125mhz.init(8000);	//  125.00 MHz
-		m_pixclk.init(25000);	//   40.00 MHz
 	}
 	// }}}
 
@@ -202,9 +200,6 @@ public:
 		if (m_clk_125mhz.time_to_edge() < mintime)
 			mintime = m_clk_125mhz.time_to_edge();
 
-		if (m_pixclk.time_to_edge() < mintime)
-			mintime = m_pixclk.time_to_edge();
-
 		assert(mintime > 1);
 
 		// Pre-evaluate, to give verilator a chance to settle any
@@ -217,7 +212,6 @@ public:
 		m_core->i_clk = m_clk.advance(mintime);
 		m_core->i_clk_200mhz = m_clk_200mhz.advance(mintime);
 		m_core->i_clk_125mhz = m_clk_125mhz.advance(mintime);
-		m_core->i_pixclk = m_pixclk.advance(mintime);
 
 		m_time_ps += mintime;
 		eval();
@@ -239,10 +233,6 @@ public:
 		if (m_clk_125mhz.falling_edge()) {
 			m_changed = true;
 			sim_clk_125mhz_tick();
-		}
-		if (m_pixclk.falling_edge()) {
-			m_changed = true;
-			sim_pixclk_tick();
 		}
 	}
 	// }}}
@@ -266,15 +256,6 @@ public:
 	}
 	// }}}
 	virtual	void	sim_clk_125mhz_tick(void) {
-		// {{{
-		// AutoFPGA will override this method within main_tb.cpp if any
-		// @SIM.TICK key is present within a design component also
-		// containing a @SIM.CLOCK key identifying this clock.  That
-		// component must also set m_changed to true.
-		m_changed = false;
-	}
-	// }}}
-	virtual	void	sim_pixclk_tick(void) {
 		// {{{
 		// AutoFPGA will override this method within main_tb.cpp if any
 		// @SIM.TICK key is present within a design component also

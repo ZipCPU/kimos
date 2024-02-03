@@ -64,11 +64,12 @@ i_sdcard_cd_n,
 
 		io_sdcard_cmd, io_sdcard_dat,
 		// SDRAM I/O port wires
-		ddr3_reset_n, ddr3_cke, ddr3_ck_p, ddr3_ck_n, ddr3_cs_n,
-		ddr3_ras_n, ddr3_cas_n, ddr3_we_n,
-		ddr3_dqs_p, ddr3_dqs_n,
-		ddr3_addr, ddr3_ba,
-		ddr3_dq, ddr3_dm, ddr3_odt,
+		o_ddr3_reset_n, ddr3_cke, o_ddr3_ck_p, o_ddr3_ck_n,
+		o_ddr3_cs_n,
+		o_ddr3_ras_n, o_ddr3_cas_n, o_ddr3_we_n,
+		io_ddr3_dqs_p, io_ddr3_dqs_n,
+		o_ddr3_a, o_ddr3_ba,
+		io_ddr3_dq, ddr3_dm, ddr3_odt,
 		// Top level Quad-SPI I/O ports
 		o_qspi_cs_n, io_qspi_dat,
 		// UART/host to wishbone interface
@@ -153,17 +154,17 @@ i_sdcard_cd_n,
 	// }}}
 	// I/O declarations for the DDR3 SDRAM
 	// {{{
-	output	wire		ddr3_reset_n;
-	output	wire	[0:0]	ddr3_cke;
-	output	wire	[0:0]	ddr3_ck_p, ddr3_ck_n;
-	output	wire	[0:0]	ddr3_cs_n;
-	output	wire		ddr3_ras_n, ddr3_cas_n, ddr3_we_n;
-	output	wire	[2:0]	ddr3_ba;
-	output	wire	[14-1:0]	ddr3_addr;
-	output	wire	[0:0]			ddr3_odt;
-	output	wire	[64/8-1:0]	ddr3_dm;
-	inout	wire	[64/8-1:0]	ddr3_dqs_p, ddr3_dqs_n;
-	inout	wire	[64-1:0]	ddr3_dq;
+	output	wire		o_ddr3_reset_n;
+	output	wire	[1:0]	o_ddr3_cke;
+	output	wire		o_ddr3_ck_p, o_ddr3_ck_n;
+	output	wire	[1:0]	o_ddr3_cs_n;
+	output	wire		o_ddr3_ras_n, o_ddr3_cas_n, o_ddr3_we_n;
+	output	wire	[2:0]	o_ddr3_ba;
+	output	wire	[15-1:0]	o_ddr3_a;
+	output	wire	[1:0]			o_ddr3_odt;
+	output	wire	[64/8-1:0]	o_ddr3_dm;
+	inout	wire	[64/8-1:0]	io_ddr3_dqs_p, io_ddr3_dqs_n;
+	inout	wire	[64-1:0]	io_ddr3_dq;
 	// }}}
 	// Quad SPI flash
 	output	wire		o_qspi_cs_n;
@@ -171,8 +172,8 @@ i_sdcard_cd_n,
 	input	wire		i_wbu_uart_rx;
 	output	wire		o_wbu_uart_tx;
 	// SPIO interface
-	input	wire			i_btn,
-	output	wire	[6-1:0]	o_led;
+	input	wire	[2-1:0]	i_btn;
+	output	wire	[8-1:0]	o_led;
 
 
 	//
@@ -236,10 +237,11 @@ i_sdcard_cd_n,
 	wire	s_clk_200mhz,  s_clk_200mhz_unbuffered,
 		sysclk_locked, sysclk_feedback,
 		s_clk_125mhz,  s_clk_125_unbuffered,
+		// s_clk_150mhz	-- needed for SATA
 		s_clk_250mhz,  s_clk_250_unbuffered,
 		s_clksync,     s_clksync_unbuffered,
 		s_clk_400mhz,  s_clk_400mhz_unbuffered,	// Pixclk * 10
-		s_clk_pixclk,  s_clk_pixclk_unbuffered,	// 40MHz
+		s_clk_40mhz_unbuffered,	// 40MHz
 		netclk_locked, netclk_feedback;
 	wire	i_clk_buffered;
 	wire	clocks_locked;
@@ -248,8 +250,8 @@ i_sdcard_cd_n,
 	reg	[4:0]	pre_reset_counter;
 	reg		pre_reset;
 	// }}}
-	wire	[6-1:0]	w_led;
-	wire	[1-1:0]	w_btn;
+	wire	[8-1:0]	w_led;
+	wire	[2-1:0]	w_btn;
 
 
 	//
@@ -310,7 +312,7 @@ i_sdcard_cd_n,
 		// Quad SPI flash
 		w_qspi_cs_n, w_qspi_sck, qspi_dat, io_qspi_dat, qspi_bmod,
 		// PLL generated clocks
-		s_clk_200mhz, s_clk_125mhz, s_clk_pixclk,
+		s_clk_200mhz, s_clk_125mhz,
 		// UART/host to wishbone interface
 		i_wbu_uart_rx, o_wbu_uart_tx,
 		w_btn, w_led);
@@ -376,7 +378,7 @@ i_sdcard_cd_n,
 		// {{{
 		.AXIDWIDTH(1), .WBDATAWIDTH(512),
 		.DDRWIDTH(64),
-		.DDRAWID(14),
+		.DDRAWID(15),
 		.RAMABITS(30)
 		// }}}
 	) sdrami(
@@ -394,15 +396,15 @@ i_sdcard_cd_n,
 		.o_wb_stall(sdram_stall),    .o_wb_ack(sdram_ack),
 			.o_wb_data(sdram_rdata), .o_wb_err(sdram_err),
 		//
-		.o_ddr_ck_p(ddr3_ck_p), .o_ddr_ck_n(ddr3_ck_n),
-		.o_ddr_reset_n(ddr3_reset_n), .o_ddr_cke(ddr3_cke),
-		.o_ddr_cs_n(ddr3_cs_n),
-		.o_ddr_ras_n(ddr3_ras_n),
-		.o_ddr_cas_n(ddr3_cas_n), .o_ddr_we_n(ddr3_we_n),
-		.o_ddr_ba(ddr3_ba), .o_ddr_addr(ddr3_addr),
-		.o_ddr_odt(ddr3_odt), .o_ddr_dm(ddr3_dm),
-		.io_ddr_dqs_p(ddr3_dqs_p), .io_ddr_dqs_n(ddr3_dqs_n),
-		.io_ddr_data(ddr3_dq)
+		.o_ddr_ck_p(o_ddr3_ck_p), .o_ddr_ck_n(o_ddr3_ck_n),
+		.o_ddr_reset_n(o_ddr3_reset_n), .o_ddr_cke(o_ddr3_cke),
+		.o_ddr_cs_n(o_ddr3_cs_n),
+		.o_ddr_ras_n(o_ddr3_ras_n),
+		.o_ddr_cas_n(o_ddr3_cas_n), .o_ddr_we_n(o_ddr3_we_n),
+		.o_ddr_ba(o_ddr3_ba), .o_ddr_addr(o_ddr3_a),
+		.o_ddr_odt(o_ddr3_odt), .o_ddr_dm(o_ddr3_dm),
+		.io_ddr_dqs_p(io_ddr3_dqs_p), .io_ddr_dqs_n(io_ddr3_dqs_n),
+		.io_ddr_data(io_ddr3_dq)
 		// }}}
 	);
  	
@@ -508,7 +510,7 @@ i_sdcard_cd_n,
 		.CLKOUT0(s_clk_200mhz_unbuffered),
 		.CLKOUT1(s_clk_400mhz_unbuffered),
 		.CLKOUT2(s_clksync_unbuffered),
-		.CLKOUT3(s_clk_pixclk_unbuffered),
+		.CLKOUT3(s_clk_40mhz_unbuffered),
 		.PWRDWN(1'b0), .RST(1'b0),
 		.CLKFBOUT(sysclk_feedback),
 		.CLKFBIN(sysclk_feedback),
@@ -519,7 +521,6 @@ i_sdcard_cd_n,
 	BUFG	sysbuf(     .I(s_clk_200mhz_unbuffered),.O(s_clk_200mhz));
 	BUFG	clksync_buf(.I(s_clksync_unbuffered),   .O(s_clksync));
 	BUFG	clk4x_buf(  .I(s_clk_400mhz_unbuffered),.O(s_clk_400mhz));
-	BUFG	clkpix_buf( .I(s_clk_pixclk_unbuffered),.O(s_clk_pixclk));
 
 	// sysclk_stable
 	// {{{
@@ -612,7 +613,7 @@ i_sdcard_cd_n,
 
 	// }}}
 
-	assign	o_led = { w_led[6-1:2], (w_led[1] && clocks_locked),
+	assign	o_led = { w_led[8-1:2], (w_led[1] && clocks_locked),
 			w_led[0] && !s_reset };
 
 	assign	w_btn = { !i_btn };
