@@ -182,7 +182,7 @@ module	main(i_clk, i_reset,
 		// The Universal QSPI Flash
 		o_qspi_cs_n, o_qspi_sck, o_qspi_dat, i_qspi_dat, o_qspi_mod,
 		// Extra clocks
-		i_clk_200mhz, i_clk_125mhz, i_pixclk,
+		i_clk_200mhz, i_clk_125mhz,
 		// UART/host to wishbone interface
 		i_wbu_uart_rx, o_wbu_uart_tx,
 		// SPIO interface
@@ -324,13 +324,13 @@ module	main(i_clk, i_reset,
 	output	wire	[1:0]	o_qspi_mod;
 	// Extra clocks
 	// Verilator lint_off UNUSED
-	input	wire		i_clk_200mhz, i_clk_125mhz, i_pixclk;
+	input	wire		i_clk_200mhz, i_clk_125mhz; // i_clk_150mhz
 	// Verilator lint_on  UNUSED
 	input	wire		i_wbu_uart_rx;
 	output	wire		o_wbu_uart_tx;
 	// SPIO interface
-	input	wire	[1-1:0]	i_btn;
-	output	wire	[6-1:0]	o_led;
+	input	wire	[2-1:0]	i_btn;
+	output	wire	[8-1:0]	o_led;
 // }}}
 	// Make Verilator happy
 	// {{{
@@ -436,7 +436,7 @@ module	main(i_clk, i_reset,
 `ifndef	TIMESYNC
 	reg	[31:0]	r_rtccount_data;
 `endif
-	wire	[6-1:0]	w_led;
+	wire	[8-1:0]	w_led;
 	wire			w_sw;	// Since this design has no switches
 
 // }}}
@@ -2161,7 +2161,7 @@ module	main(i_clk, i_reset,
 	assign	w_sw = 1'b0;
 
 	spio #(
-		.NBTN(1), .NLEDS(6), .NSW(1)
+		.NBTN(2), .NLEDS(8), .NSW(1)
 	) spioi(
 		.i_clk(i_clk), .i_reset(i_reset),
 		.i_wb_cyc(wb32_spio_cyc), .i_wb_stb(wb32_spio_stb), .i_wb_we(wb32_spio_we),

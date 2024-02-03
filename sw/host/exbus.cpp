@@ -124,7 +124,6 @@ void	EXBUS::bufalloc(int len) {
 // lclreadcode
 // {{{
 int	EXBUS::lclreadcode(char *buf, int len) {
-	char *sp, *dp;
 	int	nr, ret;
 
 	nr = m_dev->read(buf, len);
@@ -137,7 +136,7 @@ int	EXBUS::lclreadcode(char *buf, int len) {
 	}
 #endif
 	m_total_nread += nr;
-	ret = nr; sp = buf; dp = buf;
+	ret = nr;
 	// Normally, we'd skip any invalid codewords here.  The EXBUS, however,
 	// doesn't use invalid codewords--so we therefore return everything.
 	return ret;
@@ -208,6 +207,7 @@ void	EXBUS::writev(const BUSW a, const int p, const int len, const BUSW *buf) {
 			(p)?"++":"", ln, nw);
 		for(int i=0; i<ln; i++) {
 			BUSW	val = buf[nw+i];
+			int	ival = (int)val;
 
 			int	caddr = 0;
 			// Let's try compression
@@ -231,14 +231,14 @@ void	EXBUS::writev(const BUSW a, const int p, const int len, const BUSW *buf) {
 				caddr -= 1;
 				*ptr++ = 0x34 | ((caddr >> 7) & 0x03);
 				*ptr++ = (caddr & 0x07f);
-			} else if ((val >= -256) || (val < 256)) {
+			} else if ((ival >= -256) || (ival < 256)) {
 				DBGPRINTF("WR-ENCODING.2 %10d\n", val);
 				*ptr++ = 0x38|((val >> 7) & 3);
 				*ptr++ = (val & 0x07f);
 
 				// For small values like this, we don't write
 				// them into the table.
-			} else if ((val >= -32768) || (val < 32768)) {
+			} else if ((ival >= -32768) || (ival < 32768)) {
 				DBGPRINTF("WR-ENCODING.3 %10d\n", val);
 				*ptr++ = 0x3c|((val >> 14) & 3);
 				*ptr++ = (val >> 7) & 0x07f;
@@ -370,8 +370,8 @@ char	*EXBUS::encode_address(const EXBUS::BUSW a) {
 	if ((m_addr_set)&&(a == m_lastaddr))
 		return ptr;
 	
-	if (m_addr_set) {
-		// Encode a difference address
+	if (m_addr_set) { // Encode a difference address
+		// {{{
 		int	diffaddr = (a - m_lastaddr)>>2;
 		ptr = m_buf;
 		if ((diffaddr >= -2)&&(diffaddr < 2)) {
@@ -399,15 +399,17 @@ char	*EXBUS::encode_address(const EXBUS::BUSW a) {
 			diffaddr, diffaddr&0x0ffffffff);
 		*/
 	}
+	// }}}
 
+	// Encode an absolute (low memory) address (if "better")
+	// {{{
 	{
-		// Encode an absolute (low memory) address
 		// Prefer absolute address encoding over differential encoding,
 		// when both encodings encode the same address, and when both
 		// encode the address in the same number of words
 		int	waddr = ((int)addr) >> 2;
 
-		if ((addr >= -(1<<7))&&(addr < 1<<7)
+		if ((waddr >= -(1<<7))&&(waddr < 1<<7)
 				&&((ptr == m_buf)||(ptr >= &m_buf[2]))) {
 			DBGPRINTF("Setting ADDR.1 to %08x\n", addr);
 			ptr = m_buf;
@@ -430,6 +432,7 @@ char	*EXBUS::encode_address(const EXBUS::BUSW a) {
 			*ptr++ = ( addr    ) & 0x07c;
 		}
 	}
+	// }}}
 
 	*ptr = '\0';
 #ifdef	EXDEBUG
@@ -575,7 +578,6 @@ void	EXBUS::readz(const EXBUS::BUSW a, const int len, EXBUS::BUSW *buf) {
 EXBUS::BUSW	EXBUS::readword(void) {
 	EXBUS::BUSW	val = 0;
 	int		nr;
-	unsigned	sixbits;
 
 	DBGPRINTF("READ-WORD()\n");
 

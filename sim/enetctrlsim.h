@@ -1,20 +1,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename: 	builddate.v
+// Filename:	sim/enetctrlsim.h
 // {{{
 // Project:	KIMOS, a Mercury KX2 demonstration project
 //
-// Purpose:	This file records the date of the last build.  Running "make"
-//		in the main directory will create this file.  The `define found
-//	within it then creates a version stamp that can be used to tell which
-//	configuration is within an FPGA and so forth.
+// Purpose:	
 //
 // Creator:	Dan Gisselquist, Ph.D.
 //		Gisselquist Technology, LLC
 //
 ////////////////////////////////////////////////////////////////////////////////
 // }}}
-// Copyright (C) 2021-2024, Gisselquist Technology, LLC
+// Copyright (C) 2022-2024, Gisselquist Technology, LLC
 // {{{
 // This file is part of the KIMOS project.
 //
@@ -29,7 +26,7 @@
 // for more details.
 //
 // You should have received a copy of the GNU General Public License along
-// with this program.  (It's in the 1000 4 24 27 30 46 122 133 134 1000ROOT)/doc directory, run make with no
+// with this program.  (It's in the $(ROOT)/doc directory, run make with no
 // target there if the PDF file isn't present.)  If not, see
 // <http://www.gnu.org/licenses/> for a copy.
 // }}}
@@ -40,8 +37,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // }}}
-`ifndef	DATESTAMP
-`define DATESTAMP 32'h20240203
-`define BUILDTIME 32'h00064232
-`endif
-//
+#ifndef	ENETCTRLSIM_H
+#define	ENETCTRLSIM_H
+
+#define	ENET_MEMWORDS	32
+class	ENETCTRLSIM	{
+	int	m_consecutive_clocks, m_lastout,
+		m_tickcount, m_ticks_per_clock, m_lastclk;
+	int	TICKS_PER_CLOCK, PHY_ADDR;
+	int	m_mem[ENET_MEMWORDS];
+
+public:
+	bool	m_synched;
+	int	m_datareg, m_halfword, m_outreg;
+	ENETCTRLSIM(void);
+	~ENETCTRLSIM(void) {}
+
+	int	operator()(int inreset, int clk, int data);
+	int	operator[](int index) const;
+};
+
+#endif	// ENETCTRLSIM_H
+

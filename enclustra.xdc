@@ -21,6 +21,64 @@ create_clock -name i_clk -period 10.000 [get_ports i_clk];
 ## set_property DIFF_TERM FALSE [get_ports CLK200_P];
 ## set_property -dict {PACKAGE_PIN AC11  IOSTANDARD DIFF_SSTL15} [get_ports {CLK200_N}];
 ## set_property -dict {PACKAGE_PIN AB11  IOSTANDARD DIFF_SSTL15} [get_ports {CLK200_P}];
+
+## AD24: IO_B12_L16_AD24_N	A60	CLK_100_CAL	i_clk100_cal
+## D5/D6: Used for SATA reference clock, 150MHz
+## D6/D5: MGT_REFCLK2_D6_P/5_N	B3/B5	CLK_REF0_P/N	i_sata_refclk_p/n
+## N16/U16	->	C3/C5->CLK_REF2_P/N		i_aux_refclk_p/n
+## MGT_REFCLK1_K6_P/K5_N ->	B10/B12	FMC_GCLK0_M2C_P	i_fmc_refclk_p/n
+## Y22/AA22: IO_B12_L13_MRCC_Y22_P/AA22_N,A46/A48-> CLK_USR_P/N, i_usrclk_p/n
+##
+##	Si5338B -> usrclk, sata_refclk (CLK_REF0), aux_refclk (CLK_REF2)
+##	Si570	-> Not connected
+
+## MIPI clock pins
+##
+## N21/N22 ->	C148/C150 ->	MIPI1_CLK_P/N
+## R21/P21 ->	C151/C153->	MIPI0_CLK_P/N
+## M25/L25	C160/C162->	MIPI0_CLK_D0LP_P/N
+## R26/P26	C161/C163->	MIPI1_CLK_D0LP_P/N
+##
+##
+## Not clock pins ...
+##
+## F6: MGT_REFCLK3_D6_P		B7	IO_D2_P
+## F5: MGT_REFCLK3_D5_N		B9	IO_D3_N
+## H6: MGT_REFCLK0_H6_P		B4	IO2_D0_P
+## H5: MGT_REFCLK0_H5_N		B6	IO2_D1_P
+## R22/R23 ->		C122/C124->IO1_CLK_P/N		(Anios #1)
+##
+## F22/E23	-> A104/A106 -> GPIO0_LED0#/LED1#	(Baseboard LEDs)
+##
+## AA23/AB24	->	A10/A12	->	IO0_D0_P/IO0D1_N
+## AC23/AC24	->	A49/A51	->	IO0_CLK_P/IO0_CLK_N	(Anios #0)
+## Y23/AA24	->	A85/A87 ->	IO3_D0_P/IO3_D1_N
+## F2/F1 or NC ->	B47/B49	->	FMC_CLK1_M2C_P/N
+## H17/H18	->	B78/B80	->	FMC_CLK0_M2C_P/N
+## D23/D24	->	A88/A90->DP_AUX_IN/DP_AUX_OUT (No clock)
+##
+## Module connect C contains clock capable pins:
+##	F17/E17 ->	C88/C90	->	FMC_HA00_CC_P/N
+##	E10/D10	->	C89/C91	->	FMC_HA09_P/N
+##	P23/N23	->	C115/C117 ->	IO1_D0_P/IO1_D1_N
+##	R22/R23	->	C122/C124 ->	IO1_CLK_P/N	(Anios connector #1)
+##	N21/N22	->	C148/C150 ->	MIPI1_CLK_P/N
+##	R21/P21	->	C151/C153 ->	MIPI0_CLK_P/N
+##			C4/C6	-> FMC_GCLK1_M2C_P/N	(NC)
+##			C7/C9	-> CLK_REF_P/N		(NC)
+##			C10/C12	-> CLK_REF1_P/N		(NC)
+## CLK100
+## CLK200P/N
+##
+## Baseboard ...
+##	CLK_USR_P/N
+##	CLK_REF_P/N	(Si570 Reference oscillator)
+##	CLK_REF0_P/N
+##	CLK_REF1_P/N
+##	CLK_REF2_P/N
+##	(CLK_CG, may not be populated)
+##	FMC_GCLK1_M2P_P/N	(??)
+##	ID0_CLK_P/N, IO1_CLK_P/N (Anios IO connector)
 ## }}}
 
 ## LEDs
@@ -37,9 +95,21 @@ create_clock -name i_clk -period 10.000 [get_ports i_clk];
 ## Baseboard LEDs
 # set_property -dict {SLEW SLOW PACKAGE_PIN F22   IOSTANDARD LVCMOS18  } [get_ports { o_led[4] }]; # GPIO0_LED0_N
 # set_property -dict {SLEW SLOW PACKAGE_PIN E23   IOSTANDARD LVCMOS18  } [get_ports { o_led[5] }]; # GPIO1_LED1_N
+# set_property -dict {SLEW SLOW PACKAGE_PIN F22   IOSTANDARD LVCMOS18  } [get_ports { o_led[6] }]; # LED2
+# set_property -dict {SLEW SLOW PACKAGE_PIN E23   IOSTANDARD LVCMOS18  } [get_ports { o_led[7] }]; # LED3
 
 ## C142 LED2 (ST1)
 ## C144 LED3 (ST1)
+##
+## GPIO0_LED0_N	via A104
+## GPIO1_LED1_N	via A106
+## K25: LED#2 via C142
+## K26: LED#3 via C144
+## ETH0_LED1#	A149	--> Controlled by the Ethernet chip(s)
+## ETH0_LED2#	A161
+## ETH1_LED1#	A148
+## ETH1_LED2#	A160
+## FPGA DONE
 ## }}}
 
 ## UART
@@ -51,7 +121,11 @@ set_property -dict {PACKAGE_PIN A20   IOSTANDARD LVCMOS18  } [get_ports {o_wbu_u
 ## Buttons
 ## {{{
 # set_property -dict {PACKAGE_PIN C22   IOSTANDARD LVCMOS18    } [get_ports {i_btn}]; # (Not in TCL)
-## # set_property -dict {PACKAGE_PIN AD23  IOSTANDARD LVCMOS18    } [get_ports {i_btn[1]}]; # (Not in TCL)
+##
+## Button #1 will affect the user oscillator speed, if the Si5338 is so config'd
+##	(It affects the speed of CLK_CG, which feeds inputs 1 and 2 of the
+##	 Si5338)
+# set_property -dict {PACKAGE_PIN AD23  IOSTANDARD LVCMOS18    } [get_ports {i_btn[1]}]; # (Not in TCL)
 ## IO B14 L7  C22  N / A100 / BTN0#
 ## IO B12 L16 AD23 P / A58  / BTN1#
 
@@ -64,10 +138,10 @@ set_property -dict {PACKAGE_PIN A20   IOSTANDARD LVCMOS18  } [get_ports {o_wbu_u
 ## I2C #1: I2C_SCL and I2C_SDA
 ## {{{
 ## Connects to FTDI, Si53388B, AniosIO #1, HDMI Redriver
-# set_property SLEW SLOW [get_ports I2C_INT_N_LS];
+# set_property SLEW SLOW [get_ports i_i2c_int_n];
 # set_property SLEW SLOW [get_ports io_sda];
 # set_property SLEW SLOW [get_ports io_scl];
-# set_property -dict {PACKAGE_PIN AC18  IOSTANDARD SSTL15    } [get_ports {I2C_INT_N_LS}];
+# set_property -dict {PACKAGE_PIN AC18  IOSTANDARD SSTL15    } [get_ports {i_i2c_int_n}];
 # set_property -dict {PACKAGE_PIN L23   IOSTANDARD LVCMOS18  } [get_ports {io_scl}];
 # set_property -dict {PACKAGE_PIN C24   IOSTANDARD LVCMOS18  } [get_ports {io_sda}];
 ## }}}
@@ -76,8 +150,20 @@ set_property -dict {PACKAGE_PIN A20   IOSTANDARD LVCMOS18  } [get_ports {o_wbu_u
 ## Connects to FMC, AniosIO #2, Reference oscillator control, HDMI, MIPI, SFP+
 # set_property -dict {PACKAGE_PIN W25   IOSTANDARD LVCMOS18  } [get_ports {io_i2c_fpga_scl}];	## IO Bank B12, A55
 # set_property -dict {PACKAGE_PIN W26   IOSTANDARD LVCMOS18  } [get_ports {io_i2c_fpga_sda}];	## IO Bank B12, A57
+##
+##	I2C Address	Bus		Component
+##	1110'000	I2C_*		Si5338
+##	0101'0101	I2C_*_FPGA	Si570	(Controls the user oscillator)
+##	0010'000	I2C_*_MIPI0	Sony Camera
+##	1100'100	I2C_*_MIPI1	ATSHA204A
+##	1010'00x	I2C_*_FPGA	SFP+
+##	1011'110	I2C_*		HDMI, SN65DP159RSB
+##	1011'110	I2C_*_HDMI	HDMI, SN65DP159RSB
+##
+## C63/C65 -> SFP_TX_P/N	(NC)
+## C66/C68 -> SFP_RX_P/N	(NC)
 ## }}}
-
+## I2C_INT#: via A115
 ## }}}
 
 ## HDMI (Not supported.  The KX2 wires aren't connected)
@@ -95,6 +181,8 @@ set_property -dict {PACKAGE_PIN A20   IOSTANDARD LVCMOS18  } [get_ports {o_wbu_u
 ## C57 / HDMI_D2_P (ST1)
 ## C59 / HDMI_D2_N (ST1)
 ## }}}
+
+## SFP+: Not supported either.  The data wires aren't connected
 
 ## Display port
 ## {{{
@@ -117,59 +205,19 @@ set_property -dict {PACKAGE_PIN A20   IOSTANDARD LVCMOS18  } [get_ports {o_wbu_u
 # set_property -dict { PACKAGE_PIN E22   IOSTANDARD LVCMOS18  } [get_ports {i_dp_hpd}];
 ## }}}
 
-## Gyro SPI Controller
-## {{{
-## 600ms reset recovery time
-## Reset must be low for 10us (minimum) to ensure proper reset
-# set_property -dict {PACKAGE_PIN K20   IOSTANDARD LVCMOS18  } [get_ports {o_gyro_reset_n}];
-# set_property -dict {PACKAGE_PIN M17   IOSTANDARD LVCMOS18  } [get_ports {o_gyro_csn  }];
-# set_property -dict {PACKAGE_PIN L18   IOSTANDARD LVCMOS18  } [get_ports {o_gyro_sck   }];
-# set_property -dict {PACKAGE_PIN L17   IOSTANDARD LVCMOS18  } [get_ports {i_gyro_miso  }];
-# set_property -dict {PACKAGE_PIN K18   IOSTANDARD LVCMOS18  } [get_ports {o_gyro_mosi  }];
-##
-## GPIO Digital I/O pins
-# set_property -dict {PACKAGE_PIN K16   IOSTANDARD LVCMOS18  } [get_ports {io_gyro_dio[0]}];	# These should be output by default
-# set_property -dict {PACKAGE_PIN K17   IOSTANDARD LVCMOS18  } [get_ports {io_gyro_dio[1]}];
-# set_property -dict {PACKAGE_PIN J18   IOSTANDARD LVCMOS18  } [get_ports {io_gyro_dio[2]}];
-# set_property -dict {PACKAGE_PIN J19   IOSTANDARD LVCMOS18  } [get_ports {io_gyro_dio[3]}];
-## }}}
-
-## PSU A/D SPI controller
-## {{{
-# set_property -dict {PACKAGE_PIN H19   IOSTANDARD LVCMOS18  } [get_ports {o_psu_csn }];
-# set_property -dict {PACKAGE_PIN G20   IOSTANDARD LVCMOS18  } [get_ports {o_psu_sck }];
-# set_property -dict {PACKAGE_PIN D19   IOSTANDARD LVCMOS18  } [get_ports {i_psu_miso}];
-# set_property -dict {PACKAGE_PIN D20   IOSTANDARD LVCMOS18  } [get_ports {o_psu_mosi}];
-##
-# set_property -dict {PACKAGE_PIN G17   IOSTANDARD LVCMOS18  } [get_ports {o_psu_reset_n}];
-## }}}
-
-## TC (Thermocouple) SPI controller
-## {{{
-# set_property -dict {PACKAGE_PIN B16   IOSTANDARD LVCMOS18  } [get_ports { o_tc_sck   }];
-# set_property -dict {PACKAGE_PIN B17   IOSTANDARD LVCMOS18  } [get_ports { o_tc_mosi  }];
-# set_property -dict {PACKAGE_PIN A17   IOSTANDARD LVCMOS18  } [get_ports { i_tc_miso  }];
-# set_property -dict {PACKAGE_PIN E18   IOSTANDARD LVCMOS18  } [get_ports { o_tc_csn[0]}];		## IO Bank B15
-# set_property -dict {PACKAGE_PIN D18   IOSTANDARD LVCMOS18  } [get_ports { o_tc_csn[1]}];		## IO Bank B15
-# set_property -dict {PACKAGE_PIN C19   IOSTANDARD LVCMOS18  } [get_ports { o_tc_csn[2]}];
-# set_property -dict {PACKAGE_PIN B19   IOSTANDARD LVCMOS18  } [get_ports { o_tc_csn[3]}];
-# set_property -dict {PACKAGE_PIN A18   IOSTANDARD LVCMOS18  } [get_ports { o_tc_csn[4]}];
-# set_property -dict {PACKAGE_PIN A19   IOSTANDARD LVCMOS18  } [get_ports { o_tc_csn[5]}];
-## }}}
-
 ## KX2 IO Bank #0
 ## {{{
-# set_property -dict {PACKAGE_PIN V23   IOSTANDARD LVCMOS18  } [get_ports {i_ltc_clkout}];
-# set_property -dict {PACKAGE_PIN V24   IOSTANDARD LVCMOS18  } [get_ports {o_ltc_pll}]; ## IO_B12_L3_V24_N
+# set_property -dict {PACKAGE_PIN V23   IOSTANDARD LVCMOS18  } [get_ports {v23}];
+# set_property -dict {PACKAGE_PIN V24   IOSTANDARD LVCMOS18  } [get_ports {v24}]; ## IO_B12_L3_V24_N
 # set_property -dict {PACKAGE_PIN Y21   IOSTANDARD LVCMOS18  } [get_ports {IO0_D15_N}];
 # set_property -dict {PACKAGE_PIN AD21  IOSTANDARD LVCMOS18  } [get_ports {IO0_D16_P}];
 # set_property -dict {PACKAGE_PIN AE21  IOSTANDARD LVCMOS18  } [get_ports {IO0_D17_N}];
-# set_property -dict {PACKAGE_PIN AE22  IOSTANDARD LVCMOS18  } [get_ports { o_en_20v  }];
-# set_property -dict {PACKAGE_PIN AF22  IOSTANDARD LVCMOS18  } [get_ports { o_en_6p5v }];
+# set_property -dict {PACKAGE_PIN AE22  IOSTANDARD LVCMOS18  } [get_ports { ae22  }];
+# set_property -dict {PACKAGE_PIN AF22  IOSTANDARD LVCMOS18  } [get_ports { af22 }];
 # set_property -dict {PACKAGE_PIN V21   IOSTANDARD LVCMOS18  } [get_ports {IO0_D20_P}];
 # set_property -dict {PACKAGE_PIN W21   IOSTANDARD LVCMOS18  } [get_ports {IO0_D21_N}];
-# set_property -dict {PACKAGE_PIN U24   IOSTANDARD LVCMOS18  } [get_ports {i_water_ingress}];	# IO_B12_L2_U24_P
-# set_property -dict {PACKAGE_PIN U25   IOSTANDARD LVCMOS18  } [get_ports {i_housing_interlock}];	# IO_B12_L2_U25_N
+# set_property -dict {PACKAGE_PIN U24   IOSTANDARD LVCMOS18  } [get_ports {u24}];	# IO_B12_L2_U24_P
+# set_property -dict {PACKAGE_PIN U25   IOSTANDARD LVCMOS18  } [get_ports {u25}];	# IO_B12_L2_U25_N
 # set_property -dict {PACKAGE_PIN AC24  IOSTANDARD LVCMOS18  } [get_ports {IO0_CLK1_N}];
 # set_property -dict {PACKAGE_PIN AC23  IOSTANDARD LVCMOS18  } [get_ports {IO0_CLK0_P}];
 ## }}}
@@ -261,8 +309,6 @@ set_property -dict {PACKAGE_PIN A20   IOSTANDARD LVCMOS18  } [get_ports {o_wbu_u
 # set_property -dict {PACKAGE_PIN H17   IOSTANDARD LVCMOS18  } [get_ports {FMC_CLK0_M2C_P}];
 ## }}}
 
-# set_property -dict {PACKAGE_PIN W20   IOSTANDARD LVCMOS18  } [get_ports {i_ltc_pgood}];
-
 ## KX2 IO Bank #3
 ## {{{
 # set_property -dict {PACKAGE_PIN Y23   IOSTANDARD LVCMOS18  } [get_ports {IO3_D0_P}];
@@ -303,123 +349,185 @@ set_property -dict {PACKAGE_PIN A20   IOSTANDARD LVCMOS18  } [get_ports {o_wbu_u
 
 ## DDR3 MEMORY
 ## {{{
-# set_property SLEW SLOW [get_ports DDR3_VSEL]
-# set_property -dict {PACKAGE_PIN AD11  IOSTANDARD SSTL15    } [get_ports {DDR3_BA[0]}];
-# set_property -dict {PACKAGE_PIN AA10  IOSTANDARD SSTL15    } [get_ports {DDR3_BA[1]}];
-# set_property -dict {PACKAGE_PIN AF12  IOSTANDARD SSTL15    } [get_ports {DDR3_BA[2]}];
-# set_property -dict {PACKAGE_PIN AA2   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[0]}];
-# set_property -dict {PACKAGE_PIN Y2    IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[1]}];
-# set_property -dict {PACKAGE_PIN AB2   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[2]}];
-# set_property -dict {PACKAGE_PIN V1    IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[3]}];
-# set_property -dict {PACKAGE_PIN Y1    IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[4]}];
-# set_property -dict {PACKAGE_PIN W1    IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[5]}];
-# set_property -dict {PACKAGE_PIN AC2   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[6]}];
-# set_property -dict {PACKAGE_PIN V2    IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[7]}];
-# set_property -dict {PACKAGE_PIN W3    IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[8]}];
-# set_property -dict {PACKAGE_PIN V3    IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[9]}];
-# set_property -dict {PACKAGE_PIN AE11  IOSTANDARD SSTL15    } [get_ports {DDR3_A[0]}];
-# set_property -dict {PACKAGE_PIN AF9   IOSTANDARD SSTL15    } [get_ports {DDR3_A[1]}];
-# set_property -dict {PACKAGE_PIN AD10  IOSTANDARD SSTL15    } [get_ports {DDR3_A[2]}];
-# set_property -dict {PACKAGE_PIN AB10  IOSTANDARD SSTL15    } [get_ports {DDR3_A[3]}];
-# set_property -dict {PACKAGE_PIN AA9   IOSTANDARD SSTL15    } [get_ports {DDR3_A[4]}];
-# set_property -dict {PACKAGE_PIN AB9   IOSTANDARD SSTL15    } [get_ports {DDR3_A[5]}];
-# set_property -dict {PACKAGE_PIN AA8   IOSTANDARD SSTL15    } [get_ports {DDR3_A[6]}];
-# set_property -dict {PACKAGE_PIN AC8   IOSTANDARD SSTL15    } [get_ports {DDR3_A[7]}];
-# set_property -dict {PACKAGE_PIN AA7   IOSTANDARD SSTL15    } [get_ports {DDR3_A[8]}];
-# set_property -dict {PACKAGE_PIN AE8   IOSTANDARD SSTL15    } [get_ports {DDR3_A[9]}];
-# set_property -dict {PACKAGE_PIN AA13  IOSTANDARD SSTL15    } [get_ports {DDR3_CKE[0]}];
-# set_property -dict {PACKAGE_PIN AC12  IOSTANDARD DIFF_SSTL15} [get_ports {DDR3_CK_N[0]}];
-# set_property -dict {PACKAGE_PIN AB12  IOSTANDARD DIFF_SSTL15} [get_ports {DDR3_CK_P[0]}];
-# set_property -dict {PACKAGE_PIN U1    IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[10]}];
-# set_property -dict {PACKAGE_PIN U7    IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[11]}];
-# set_property -dict {PACKAGE_PIN U6    IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[12]}];
-# set_property -dict {PACKAGE_PIN V4    IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[13]}];
-# set_property -dict {PACKAGE_PIN V6    IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[14]}];
-# set_property -dict {PACKAGE_PIN U2    IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[15]}];
-# set_property -dict {PACKAGE_PIN AE3   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[16]}];
-# set_property -dict {PACKAGE_PIN AE6   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[17]}];
-# set_property -dict {PACKAGE_PIN AF3   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[18]}];
-# set_property -dict {PACKAGE_PIN AD1   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[19]}];
-# set_property -dict {PACKAGE_PIN AE1   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[20]}];
-# set_property -dict {PACKAGE_PIN AE2   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[21]}];
-# set_property -dict {PACKAGE_PIN AF2   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[22]}];
-# set_property -dict {PACKAGE_PIN AE5   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[23]}];
-# set_property -dict {PACKAGE_PIN AD5   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[24]}];
-# set_property -dict {PACKAGE_PIN Y5    IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[25]}];
-# set_property -dict {PACKAGE_PIN AC6   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[26]}];
-# set_property -dict {PACKAGE_PIN Y6    IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[27]}];
-# set_property -dict {PACKAGE_PIN AB4   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[28]}];
-# set_property -dict {PACKAGE_PIN AD6   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[29]}];
-# set_property -dict {PACKAGE_PIN AB6   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[30]}];
-# set_property -dict {PACKAGE_PIN AC3   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[31]}];
-# set_property -dict {PACKAGE_PIN AD16  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[32]}];
-# set_property -dict {PACKAGE_PIN AE17  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[33]}];
-# set_property -dict {PACKAGE_PIN AF15  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[34]}];
-# set_property -dict {PACKAGE_PIN AF20  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[35]}];
-# set_property -dict {PACKAGE_PIN AD15  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[36]}];
-# set_property -dict {PACKAGE_PIN AF14  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[37]}];
-# set_property -dict {PACKAGE_PIN AE15  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[38]}];
-# set_property -dict {PACKAGE_PIN AF17  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[39]}];
-# set_property -dict {PACKAGE_PIN AA14  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[40]}];
-# set_property -dict {PACKAGE_PIN AA15  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[41]}];
-# set_property -dict {PACKAGE_PIN AC14  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[42]}];
-# set_property -dict {PACKAGE_PIN AD14  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[43]}];
-# set_property -dict {PACKAGE_PIN AB14  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[44]}];
-# set_property -dict {PACKAGE_PIN AB15  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[45]}];
-# set_property -dict {PACKAGE_PIN AA17  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[46]}];
-# set_property -dict {PACKAGE_PIN AA18  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[47]}];
-# set_property -dict {PACKAGE_PIN AB20  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[48]}];
-# set_property -dict {PACKAGE_PIN AD19  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[49]}];
-# set_property -dict {PACKAGE_PIN AC19  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[50]}];
-# set_property -dict {PACKAGE_PIN AA20  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[51]}];
-# set_property -dict {PACKAGE_PIN AA19  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[52]}];
-# set_property -dict {PACKAGE_PIN AC17  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[53]}];
-# set_property -dict {PACKAGE_PIN AD18  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[54]}];
-# set_property -dict {PACKAGE_PIN AB17  IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[55]}];
-# set_property -dict {PACKAGE_PIN W15   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[56]}];
-# set_property -dict {PACKAGE_PIN W16   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[57]}];
-# set_property -dict {PACKAGE_PIN W14   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[58]}];
-# set_property -dict {PACKAGE_PIN V16   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[59]}];
-# set_property -dict {PACKAGE_PIN V19   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[60]}];
-# set_property -dict {PACKAGE_PIN V17   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[61]}];
-# set_property -dict {PACKAGE_PIN V18   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[62]}];
-# set_property -dict {PACKAGE_PIN Y17   IOSTANDARD SSTL15_T_DCI} [get_ports {DDR3_DQ[63]}];
-# set_property -dict {PACKAGE_PIN AD13  IOSTANDARD SSTL15    } [get_ports {DDR3_ODT[0]}];
-# set_property -dict {PACKAGE_PIN AA3   IOSTANDARD SSTL15    } [get_ports {DDR3_VSEL}];
-# set_property -dict {PACKAGE_PIN AA12  IOSTANDARD SSTL15    } [get_ports {DDR3_WE_N}];
-# set_property -dict {PACKAGE_PIN AF10  IOSTANDARD SSTL15    } [get_ports {DDR3_A[10]}];
-# set_property -dict {PACKAGE_PIN AD8   IOSTANDARD SSTL15    } [get_ports {DDR3_A[11]}];
-# set_property -dict {PACKAGE_PIN AE10  IOSTANDARD SSTL15    } [get_ports {DDR3_A[12]}];
-# set_property -dict {PACKAGE_PIN AF8   IOSTANDARD SSTL15    } [get_ports {DDR3_A[13]}];
-# set_property -dict {PACKAGE_PIN AC7   IOSTANDARD SSTL15    } [get_ports {DDR3_A[14]}];
-# set_property -dict {PACKAGE_PIN AE12  IOSTANDARD SSTL15    } [get_ports {DDR3_CAS_N}];
-# set_property -dict {PACKAGE_PIN Y12   IOSTANDARD SSTL15    } [get_ports {DDR3_CS_N[0]}];
-# set_property -dict {PACKAGE_PIN Y3    IOSTANDARD SSTL15    } [get_ports {DDR3_DM[0]}];
-# set_property -dict {PACKAGE_PIN U5    IOSTANDARD SSTL15    } [get_ports {DDR3_DM[1]}];
-# set_property -dict {PACKAGE_PIN AD4   IOSTANDARD SSTL15    } [get_ports {DDR3_DM[2]}];
-# set_property -dict {PACKAGE_PIN AC4   IOSTANDARD SSTL15    } [get_ports {DDR3_DM[3]}];
-# set_property -dict {PACKAGE_PIN AF19  IOSTANDARD SSTL15    } [get_ports {DDR3_DM[4]}];
-# set_property -dict {PACKAGE_PIN AC16  IOSTANDARD SSTL15    } [get_ports {DDR3_DM[5]}];
-# set_property -dict {PACKAGE_PIN AB19  IOSTANDARD SSTL15    } [get_ports {DDR3_DM[6]}];
-# set_property -dict {PACKAGE_PIN V14   IOSTANDARD SSTL15    } [get_ports {DDR3_DM[7]}];
-# set_property -dict {PACKAGE_PIN AE13  IOSTANDARD SSTL15    } [get_ports {DDR3_RAS_N}]
-# set_property -dict {PACKAGE_PIN AC1   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {DDR3_DQS_N[0]}];
-# set_property -dict {PACKAGE_PIN W5    IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {DDR3_DQS_N[1]}];
-# set_property -dict {PACKAGE_PIN AF5   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {DDR3_DQS_P[2]}];
-# set_property -dict {PACKAGE_PIN AF4   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {DDR3_DQS_N[2]}];
-# set_property -dict {PACKAGE_PIN AA5   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {DDR3_DQS_P[3]}];
-# set_property -dict {PACKAGE_PIN AB5   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {DDR3_DQS_N[3]}];
-# set_property -dict {PACKAGE_PIN AE18  IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {DDR3_DQS_P[4]}];
-# set_property -dict {PACKAGE_PIN AF18  IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {DDR3_DQS_N[4]}];
-# set_property -dict {PACKAGE_PIN Y15   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {DDR3_DQS_P[5]}];
-# set_property -dict {PACKAGE_PIN Y16   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {DDR3_DQS_N[5]}];
-# set_property -dict {PACKAGE_PIN AD20  IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {DDR3_DQS_P[6]}];
-# set_property -dict {PACKAGE_PIN AE20  IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {DDR3_DQS_N[6]}];
-# set_property -dict {PACKAGE_PIN W18   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {DDR3_DQS_P[7]}];
-# set_property -dict {PACKAGE_PIN W19   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {DDR3_DQS_N[7]}];
-# set_property -dict {PACKAGE_PIN AB1   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {DDR3_DQS_P[0]}];
-# set_property -dict {PACKAGE_PIN W6    IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {DDR3_DQS_P[1]}];
-# set_property -dict {PACKAGE_PIN AB7   IOSTANDARD SSTL15    } [get_ports {DDR3_RST_N}];
+## Controls wires
+## {{{
+# set_property -dict {PACKAGE_PIN AB7   IOSTANDARD SSTL15    } [get_ports {o_ddr3_reset_n}];
+# set_property SLEW SLOW [get_ports o_ddr3_vsel]
+
+# set_property -dict {PACKAGE_PIN AC12  IOSTANDARD DIFF_SSTL15} [get_ports {o_ddr3_clk_n}];
+# set_property -dict {PACKAGE_PIN AB12  IOSTANDARD DIFF_SSTL15} [get_ports {o_ddr3_clk_p}];
+# set_property -dict {PACKAGE_PIN AA13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[0]}];
+# set_property -dict {PACKAGE_PIN AF13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[1]}];
+# set_property -dict {PACKAGE_PIN AA3   IOSTANDARD SSTL15    } [get_ports {o_ddr3_vsel}];
+# set_property -dict {PACKAGE_PIN Y12   IOSTANDARD SSTL15    } [get_ports {o_ddr3_s_n[0]}];
+# set_property -dict {PACKAGE_PIN Y13   IOSTANDARD SSTL15    } [get_ports {o_ddr3_s_n[1]}];
+# set_property -dict {PACKAGE_PIN AE12  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cas_n}];
+# set_property -dict {PACKAGE_PIN AE13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_ras_n}]
+# set_property -dict {PACKAGE_PIN AA12  IOSTANDARD SSTL15    } [get_ports {o_ddr3_we_n}];
+
+# set_property -dict {PACKAGE_PIN AD13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_odt[0]}];
+# set_property -dict {PACKAGE_PIN AC12  IOSTANDARD SSTL15    } [get_ports {o_ddr3_odt[1]}];
+## }}}
+
+## Address lines
+## {{{
+# set_property -dict {PACKAGE_PIN AE11  IOSTANDARD SSTL15    } [get_ports {o_ddr3_a[0]}];
+# set_property -dict {PACKAGE_PIN AF9   IOSTANDARD SSTL15    } [get_ports {o_ddr3_a[1]}];
+# set_property -dict {PACKAGE_PIN AD10  IOSTANDARD SSTL15    } [get_ports {o_ddr3_a[2]}];
+# set_property -dict {PACKAGE_PIN AB10  IOSTANDARD SSTL15    } [get_ports {o_ddr3_a[3]}];
+# set_property -dict {PACKAGE_PIN AA9   IOSTANDARD SSTL15    } [get_ports {o_ddr3_a[4]}];
+# set_property -dict {PACKAGE_PIN AB9   IOSTANDARD SSTL15    } [get_ports {o_ddr3_a[5]}];
+# set_property -dict {PACKAGE_PIN AA8   IOSTANDARD SSTL15    } [get_ports {o_ddr3_a[6]}];
+# set_property -dict {PACKAGE_PIN AC8   IOSTANDARD SSTL15    } [get_ports {o_ddr3_a[7]}];
+# set_property -dict {PACKAGE_PIN AA7   IOSTANDARD SSTL15    } [get_ports {o_ddr3_a[8]}];
+# set_property -dict {PACKAGE_PIN AE8   IOSTANDARD SSTL15    } [get_ports {o_ddr3_a[9]}];
+
+# set_property -dict {PACKAGE_PIN AF10  IOSTANDARD SSTL15    } [get_ports {o_ddr3_a[10]}];
+# set_property -dict {PACKAGE_PIN AD8   IOSTANDARD SSTL15    } [get_ports {o_ddr3_a[11]}];
+# set_property -dict {PACKAGE_PIN AE10  IOSTANDARD SSTL15    } [get_ports {o_ddr3_a[12]}];
+# set_property -dict {PACKAGE_PIN AF8   IOSTANDARD SSTL15    } [get_ports {o_ddr3_a[13]}];
+# set_property -dict {PACKAGE_PIN AC7   IOSTANDARD SSTL15    } [get_ports {o_ddr3_a[14]}];
+
+# set_property -dict {PACKAGE_PIN AD11  IOSTANDARD SSTL15    } [get_ports {o_ddr3_ba[0]}];
+# set_property -dict {PACKAGE_PIN AA10  IOSTANDARD SSTL15    } [get_ports {o_ddr3_ba[1]}];
+# set_property -dict {PACKAGE_PIN AF12  IOSTANDARD SSTL15    } [get_ports {o_ddr3_ba[2]}];
+## }}}
+
+## Byte lane #0
+## {{{
+# set_property -dict {PACKAGE_PIN AA2   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[0]}];
+# set_property -dict {PACKAGE_PIN Y2    IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[1]}];
+# set_property -dict {PACKAGE_PIN AB2   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[2]}];
+# set_property -dict {PACKAGE_PIN V1    IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[3]}];
+# set_property -dict {PACKAGE_PIN Y1    IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[4]}];
+# set_property -dict {PACKAGE_PIN W1    IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[5]}];
+# set_property -dict {PACKAGE_PIN AC2   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[6]}];
+# set_property -dict {PACKAGE_PIN V2    IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[7]}];
+
+# set_property -dict {PACKAGE_PIN Y3    IOSTANDARD SSTL15    } [get_ports {o_ddr3_dm[0]}];
+
+# set_property -dict {PACKAGE_PIN AB1   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {io_ddr3_dqs_p[0]}];
+# set_property -dict {PACKAGE_PIN AC1   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {io_ddr3_dqs_n[0]}];
+## }}}
+
+## Byte lane #1
+## {{{
+# set_property -dict {PACKAGE_PIN W3    IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[8]}];
+# set_property -dict {PACKAGE_PIN V3    IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[9]}];
+# set_property -dict {PACKAGE_PIN U1    IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[10]}];
+# set_property -dict {PACKAGE_PIN U7    IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[11]}];
+# set_property -dict {PACKAGE_PIN U6    IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[12]}];
+# set_property -dict {PACKAGE_PIN V4    IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[13]}];
+# set_property -dict {PACKAGE_PIN V6    IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[14]}];
+# set_property -dict {PACKAGE_PIN U2    IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[15]}];
+
+# set_property -dict {PACKAGE_PIN U5    IOSTANDARD SSTL15    } [get_ports {o_ddr3_dm[1]}];
+
+# set_property -dict {PACKAGE_PIN W6    IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {io_ddr3_dqs_p[1]}];
+# set_property -dict {PACKAGE_PIN W5    IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {io_ddr3_dqs_n[1]}];
+## }}}
+
+## Byte lane #2
+## {{{
+# set_property -dict {PACKAGE_PIN AE3   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[16]}];
+# set_property -dict {PACKAGE_PIN AE6   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[17]}];
+# set_property -dict {PACKAGE_PIN AF3   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[18]}];
+# set_property -dict {PACKAGE_PIN AD1   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[19]}];
+# set_property -dict {PACKAGE_PIN AE1   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[20]}];
+# set_property -dict {PACKAGE_PIN AE2   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[21]}];
+# set_property -dict {PACKAGE_PIN AF2   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[22]}];
+# set_property -dict {PACKAGE_PIN AE5   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[23]}];
+
+# set_property -dict {PACKAGE_PIN AD4   IOSTANDARD SSTL15    } [get_ports {o_ddr3_dm[2]}];
+
+# set_property -dict {PACKAGE_PIN AF5   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {io_ddr3_dqs_p[2]}];
+# set_property -dict {PACKAGE_PIN AF4   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {io_ddr3_dqs_n[2]}];
+## }}}
+
+## Byte lane #3
+## {{{
+# set_property -dict {PACKAGE_PIN AD5   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[24]}];
+# set_property -dict {PACKAGE_PIN Y5    IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[25]}];
+# set_property -dict {PACKAGE_PIN AC6   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[26]}];
+# set_property -dict {PACKAGE_PIN Y6    IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[27]}];
+# set_property -dict {PACKAGE_PIN AB4   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[28]}];
+# set_property -dict {PACKAGE_PIN AD6   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[29]}];
+# set_property -dict {PACKAGE_PIN AB6   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[30]}];
+# set_property -dict {PACKAGE_PIN AC3   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[31]}];
+
+# set_property -dict {PACKAGE_PIN AC4   IOSTANDARD SSTL15    } [get_ports {o_ddr3_dm[3]}];
+
+# set_property -dict {PACKAGE_PIN AA5   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {io_ddr3_dqs_p[3]}];
+# set_property -dict {PACKAGE_PIN AB5   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {io_ddr3_dqs_n[3]}];
+## }}}
+
+## Byte lane #4
+## {{{
+# set_property -dict {PACKAGE_PIN AD16  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[32]}];
+# set_property -dict {PACKAGE_PIN AE17  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[33]}];
+# set_property -dict {PACKAGE_PIN AF15  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[34]}];
+# set_property -dict {PACKAGE_PIN AF20  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[35]}];
+# set_property -dict {PACKAGE_PIN AD15  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[36]}];
+# set_property -dict {PACKAGE_PIN AF14  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[37]}];
+# set_property -dict {PACKAGE_PIN AE15  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[38]}];
+# set_property -dict {PACKAGE_PIN AF17  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[39]}];
+
+# set_property -dict {PACKAGE_PIN AF19  IOSTANDARD SSTL15    } [get_ports {o_ddr3_dm[4]}];
+
+# set_property -dict {PACKAGE_PIN AE18  IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {io_ddr3_dqs_p[4]}];
+# set_property -dict {PACKAGE_PIN AF18  IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {io_ddr3_dqs_n[4]}];
+## }}}
+
+## Byte lane #5
+## {{{
+# set_property -dict {PACKAGE_PIN AA14  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[40]}];
+# set_property -dict {PACKAGE_PIN AA15  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[41]}];
+# set_property -dict {PACKAGE_PIN AC14  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[42]}];
+# set_property -dict {PACKAGE_PIN AD14  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[43]}];
+# set_property -dict {PACKAGE_PIN AB14  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[44]}];
+# set_property -dict {PACKAGE_PIN AB15  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[45]}];
+# set_property -dict {PACKAGE_PIN AA17  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[46]}];
+# set_property -dict {PACKAGE_PIN AA18  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[47]}];
+
+# set_property -dict {PACKAGE_PIN AC16  IOSTANDARD SSTL15    } [get_ports {o_ddr3_dm[5]}];
+
+# set_property -dict {PACKAGE_PIN Y15   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {io_ddr3_dqs_p[5]}];
+# set_property -dict {PACKAGE_PIN Y16   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {io_ddr3_dqs_n[5]}];
+## }}}
+
+## Byte lane #6
+## {{{
+# set_property -dict {PACKAGE_PIN AB20  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[48]}];
+# set_property -dict {PACKAGE_PIN AD19  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[49]}];
+# set_property -dict {PACKAGE_PIN AC19  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[50]}];
+# set_property -dict {PACKAGE_PIN AA20  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[51]}];
+# set_property -dict {PACKAGE_PIN AA19  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[52]}];
+# set_property -dict {PACKAGE_PIN AC17  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[53]}];
+# set_property -dict {PACKAGE_PIN AD18  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[54]}];
+# set_property -dict {PACKAGE_PIN AB17  IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[55]}];
+
+# set_property -dict {PACKAGE_PIN AB19  IOSTANDARD SSTL15    } [get_ports {o_ddr3_dm[6]}];
+
+# set_property -dict {PACKAGE_PIN AD20  IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {io_ddr3_dqs_p[6]}];
+# set_property -dict {PACKAGE_PIN AE20  IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {io_ddr3_dqs_n[6]}];
+## }}}
+
+## Byte lane #7
+## {{{
+# set_property -dict {PACKAGE_PIN W15   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[56]}];
+# set_property -dict {PACKAGE_PIN W16   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[57]}];
+# set_property -dict {PACKAGE_PIN W14   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[58]}];
+# set_property -dict {PACKAGE_PIN V16   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[59]}];
+# set_property -dict {PACKAGE_PIN V19   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[60]}];
+# set_property -dict {PACKAGE_PIN V17   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[61]}];
+# set_property -dict {PACKAGE_PIN V18   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[62]}];
+# set_property -dict {PACKAGE_PIN Y17   IOSTANDARD SSTL15_T_DCI} [get_ports {io_ddr3_dq[63]}];
+
+# set_property -dict {PACKAGE_PIN V14   IOSTANDARD SSTL15    } [get_ports {o_ddr3_dm[7]}];
+
+# set_property -dict {PACKAGE_PIN W18   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {io_ddr3_dqs_p[7]}];
+# set_property -dict {PACKAGE_PIN W19   IOSTANDARD DIFF_SSTL15_T_DCI} [get_ports {io_ddr3_dqs_n[7]}];
+## }}}
 ## }}}
 
 ## Ethernet MDIO
