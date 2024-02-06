@@ -252,13 +252,13 @@ void	DBLUARTSIM::poll_read(void) {
 					if (m_cmdline[m_cllen] != '\r') {
 						if (m_cmdline[m_cllen] == '\n'){
 							m_cmdline[m_cllen]='\0';
-							printf("< %s\n", m_cmdline);
+							// printf("< %s\n", m_cmdline);
 							m_cllen=0;
 						} else
 							m_cllen++;
 					} if (m_cllen >= 64) {
 						m_cmdline[m_cllen+1] = '\0';
-						printf("< %s\n", m_cmdline);
+						// printf("< %s\n", m_cmdline);
 						m_cllen = 0;
 					}
 					
@@ -268,7 +268,7 @@ void	DBLUARTSIM::poll_read(void) {
 
 				if (nr <= 0) {
 					m_cmdline[m_cllen] = '\0';
-					printf("< %s [CLOSED]\n", m_cmdline);
+					// printf("< %s [CLOSED]\n", m_cmdline);
 					m_cllen = 0;
 				}
 			} if (nr > 0) {
@@ -305,7 +305,7 @@ void	DBLUARTSIM::received(const char ch) {
 			snt = 0;
 		} // else printf("%d/%d bytes returned\n", snt, m_cmdpos);
 		m_cmdbuf[m_cmdpos] = '\0';
-		if (m_copy) printf("> %s", m_cmdbuf);
+		// if (m_copy) printf("> %s", m_cmdbuf);
 		if (snt < m_cmdpos) {
 			fprintf(stderr, "CMD: Only sent %d bytes of %d!\n",
 				snt, m_cmdpos);

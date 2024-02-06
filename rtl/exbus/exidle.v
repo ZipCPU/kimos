@@ -41,7 +41,7 @@
 module	exidle #(
 		// {{{
 `ifdef	VERILATOR
-		parameter	LGIDLE = 16
+		parameter	LGIDLE = 12
 `else
 		// It takes 5 idles to sync and know where you are in the
 		// data stream.  Let's synchronize in 0.4s in h/w, faster in
