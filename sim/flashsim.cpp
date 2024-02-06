@@ -176,7 +176,7 @@ int	FLASHSIM::operator()(const int csn, const int sck, const int dat) {
 		m_count= 0;
 
 		switch(m_state) {
-		case	QSPIF_PP: case QSPIF_QPP: case QSPIF_QPP4:
+		case QSPIF_PP: case QSPIF_PP4: case QSPIF_QPP: case QSPIF_QPP4:
 			// {{{
 			// Start a page program
 			if (m_debug) printf("FLASHSIM: Page Program write cycle begins (Addr = %08x)\n", (m_addr&(~0x0ff)));
@@ -482,6 +482,16 @@ int	FLASHSIM::operator()(const int csn, const int sck, const int dat) {
 			m_state = QSPIF_FAST_READ4;
 			break;
 			// }}}
+		case 0x12: // Page program, 32bit address
+			// {{{
+			if (2 != (m_sreg & 0x203)) {
+				if (m_debug) printf("FLASHSIM: Cannot program at this time, SREG = %x\n", m_sreg);
+				m_state = QSPIF_INVALID;
+			} else {
+				m_state = QSPIF_PP4;
+				if (m_debug) printf("PAGE-PROGRAM/4 COMMAND ACCEPTED\n");
+			} break;
+			// }}}
 		case 0x13: // Read data bytes, 4-byte address
 			// {{{
 			if (m_debug) printf("FLASHSIM: SLOW-READ (single-bit)\n");
@@ -644,7 +654,7 @@ int	FLASHSIM::operator()(const int csn, const int sck, const int dat) {
 			break;
 			// }}}
 		default:
-			printf("FLASHSIM: UNRECOGNIZED SPI FLASH CMD: %02x\n", m_ireg&0x0ff);
+			printf("FLASHSIM: UNRECOGNIZED SPI FLASH CMD: 0x%02x\n", m_ireg&0x0ff);
 			m_state = QSPIF_INVALID;
 			assert(0 && "Unrecognized command\n");
 			break;
@@ -905,6 +915,21 @@ int	FLASHSIM::operator()(const int csn, const int sck, const int dat) {
 				for(int i=0; i<256; i++)
 					m_pmem[i] = 0x0ff;
 			} else if (m_count >= 40) {
+				m_pmem[m_addr & 0x0ff] = m_ireg & 0x0ff;
+				// printf("QSPI: PMEM[%02x] = 0x%02x -> %02x\n", m_addr & 0x0ff, m_ireg & 0x0ff, (m_pmem[(m_addr & 0x0ff)]&0x0ff));
+				m_addr = (m_addr & (~0x0ff)) | ((m_addr+1)&0x0ff);
+			} break;
+			// }}}
+		case QSPIF_PP4:
+			// {{{
+			if (m_count == 40) {
+				m_addr = m_ireg & m_memmask;
+				if (m_debug) printf("FLASHSIM: PAGE-PROGRAM ADDR = %06x\n", m_addr);
+				assert((m_addr & (~(m_memmask)))==0);
+				// m_page = m_addr >> 8;
+				for(int i=0; i<256; i++)
+					m_pmem[i] = 0x0ff;
+			} else if (m_count >= 48) {
 				m_pmem[m_addr & 0x0ff] = m_ireg & 0x0ff;
 				// printf("QSPI: PMEM[%02x] = 0x%02x -> %02x\n", m_addr & 0x0ff, m_ireg & 0x0ff, (m_pmem[(m_addr & 0x0ff)]&0x0ff));
 				m_addr = (m_addr & (~0x0ff)) | ((m_addr+1)&0x0ff);
