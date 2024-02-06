@@ -1,20 +1,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename: 	builddate.v
+// Filename:	sw/zlib/bootloader.h
 // {{{
 // Project:	KIMOS, a Mercury KX2 demonstration project
 //
-// Purpose:	This file records the date of the last build.  Running "make"
-//		in the main directory will create this file.  The `define found
-//	within it then creates a version stamp that can be used to tell which
-//	configuration is within an FPGA and so forth.
+// Purpose:	
+//
 //
 // Creator:	Dan Gisselquist, Ph.D.
 //		Gisselquist Technology, LLC
 //
 ////////////////////////////////////////////////////////////////////////////////
 // }}}
-// Copyright (C) 2021-2024, Gisselquist Technology, LLC
+// Copyright (C) 2023-2024, Gisselquist Technology, LLC
 // {{{
 // This file is part of the KIMOS project.
 //
@@ -29,7 +27,7 @@
 // for more details.
 //
 // You should have received a copy of the GNU General Public License along
-// with this program.  (It's in the 1000 4 24 27 30 46 122 133 134 1000ROOT)/doc directory, run make with no
+// with this program.  (It's in the $(ROOT)/doc directory, run make with no
 // target there if the PDF file isn't present.)  If not, see
 // <http://www.gnu.org/licenses/> for a copy.
 // }}}
@@ -40,8 +38,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // }}}
-`ifndef	DATESTAMP
-`define DATESTAMP 32'h20240205
-`define BUILDTIME 32'h00202256
-`endif
-//
+#ifndef	BOOTLOADER_H
+#define	BOOTLOADER_H
+
+extern	int	_top_of_heap[1], _top_of_stack[1];
+extern	int	_boot_address[1];
+
+extern	int	_ram[1], _rom[1], _kram[1];
+
+extern	int	_boot_address[1],
+		_kram_start[1], _kram_end[1],
+		_ram_image_start[1], _ram_image_end[1],
+		_bss_image_end[1];
+
+#endif
