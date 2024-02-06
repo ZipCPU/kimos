@@ -1,20 +1,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename: 	builddate.v
+// Filename:	sw/board/sdinfo.c
 // {{{
 // Project:	KIMOS, a Mercury KX2 demonstration project
 //
-// Purpose:	This file records the date of the last build.  Running "make"
-//		in the main directory will create this file.  The `define found
-//	within it then creates a version stamp that can be used to tell which
-//	configuration is within an FPGA and so forth.
+// Purpose:
 //
 // Creator:	Dan Gisselquist, Ph.D.
 //		Gisselquist Technology, LLC
 //
 ////////////////////////////////////////////////////////////////////////////////
 // }}}
-// Copyright (C) 2021-2024, Gisselquist Technology, LLC
+// Copyright (C) 2023-2024, Gisselquist Technology, LLC
 // {{{
 // This file is part of the KIMOS project.
 //
@@ -29,7 +26,7 @@
 // for more details.
 //
 // You should have received a copy of the GNU General Public License along
-// with this program.  (It's in the 1000 4 24 27 30 46 122 133 134 1000ROOT)/doc directory, run make with no
+// with this program.  (It's in the $(ROOT)/doc directory, run make with no
 // target there if the PDF file isn't present.)  If not, see
 // <http://www.gnu.org/licenses/> for a copy.
 // }}}
@@ -40,8 +37,60 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // }}}
-`ifndef	DATESTAMP
-`define DATESTAMP 32'h20240205
-`define BUILDTIME 32'h00202256
-`endif
-//
+#include "board.h"
+// #include "rxfns.h"
+#include "txfns.h"
+#include <stdio.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
+#include <locale.h>
+#include <zipcpu.h>
+#include "ffconf.h"
+#include "ff.h"
+
+int main(int argc, char **argv) {
+	int	nxt, ntyp, npc, nts, nbt;
+	char	rxstr[150];
+	const char DELIMITERS[] = ", \t";
+	const char	*istr="11";
+	FATFS	vol;
+	FRESULT	r;
+
+#ifdef	GPIO_SD_RESET_CLR
+	*_gpio = GPIO_SD_RESET_CLR;
+#endif
+	r = f_mount(&vol, "/", 1);
+	if (r != FR_OK)
+		printf("Could not mount SD-Card: err %d\n", r);
+
+	// Read the main directory
+	DIR	ds;
+	FILINFO	fis;
+
+	r = f_opendir(&ds, "/");
+	if (r != FR_OK) {
+		fprintf(stderr, "F_OPENDIR failed: %d\n", r);
+		goto failed;
+	}
+
+	do {
+		r = f_readdir(&ds, &fis);
+		if (r != FR_OK) {
+			fprintf(stderr, "F_READDIR failed: %d\n");
+			goto failed;
+		} if (fis.fname[0] == 0) {
+			// printf("End of list\n");
+			break;
+		}
+
+		printf("File: /%s%s\n", fis.fname,
+			(fis.fattrib & AM_DIR) ? "/":"");
+	} while(1);
+
+	printf("Success\n");
+	return 0;
+
+failed:
+	fprintf(stderr, "EXIT on failures\n");
+}

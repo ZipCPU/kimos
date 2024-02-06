@@ -990,14 +990,14 @@ module	main(i_clk, i_reset,
 			// Address LSBs     = 2
 			// Slave name width = 5
 			{ 25'h1000000 }, // flash: 0x4000000
-			{ 25'h0000000 }  //  sdio: 0x0000000
+			{ 25'h0800000 }  //  sdio: 0x2000000
 		}),
 		.SLAVE_MASK({
 			// Address width    = 25
 			// Address LSBs     = 2
 			// Slave name width = 5
 			{ 25'h1000000 }, // flash
-			{ 25'h1000000 }  //  sdio
+			{ 25'h1800000 }  //  sdio
 		}),
 		.OPT_DBLBUFFER(1'b1))
 	wbflash_xbar(

@@ -129,7 +129,7 @@ typedef struct  CONSOLE_S {
 
 #ifdef	SDIO_ACCESS
 #define	_BOARD_HAS_SDIO
-static volatile struct SDIO_S *const _sdio = ((struct SDIO_S *)@$[0x%08x](REGBASE));
+static volatile struct SDIO_S *const _sdio = ((struct SDIO_S *)0x02000000);
 #endif	// SDIO_ACCESS
 #ifdef	SDRAM_ACCESS
 #define	_BOARD_HAS_SDRAM

@@ -207,11 +207,17 @@ sw-zlib: check-zip-gcc
 	+@$(SUBMAKE) sw/zlib
 ## }}}
 
+.PHONY: sw-fatfs
+## {{{
+sw-fatfs: check-zip-gcc
+	+@$(SUBMAKE) sw/fatfs
+## }}}
+
 .PHONY: sw-board
 ## {{{
 ## Build the board software.  This may (or may not) use the software library
 ##
-sw-board: sw-zlib check-zip-gcc
+sw-board: sw-zlib sw-fatfs check-zip-gcc
 	+@$(SUBMAKE) sw/board
 ## }}}
 

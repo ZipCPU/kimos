@@ -58,11 +58,11 @@
 // Register address definitions, from @REGS.#d
 //
 // SDIO SD Card addresses
-#define	R_SDIO_CTRL     	0x00000000	// 00000000, wbregs names: SDCARD
-#define	R_SDIO_DATA     	0x00000004	// 00000000, wbregs names: SDDATA
-#define	R_SDIO_FIFOA    	0x00000008	// 00000000, wbregs names: SDFIFOA, SDFIF0, SDFIFA
-#define	R_SDIO_FIFOB    	0x0000000c	// 00000000, wbregs names: SDFIFOB, SDFIF1, SDFIFB
-#define	R_SDIO_PHY      	0x00000010	// 00000000, wbregs names: SDPHY
+#define	R_SDIO_CTRL     	0x02000000	// 02000000, wbregs names: SDCARD
+#define	R_SDIO_DATA     	0x02000004	// 02000000, wbregs names: SDDATA
+#define	R_SDIO_FIFOA    	0x02000008	// 02000000, wbregs names: SDFIFOA, SDFIF0, SDFIFA
+#define	R_SDIO_FIFOB    	0x0200000c	// 02000000, wbregs names: SDFIFOB, SDFIF1, SDFIFB
+#define	R_SDIO_PHY      	0x02000010	// 02000000, wbregs names: SDPHY
 #define	R_FLASH         	0x04000000	// 04000000, wbregs names: FLASH
 // FLASH erase/program configuration registers
 #define	R_FLASHCFG      	0x08000400	// 08000400, wbregs names: FLASHCFG, QSPIC

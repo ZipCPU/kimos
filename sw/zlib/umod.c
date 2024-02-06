@@ -1,20 +1,26 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename: 	builddate.v
+// Filename:	sw/zlib/umod.c
 // {{{
 // Project:	KIMOS, a Mercury KX2 demonstration project
 //
-// Purpose:	This file records the date of the last build.  Running "make"
-//		in the main directory will create this file.  The `define found
-//	within it then creates a version stamp that can be used to tell which
-//	configuration is within an FPGA and so forth.
+// Purpose:	This is a temporary file--a crutch if you will--until a similar
+//		capability is merged into GCC.  Right now, GCC has no way of
+//	taking the module of two 64-bit numbers, and this routine provides that
+//	capability.
+//
+//	This routine is required by and used by newlib's printf in order to
+//	print decimal numbers (%d) to an IO stream.
+//
+//	Once gcc is properly patched, this will be removed from the 
+//	repository.
 //
 // Creator:	Dan Gisselquist, Ph.D.
 //		Gisselquist Technology, LLC
 //
 ////////////////////////////////////////////////////////////////////////////////
 // }}}
-// Copyright (C) 2021-2024, Gisselquist Technology, LLC
+// Copyright (C) 2023-2024, Gisselquist Technology, LLC
 // {{{
 // This file is part of the KIMOS project.
 //
@@ -29,7 +35,7 @@
 // for more details.
 //
 // You should have received a copy of the GNU General Public License along
-// with this program.  (It's in the 1000 4 24 27 30 46 122 133 134 1000ROOT)/doc directory, run make with no
+// with this program.  (It's in the $(ROOT)/doc directory, run make with no
 // target there if the PDF file isn't present.)  If not, see
 // <http://www.gnu.org/licenses/> for a copy.
 // }}}
@@ -40,8 +46,19 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // }}}
-`ifndef	DATESTAMP
-`define DATESTAMP 32'h20240205
-`define BUILDTIME 32'h00202256
-`endif
-//
+#include <stdint.h>
+
+
+unsigned long __udivdi3(unsigned long, unsigned long);
+
+__attribute((noinline))
+unsigned long __umoddi3(unsigned long a, unsigned long b) {
+	unsigned long	r;
+
+	// Return a modulo b, or a%b in C syntax
+	r = __udivdi3(a, b);
+	r = r * b;
+	r = a - r;
+	return r;
+}
+
