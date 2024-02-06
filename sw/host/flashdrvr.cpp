@@ -198,7 +198,7 @@ void	FLASHDRVR::restore_quadio(DEVBUS *fpga) {
 
 	fpga->writeio(R_FLASHCFG, F_END);
 
-	if (1) { // MICRON_FLASHID == m_id) {
+	if (0) { // MICRON_FLASHID == m_id) {
 		// printf("MICRON-flash\n");
 		// Need to enable XIP first for MICRON's flash
 		//

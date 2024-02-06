@@ -482,7 +482,7 @@ int	FLASHSIM::operator()(const int csn, const int sck, const int dat) {
 			m_state = QSPIF_FAST_READ4;
 			break;
 			// }}}
-		case 0x12: // Page program, 32bit address
+		case 0x12: // Page program, 32b address
 			// {{{
 			if (2 != (m_sreg & 0x203)) {
 				if (m_debug) printf("FLASHSIM: Cannot program at this time, SREG = %x\n", m_sreg);
@@ -924,7 +924,7 @@ int	FLASHSIM::operator()(const int csn, const int sck, const int dat) {
 			// {{{
 			if (m_count == 40) {
 				m_addr = m_ireg & m_memmask;
-				if (m_debug) printf("FLASHSIM: PAGE-PROGRAM ADDR = %06x\n", m_addr);
+				if (m_debug) printf("FLASHSIM: PAGE-PROGRAM ADDR = %08x\n", m_addr);
 				assert((m_addr & (~(m_memmask)))==0);
 				// m_page = m_addr >> 8;
 				for(int i=0; i<256; i++)
