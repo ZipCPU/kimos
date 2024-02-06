@@ -231,14 +231,14 @@ void	EXBUS::writev(const BUSW a, const int p, const int len, const BUSW *buf) {
 				caddr -= 1;
 				*ptr++ = 0x34 | ((caddr >> 7) & 0x03);
 				*ptr++ = (caddr & 0x07f);
-			} else if ((ival >= -256) || (ival < 256)) {
+			} else if ((ival >= -256) && (ival < 256)) {
 				DBGPRINTF("WR-ENCODING.2 %10d\n", val);
 				*ptr++ = 0x38|((val >> 7) & 3);
 				*ptr++ = (val & 0x07f);
 
 				// For small values like this, we don't write
 				// them into the table.
-			} else if ((ival >= -32768) || (ival < 32768)) {
+			} else if ((ival >= -32768) && (ival < 32768)) {
 				DBGPRINTF("WR-ENCODING.3 %10d\n", val);
 				*ptr++ = 0x3c|((val >> 14) & 3);
 				*ptr++ = (val >> 7) & 0x07f;
