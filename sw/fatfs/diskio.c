@@ -43,9 +43,9 @@
 #include "ff.h"
 #include "diskio.h"
 #include "board.h"
-#include "sdspidrv.h"
+// #include "sdspidrv.h"
 #include "sdiodrv.h"
-#include "emmcdrv.h"
+// #include "emmcdrv.h"
 #include "diskiodrvr.h"
 
 #define	STDIO_DEBUG
