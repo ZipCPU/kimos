@@ -95,8 +95,8 @@ create_clock -name i_clk -period 10.000 [get_ports i_clk];
 ## Baseboard LEDs
 # set_property -dict {SLEW SLOW PACKAGE_PIN F22   IOSTANDARD LVCMOS18  } [get_ports { o_led[4] }]; # GPIO0_LED0_N
 # set_property -dict {SLEW SLOW PACKAGE_PIN E23   IOSTANDARD LVCMOS18  } [get_ports { o_led[5] }]; # GPIO1_LED1_N
-# set_property -dict {SLEW SLOW PACKAGE_PIN F22   IOSTANDARD LVCMOS18  } [get_ports { o_led[6] }]; # LED2
-# set_property -dict {SLEW SLOW PACKAGE_PIN E23   IOSTANDARD LVCMOS18  } [get_ports { o_led[7] }]; # LED3
+# set_property -dict {SLEW SLOW PACKAGE_PIN K25   IOSTANDARD LVCMOS18  } [get_ports { o_led[6] }]; # LED2
+# set_property -dict {SLEW SLOW PACKAGE_PIN K26   IOSTANDARD LVCMOS18  } [get_ports { o_led[7] }]; # LED3
 
 ## C142 LED2 (ST1)
 ## C144 LED3 (ST1)
@@ -120,7 +120,7 @@ set_property -dict {PACKAGE_PIN A20   IOSTANDARD LVCMOS18  } [get_ports {o_wbu_u
 
 ## Buttons
 ## {{{
-# set_property -dict {PACKAGE_PIN C22   IOSTANDARD LVCMOS18    } [get_ports {i_btn}]; # (Not in TCL)
+# set_property -dict {PACKAGE_PIN C22   IOSTANDARD LVCMOS18    } [get_ports {i_btn[0]}]; # (Not in TCL)
 ##
 ## Button #1 will affect the user oscillator speed, if the Si5338 is so config'd
 ##	(It affects the speed of CLK_CG, which feeds inputs 1 and 2 of the
@@ -603,14 +603,14 @@ set_property -dict {PACKAGE_PIN A20   IOSTANDARD LVCMOS18  } [get_ports {o_wbu_u
 
 ## SDCARD
 ## {{{
-# set_property -dict {PACKAGE_PIN C21   IOSTANDARD LVCMOS18  } [get_ports {o_sd_sck}];  # SDIO_CLK
-# set_property -dict {PACKAGE_PIN B21   IOSTANDARD LVCMOS18  } [get_ports {io_sd_cmd}]; # SDIO_CLK
-# set_property -dict {PACKAGE_PIN D26   IOSTANDARD LVCMOS18  } [get_ports {io_sd[0]}];  # SDIO_D0
-# set_property -dict {PACKAGE_PIN C26   IOSTANDARD LVCMOS18  } [get_ports {io_sd[1]}];  # SDIO_D1
-# set_property -dict {PACKAGE_PIN A23   IOSTANDARD LVCMOS18  } [get_ports {io_sd[2]}];  # SDIO_D2
-# set_property -dict {PACKAGE_PIN A24   IOSTANDARD LVCMOS18  } [get_ports {io_sd[3]}];  # SDIO_D3
+# set_property -dict {PACKAGE_PIN C21   IOSTANDARD LVCMOS18  } [get_ports {o_sdcard_clk}];  # SDIO_CLK
+# set_property -dict {PACKAGE_PIN B21   IOSTANDARD LVCMOS18  } [get_ports {io_sdcard_cmd}]; # SDIO_CLK
+# set_property -dict {PACKAGE_PIN D26   IOSTANDARD LVCMOS18  } [get_ports {io_sdcard_dat[0]}];  # SDIO_D0
+# set_property -dict {PACKAGE_PIN C26   IOSTANDARD LVCMOS18  } [get_ports {io_sdcard_dat[1]}];  # SDIO_D1
+# set_property -dict {PACKAGE_PIN A23   IOSTANDARD LVCMOS18  } [get_ports {io_sdcard_dat[2]}];  # SDIO_D2
+# set_property -dict {PACKAGE_PIN A24   IOSTANDARD LVCMOS18  } [get_ports {io_sdcard_dat[3]}];  # SDIO_D3
 
-# set_property -dict {PACKAGE_PIN D21   IOSTANDARD LVCMOS18  } [get_ports {i_sd_cd_n}];  # SDCARD_CD#
+# set_property -dict {PACKAGE_PIN D21   IOSTANDARD LVCMOS18  } [get_ports {i_sdcard_cd_n}];  # SDCARD_CD#
 
 ## IO B14 L10 C21 P / A91 / SDIO_CLK
 ## IO B14 L10 B21 N / A93 / SDIO_CMD

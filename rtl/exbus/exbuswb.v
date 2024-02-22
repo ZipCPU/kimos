@@ -63,13 +63,13 @@ module	exbuswb #(
 		// GPIO interface
 		// {{{
 		input	wire	[1:0]		i_gpio,
-		output	wire	[1:0]		o_gpio,
+		output	reg	[1:0]		o_gpio,
 		// }}}
 		// Console interface
 		// {{{
 		input	wire			i_console_stb,
 		input	wire	[6:0]		i_console_byte,
-		output	reg			o_console_busy,
+		output	wire			o_console_busy,
 		//
 		output	reg			o_console_stb,
 		output	reg	[6:0]		o_console_byte,
@@ -77,10 +77,10 @@ module	exbuswb #(
 		// Wishbone
 		// {{{
 		output	wire			o_wb_cyc,
-		output	reg			o_wb_stb,
-		output	reg			o_wb_we,
-		output	reg	[(AW-1):0]	o_wb_addr,
-		output	reg	[DW-1:0]	o_wb_data,
+		output	wire			o_wb_stb,
+		output	wire			o_wb_we,
+		output	wire	[(AW-1):0]	o_wb_addr,
+		output	wire	[DW-1:0]	o_wb_data,
 		output	wire	[DW/8-1:0]	o_wb_sel,
 		// Wishbone inputs
 		input	wire			i_wb_stall, i_wb_ack, i_wb_err,

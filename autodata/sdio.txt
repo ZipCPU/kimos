@@ -122,7 +122,7 @@
 		.NUMIO(@$(NUMIO))
 	) u_@$(PREFIX)_frontend (
 		// {{{
-		.i_clk(s_clk), .i_hsclk(s_clk4x), .i_reset(s_reset),
+		.i_clk(s_clk), .i_hsclk(s_clk_400mhz), .i_reset(s_reset),
 		// Configuration
 		.i_cfg_ddr(w_@$(PREFIX)_cfg_ddr),
 		.i_cfg_ds(w_@$(PREFIX)_cfg_ds),
