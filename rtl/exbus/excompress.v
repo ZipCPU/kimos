@@ -75,12 +75,14 @@ module	excompress #(
 	reg	[4:0]	w_match;
 	reg	[3:0]	matchv;
 
-	reg		r_busy, r_stb, r_matched;
+	wire		r_busy;
+	reg		r_stb, r_matched;
 	reg	[31:0]	r_value;
 	reg	[34:0]	r_word;
 
 	reg	[8:0]	tbl_base, tbl_read_index, tbl_rdindex;
-	reg		tbl_full, tbl_valid, tbl_reading, table_match;
+	reg		tbl_full, tbl_valid, table_match;
+	wire		tbl_reading;
 	reg	[31:0]	tbl_mem		[0:511];
 	reg	[31:0]	tbl_rdvalue;
 	reg	[13:0]	tbl_word;

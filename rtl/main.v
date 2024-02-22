@@ -368,7 +368,7 @@ module	main(i_clk, i_reset,
 	// {{{
 `ifndef	VERILATOR
 	wire		cpu_prof_stb;
-	wire	[25+1:0]	cpu_prof_addr;
+	wire	[25+$clog2(512/8)-1:0]	cpu_prof_addr;
 	wire [31:0]	cpu_prof_ticks;
 `endif
 	// All we define here is a set of scope wires
@@ -732,7 +732,6 @@ module	main(i_clk, i_reset,
 		.SLAVE_ADDR({
 			// Address width    = 25
 			// Address LSBs     = 6
-			// Slave name width = 10
 			{ 25'h1000000 }, //      sdram: 0x40000000
 			{ 25'h0280000 }, //      bkram: 0x0a000000
 			{ 25'h0200000 }, //   crossbus: 0x08000000
@@ -741,7 +740,6 @@ module	main(i_clk, i_reset,
 		.SLAVE_MASK({
 			// Address width    = 25
 			// Address LSBs     = 6
-			// Slave name width = 10
 			{ 25'h1000000 }, //      sdram
 			{ 25'h1f80000 }, //      bkram
 			{ 25'h1f80000 }, //   crossbus
@@ -877,14 +875,12 @@ module	main(i_clk, i_reset,
 		.SLAVE_ADDR({
 			// Address width    = 30
 			// Address LSBs     = 2
-			// Slave name width = 11
 			{ 30'h20000000 }, //         zip: 0x80000000
 			{ 30'h00000000 }  // wbu_arbiter: 0x00000000
 		}),
 		.SLAVE_MASK({
 			// Address width    = 30
 			// Address LSBs     = 2
-			// Slave name width = 11
 			{ 30'h38000000 }, //         zip
 			{ 30'h20000000 }  // wbu_arbiter
 		}),
@@ -988,14 +984,12 @@ module	main(i_clk, i_reset,
 		.SLAVE_ADDR({
 			// Address width    = 25
 			// Address LSBs     = 2
-			// Slave name width = 5
 			{ 25'h1000000 }, // flash: 0x4000000
 			{ 25'h0800000 }  //  sdio: 0x2000000
 		}),
 		.SLAVE_MASK({
 			// Address width    = 25
 			// Address LSBs     = 2
-			// Slave name width = 5
 			{ 25'h1000000 }, // flash
 			{ 25'h1800000 }  //  sdio
 		}),
@@ -1179,7 +1173,6 @@ module	main(i_clk, i_reset,
 		.SLAVE_ADDR({
 			// Address width    = 9
 			// Address LSBs     = 2
-			// Slave name width = 8
 			{ 9'h1c0 }, //      cfg: 0x700
 			{ 9'h180 }, // wb32_sio: 0x600
 			{ 9'h140 }, //     uart: 0x500
@@ -1188,7 +1181,6 @@ module	main(i_clk, i_reset,
 		.SLAVE_MASK({
 			// Address width    = 9
 			// Address LSBs     = 2
-			// Slave name width = 8
 			{ 9'h1c0 }, //      cfg
 			{ 9'h1c0 }, // wb32_sio
 			{ 9'h1c0 }, //     uart

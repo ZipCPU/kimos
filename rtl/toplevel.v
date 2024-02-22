@@ -64,12 +64,12 @@ i_sdcard_cd_n,
 
 		io_sdcard_cmd, io_sdcard_dat,
 		// SDRAM I/O port wires
-		o_ddr3_reset_n, ddr3_cke, o_ddr3_ck_p, o_ddr3_ck_n,
-		o_ddr3_cs_n,
-		o_ddr3_ras_n, o_ddr3_cas_n, o_ddr3_we_n,
-		io_ddr3_dqs_p, io_ddr3_dqs_n,
-		o_ddr3_a, o_ddr3_ba,
-		io_ddr3_dq, ddr3_dm, ddr3_odt,
+		ddr3_reset_n, ddr3_cke, ddr3_ck_p, ddr3_ck_n,
+		ddr3_cs_n,
+		ddr3_ras_n, ddr3_cas_n, ddr3_we_n,
+		ddr3_dqs_p, ddr3_dqs_n,
+		ddr3_addr, ddr3_ba,
+		ddr3_dq, ddr3_dm, ddr3_odt,
 		// Top level Quad-SPI I/O ports
 		o_qspi_cs_n, io_qspi_dat,
 		// UART/host to wishbone interface
@@ -154,17 +154,17 @@ i_sdcard_cd_n,
 	// }}}
 	// I/O declarations for the DDR3 SDRAM
 	// {{{
-	output	wire		o_ddr3_reset_n;
-	output	wire	[1:0]	o_ddr3_cke;
-	output	wire		o_ddr3_ck_p, o_ddr3_ck_n;
-	output	wire	[1:0]	o_ddr3_cs_n;
-	output	wire		o_ddr3_ras_n, o_ddr3_cas_n, o_ddr3_we_n;
-	output	wire	[2:0]	o_ddr3_ba;
-	output	wire	[15-1:0]	o_ddr3_a;
-	output	wire	[1:0]			o_ddr3_odt;
-	output	wire	[64/8-1:0]	o_ddr3_dm;
-	inout	wire	[64/8-1:0]	io_ddr3_dqs_p, io_ddr3_dqs_n;
-	inout	wire	[64-1:0]	io_ddr3_dq;
+	output	wire		ddr3_reset_n;
+	output	wire	[0:0]	ddr3_cke;
+	output	wire		ddr3_ck_p, ddr3_ck_n;
+	output	wire	[0:0]	ddr3_cs_n;
+	output	wire		ddr3_ras_n, ddr3_cas_n, ddr3_we_n;
+	output	wire	[2:0]	ddr3_ba;
+	output	wire	[14-1:0]	ddr3_addr;
+	output	wire	[0:0]			ddr3_odt;
+	output	wire	[64/8-1:0]	ddr3_dm;
+	inout	wire	[64/8-1:0]	ddr3_dqs_p, ddr3_dqs_n;
+	inout	wire	[64-1:0]	ddr3_dq;
 	// }}}
 	// Quad SPI flash
 	output	wire		o_qspi_cs_n;
@@ -331,7 +331,7 @@ i_sdcard_cd_n,
 		.NUMIO(4)
 	) u_sdio_frontend (
 		// {{{
-		.i_clk(s_clk), .i_hsclk(s_clk4x), .i_reset(s_reset),
+		.i_clk(s_clk), .i_hsclk(s_clk_400mhz), .i_reset(s_reset),
 		// Configuration
 		.i_cfg_ddr(w_sdio_cfg_ddr),
 		.i_cfg_ds(w_sdio_cfg_ds),
@@ -378,7 +378,7 @@ i_sdcard_cd_n,
 		// {{{
 		.AXIDWIDTH(1), .WBDATAWIDTH(512),
 		.DDRWIDTH(64),
-		.DDRAWID(15),
+		.DDRAWID(14),
 		.RAMABITS(30)
 		// }}}
 	) sdrami(
@@ -396,15 +396,15 @@ i_sdcard_cd_n,
 		.o_wb_stall(sdram_stall),    .o_wb_ack(sdram_ack),
 			.o_wb_data(sdram_rdata), .o_wb_err(sdram_err),
 		//
-		.o_ddr_ck_p(o_ddr3_ck_p), .o_ddr_ck_n(o_ddr3_ck_n),
-		.o_ddr_reset_n(o_ddr3_reset_n), .o_ddr_cke(o_ddr3_cke),
-		.o_ddr_cs_n(o_ddr3_cs_n),
-		.o_ddr_ras_n(o_ddr3_ras_n),
-		.o_ddr_cas_n(o_ddr3_cas_n), .o_ddr_we_n(o_ddr3_we_n),
-		.o_ddr_ba(o_ddr3_ba), .o_ddr_addr(o_ddr3_a),
-		.o_ddr_odt(o_ddr3_odt), .o_ddr_dm(o_ddr3_dm),
-		.io_ddr_dqs_p(io_ddr3_dqs_p), .io_ddr_dqs_n(io_ddr3_dqs_n),
-		.io_ddr_data(io_ddr3_dq)
+		.o_ddr_ck_p(ddr3_ck_p), .o_ddr_ck_n(ddr3_ck_n),
+		.o_ddr_reset_n(ddr3_reset_n), .o_ddr_cke(ddr3_cke),
+		.o_ddr_cs_n(ddr3_cs_n),
+		.o_ddr_ras_n(ddr3_ras_n),
+		.o_ddr_cas_n(ddr3_cas_n), .o_ddr_we_n(ddr3_we_n),
+		.o_ddr_ba(ddr3_ba), .o_ddr_addr(ddr3_addr),
+		.o_ddr_odt(ddr3_odt), .o_ddr_dm(ddr3_dm),
+		.io_ddr_dqs_p(ddr3_dqs_p), .io_ddr_dqs_n(ddr3_dqs_n),
+		.io_ddr_data(ddr3_dq)
 		// }}}
 	);
  	
