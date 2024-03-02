@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename:	pktarbiter.v
+// Filename:	rtl/net/pktarbiter.v
 // {{{
 // Project:	KIMOS, a Mercury KX2 demonstration project
 //
@@ -13,15 +13,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 // }}}
-// Copyright (C) (None)
+// Copyright (C) 2024, Gisselquist Technology, LLC
 // {{{
-// The algorithm described in this file was copied from a stack overflow
-// article:
+// This file is part of the KIMOS project.
 //
-//	https://stackoverflow.com/questions/55015328/understanding-a-simple-round-robin-arbiter-verilog-code
+// The KIMOS project is free software and gateware: you can redistribute it
+// and/or modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation, either version 3 of the License,
+// or (at your option) any later version.
 //
-// The formal properties, if present, are Copyright (C) 2021, Gisselquist
-// Technology, LLC, and proprietary to Gisselquist Technology.
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+// target there if the PDF file isn't present.)  If not, see
+// <http://www.gnu.org/licenses/> for a copy.
+// }}}
+// License:	GPL, v3, as defined and found on www.gnu.org,
+// {{{
+//		http://www.gnu.org/licenses/gpl.html
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
