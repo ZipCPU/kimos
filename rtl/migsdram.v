@@ -207,6 +207,7 @@ module	migsdram #(
 		.s_axi_rlast(s_axi_rlast),	.s_axi_rvalid(s_axi_rvalid),
 		.init_calib_complete(init_calib_complete),
 		.sys_rst(i_rst),
+		.device_temp_i(12'h0),
 		.device_temp(w_device_temp)
 		// }}}
 	);

@@ -74,7 +74,7 @@
 @$ABITS=@$(LGMEMSZ)-@$(UNUSED)
 @LD.PERM=wx
 @$DDRWIDTH=64
-@$DDRAWID=14
+@$DDRAWID=15
 @TOP.PORTLIST=
 		// SDRAM I/O port wires
 		ddr3_reset_n, ddr3_cke, ddr3_ck_p, ddr3_ck_n,
