@@ -27,7 +27,7 @@
 ## for more details.
 ##
 ## You should have received a copy of the GNU General Public License along
-## with this program.  (It's in the $(ROOT)/doc directory, run make with no
+## with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
 ## target there if the PDF file isn't present.)  If not, see
 ## <http://www.gnu.org/licenses/> for a copy.
 ## }}}
@@ -44,6 +44,9 @@
 @NADDR=8
 @$NUMIO=4
 @ACCESS=SDIO_ACCESS
+@MASTER.TYPE=DMA
+@MASTER.BUS=wbwide
+@MASTER.ANSPREFIX=dma_
 @SLAVE.TYPE=OTHER
 @SLAVE.BUS=wbflash
 ## @SCOPE.TRIGGER=@$(PREFIX)_debug[31]
@@ -100,6 +103,7 @@
 		//
 	wire	[1:0]	w_@$(PREFIX)_cmd_strb;
 	wire	[1:0]	w_@$(PREFIX)_cmd_idata;
+	wire		w_@$(PREFIX)_cmd_collision;
 	wire		w_@$(PREFIX)_card_busy;
 	wire	[1:0]	w_@$(PREFIX)_rx_strb;
 	wire	[15:0]	w_@$(PREFIX)_rx_data;
@@ -140,6 +144,7 @@
 		// Return values
 		.o_cmd_strb(w_@$(PREFIX)_cmd_strb),
 		.o_cmd_data(w_@$(PREFIX)_cmd_idata),
+		.o_cmd_collision(w_@$(PREFIX)_cmd_collision),
 		.o_data_busy(w_@$(PREFIX)_card_busy),
 		.o_rx_strb( w_@$(PREFIX)_rx_strb),
 		.o_rx_data( w_@$(PREFIX)_rx_data),
@@ -181,6 +186,7 @@
 		//
 		w_@$(PREFIX)_cmd_strb,
 		w_@$(PREFIX)_cmd_idata,
+		w_@$(PREFIX)_cmd_collision,
 		w_@$(PREFIX)_card_busy,
 		w_@$(PREFIX)_rx_strb,
 		w_@$(PREFIX)_rx_data,
@@ -212,6 +218,7 @@
 		//
 		i_@$(PREFIX)_cmd_strb,
 		i_@$(PREFIX)_cmd_data,
+		i_@$(PREFIX)_cmd_collision,
 		i_@$(PREFIX)_card_busy,
 		i_@$(PREFIX)_rx_strb,
 		i_@$(PREFIX)_rx_data,
@@ -242,6 +249,7 @@
 		//
 	input	wire	[1:0]	i_@$(PREFIX)_cmd_strb;
 	input	wire	[1:0]	i_@$(PREFIX)_cmd_data;
+	input	wire		i_@$(PREFIX)_cmd_collision;
 	input	wire		i_@$(PREFIX)_card_busy;
 	input	wire	[1:0]	i_@$(PREFIX)_rx_strb;
 	input	wire	[15:0]	i_@$(PREFIX)_rx_data;
@@ -272,6 +280,11 @@
 
 	sdio #(
 		// {{{
+		.OPT_DMA(1'b1),
+		.ADDRESS_WIDTH(@$(MASTER.BUS.AWID)+$clog2(@$(MASTER.BUS.WIDTH)/8)),
+		.DMA_DW(@$(MASTER.BUS.WIDTH)),
+		.OPT_ISTREAM(1'b0),
+		.OPT_OSTREAM(1'b0),
 		.LGFIFO(10), .NUMIO(@$(NUMIO)),
 		.MW(@$(SLAVE.BUS.WIDTH)),
 		.OPT_SERDES(@$(OPT_SERDES)),
@@ -284,6 +297,19 @@
 		.i_clk(@$(SLAVE.BUS.CLOCK.WIRE)),
 		.i_reset(@$(SLAVE.BUS.CLOCK.RESET)),
 		@$(SLAVE.ANSIPORTLIST),
+		@$(MASTER.ANSIPORTLIST),
+		// Stream interface
+		// {{{
+		// Verilator lint_off PINCONNECTEMPTY
+		.s_valid(1'b0),
+		.s_ready(),
+		.s_data(32'h0),
+		.m_valid(),
+		.m_ready(1'b1),
+		.m_data(),
+		.m_last(),
+		// Verilator lint_on  PINCONNECTEMPTY
+		// }}}
 		.i_card_detect(i_@$(PREFIX)_detect),
 		.o_1p8v(w_@$(PREFIX)_1p8v),
 		.o_int(@$(PREFIX)_int),
@@ -304,6 +330,7 @@
 		//
 		.i_cmd_strb( i_@$(PREFIX)_cmd_strb),
 		.i_cmd_data( i_@$(PREFIX)_cmd_data),
+		.i_cmd_collision( i_@$(PREFIX)_cmd_collision),
 		.i_card_busy(i_@$(PREFIX)_card_busy),
 		.i_rx_strb(  i_@$(PREFIX)_rx_strb),
 		.i_rx_data(  i_@$(PREFIX)_rx_data),

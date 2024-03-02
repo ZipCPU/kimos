@@ -30,7 +30,7 @@
 // for more details.
 //
 // You should have received a copy of the GNU General Public License along
-// with this program.  (It's in the $(ROOT)/doc directory, run make with no
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
 // target there if the PDF file isn't present.)  If not, see
 // <http://www.gnu.org/licenses/> for a copy.
 // }}}
@@ -59,6 +59,7 @@ module	xsdddr #(
 		input	wire	[1:0]	i_data,
 		output	wire		io_pin_tristate,
 		input	wire		i_pin,
+		output	wire	[1:0]	o_mine,
 		output	wire		o_pin,
 		output	wire	[1:0]	o_wide
 		// }}}
@@ -66,6 +67,7 @@ module	xsdddr #(
 
 	wire	w_in, w_out;
 	reg	high_z;
+	reg	[1:0]	r_mine;
 
 	initial	high_z = OPT_BIDIR;
 	always @(posedge i_clk)
@@ -73,12 +75,21 @@ module	xsdddr #(
 
 `ifdef	OPENSIM
 	// {{{
-	reg	[1:0]	r_out;
+	reg		r_out;
+	// Verilator lint_off MULTIDRIVEN
+	reg		r_pin;
+	// Verilator lint_on  MULTIDRIVEN
 
 	always @(posedge i_clk)
-		r_out <= i_data;
+		r_out <= i_data[0];
 
-	assign	w_out = (i_clk) ? r_out[1] : r_out[0];
+	always @(posedge i_clk)
+		r_pin <= i_data[1];
+	always @(negedge i_clk)
+		r_pin <= r_out;
+
+	// assign	w_out = (i_clk) ? r_out[1] : r_out[0];
+	assign	w_out = r_pin;
 	assign	io_pin_tristate = high_z;
 	assign	o_pin = w_out;
 
@@ -108,6 +119,17 @@ module	xsdddr #(
 	generate if (OPT_BIDIR)
 	begin : GEN_BIDIRECTIONAL
 		// {{{
+		reg	[2:0]	r_last;
+
+		always @(posedge i_clk)
+		if (!i_en)
+			r_last <= 3'h0;
+		else
+			r_last <= { r_last[0], i_data[1], i_data[0] };
+		always @(posedge i_clk)
+			r_mine <= r_last[2:1];
+
+		assign	o_mine = r_mine;
 `ifdef	OPENSIM
 		reg		r_p, r_n;
 		reg	[1:0]	r_in;
@@ -136,6 +158,9 @@ module	xsdddr #(
 	end else begin : GEN_OUTPUT
 
 		assign	o_wide = 2'b11;
+		always @(posedge i_clk)
+			r_mine <= i_data;
+		assign	o_mine = r_mine;
 
 		// Keep Verilator happy
 		// {{{

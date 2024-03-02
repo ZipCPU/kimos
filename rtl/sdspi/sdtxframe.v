@@ -27,7 +27,7 @@
 // for more details.
 //
 // You should have received a copy of the GNU General Public License along
-// with this program.  (It's in the $(ROOT)/doc directory, run make with no
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
 // target there if the PDF file isn't present.)  If not, see
 // <http://www.gnu.org/licenses/> for a copy.
 // }}}
@@ -1497,11 +1497,24 @@ module	sdtxframe #(
 	// "Careless" assumptions
 	// {{{
 
+	// always @(*)
+	// if (!i_reset && tx_valid && fs_count == 0)
+	//	assume(fb_count <= fd_offset);
+
+	// Without the following assertion, f_loaded_count gets out of synch,
+	// and the proof fails.  With the assertion, it passes.
+	// always @(*) assume(i_ckstb || i_hlfck);
+	// always @(*) assume(!i_cfg_ddr && i_cfg_spd >= 1);
 
 	// The following assertion just prevents overflow within the formal
 	// accounting.  It's unnecessary otherwise.
 	always @(*) assume(fb_count < 15'h7fd0);
 
+	// The following assertions are crutches, that have been removed now
+	// that the proof passes.
+	// always @(*) assume(pstate != P_LAST);
+	// always @(*) if (cfg_period == P_1D) assume(!cfg_ddr);
+	// always @(*) if (pstate == P_IDLE) assume(!S_VALID || !S_LAST);
 	// }}}
 `endif	// FORMAL
 // }}}
