@@ -44,10 +44,15 @@ module	exdecompress #(
 		// }}}
 	) (
 		// {{{
-		input	wire		i_clk, i_reset, i_stb,
+		input	wire		i_clk,
+					i_reset,
+					i_stb,
+		output	wire		o_busy,
 		input	wire	[34:0]	i_word,
 		output	reg		o_stb,
-		output	reg	[34:0]	o_word
+		input	wire		i_busy,
+		output	reg	[34:0]	o_word,
+		output	wire		o_active
 		// }}}
 	);
 
@@ -67,6 +72,8 @@ module	exdecompress #(
 	reg	[34:0]	partial;
 	reg	[31:0]	write_table_value;
 	reg		write_to_table;
+
+	wire	r_busy, q_busy;
 	// }}}
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -85,7 +92,7 @@ module	exdecompress #(
 	// addr_word
 	// {{{
 	always @(posedge i_clk)
-	if (!OPT_LOWPOWER || (i_stb && i_word[34:33] == 2'b00))
+	if (!OPT_LOWPOWER || (i_stb && !o_busy && i_word[34:33] == 2'b00))
 	casez(i_word[32:29])
 	4'b0???:addr_word <= { 3'b000, i_word[31:2], 1'b0, i_word[0] };
 	4'b10??:addr_word <= { 3'b001, {(29){i_word[30]}}, i_word[29], 1'b0, i_word[28] };
@@ -99,6 +106,7 @@ module	exdecompress #(
 	// write_word: Decode the write word
 	// {{{
 	always @(posedge i_clk)
+	if (i_stb && !o_busy)
 	casez(i_word[34:30])
 	5'b??0??:write_word <= { 3'b010, i_word[31:0] };
 	5'b??1?0:write_word <= { 3'b010, {(24){i_word[29]}}, i_word[28:21] };
@@ -109,33 +117,39 @@ module	exdecompress #(
 	// write_lookup_addr
 	// {{{
 	always @(posedge i_clk)
-	if (OPT_LOWPOWER && i_word[34:33] != 2'b01)
-		write_lookup_addr <= 0;
-	else case(i_word[30])
-		// write_lookup_addr = write_addr - i_word[29:28] - 1
-		// write_lookup_addr = write_addr + ~i_word[29:28] + 1 - 1
-	1'b0:write_lookup_addr <= { 8'hff, ~i_word[29:28] } + write_addr;
-	1'b1:write_lookup_addr <= { 1'b1,  ~i_word[29:21] } + write_addr;
-	endcase
+	if (i_stb && !o_busy)
+	begin
+		if (OPT_LOWPOWER && i_word[34:33] != 2'b01)
+			write_lookup_addr <= 0;
+		else case(i_word[30])
+		1'b0:write_lookup_addr<= { 8'hff, ~i_word[29:28] } + write_addr;
+		1'b1:write_lookup_addr<= { 1'b1,  ~i_word[29:21] } + write_addr;
+		endcase
+	end
 	// }}}
 
 	// write_table_lookup
 	// {{{
 	always @(posedge i_clk)
-	if (OPT_LOWPOWER && (i_reset || !i_stb))
+	if (OPT_LOWPOWER && i_reset)
 		write_table_lookup <= 1'b0;
-	else if (OPT_LOWPOWER)
-		write_table_lookup <= (i_word[34:31] == 4'b0110);
-	else
-		write_table_lookup <= (i_word[32:31] == 2'b10);
+	else if (i_stb && !o_busy)
+	begin
+		if (OPT_LOWPOWER)
+			write_table_lookup <= (i_word[34:31] == 4'b0110);
+		else
+			write_table_lookup <= (i_word[32:31] == 2'b10);
+	end else if (!r_busy)
+		write_table_lookup <= 1'b0;
 	// }}}
 
 	// read_count
 	// {{{
 	always @(posedge i_clk)
-	if (OPT_LOWPOWER && (i_reset || !i_stb))
+	if (OPT_LOWPOWER && i_reset)
 		read_count <= 0;
-	else case(i_word[32])
+	else if (i_stb && !o_busy)
+	case(i_word[32])
 	1'b0: read_count <= 12'd1  + { 8'h0, i_word[31:28] }; // 1-16
 	1'b1: read_count <= 12'd17 + { 1'b0, i_word[31:21] };	// 17-2064
 	endcase
@@ -144,9 +158,9 @@ module	exdecompress #(
 	// word_type
 	// {{{
 	always @(posedge i_clk)
-	if (OPT_LOWPOWER && (i_reset || !i_stb))
+	if (OPT_LOWPOWER && i_reset)
 		word_type <= 2'b00;
-	else
+	else if (i_stb && !o_busy)
 		word_type <= i_word[34:33];
 	// }}}
 
@@ -155,21 +169,21 @@ module	exdecompress #(
 	initial	r_stb = 1'b0;
 	initial	write_to_table = 1'b0;
 	always @(posedge i_clk)
+	if (i_reset)
 	begin
-		r_stb <= i_stb;
+		r_stb <= 1'b0;
+		write_to_table <= 1'b0;
+	end else if (i_stb && !o_busy)
+	begin
+		r_stb <= 1'b1;
+		write_to_table <= i_word[34:33] == 2'b01
+			&& (!i_word[32] || i_word[32:30] == 3'b111);
+	end else if (!r_busy)
+		{ write_to_table, r_stb } <= 2'b0;
+
+	always @(posedge i_clk)
+	if (i_stb && !o_busy)
 		r_special <= i_word[32:28];
-
-		write_to_table <= i_stb && i_word[34:33] == 2'b01
-			&& (!i_word[32]
-			// || i_word[32:30] == 3'b110 // && == last?
-			|| i_word[32:30] == 3'b111);
-
-		if (i_reset)
-		begin
-			r_stb <= 1'b0;
-			write_to_table <= 1'b0;
-		end
-	end
 	// }}}
 
 	// }}}
@@ -189,16 +203,19 @@ module	exdecompress #(
 	always @(posedge i_clk)
 	if (i_reset)
 		q_stb <= 1'b0;
-	else
-		q_stb <= r_stb;
+	else if (r_stb && !r_busy)
+		q_stb <= 1'b1;
+	else if (!q_busy)
+		q_stb <= 1'b0;
 	// }}}
 
 	// partial
 	// {{{
 	always @(posedge i_clk)
-	if (OPT_LOWPOWER && (i_reset || !r_stb))
-		partial <= 0;
-	else case(word_type)
+	if (OPT_LOWPOWER && i_reset)
+		partial <= 35'h0;
+	else if (r_stb && !r_busy)
+	case(word_type)
 	2'b00: partial <=  addr_word;
 	2'b01: partial <= write_word;
 	2'b10: partial <= { 2'b10, {(21){1'b0}}, read_count };
@@ -209,31 +226,33 @@ module	exdecompress #(
 	// partial_type
 	// {{{
 	always @(posedge i_clk)
-	if (OPT_LOWPOWER && (i_reset || !r_stb))
+	if (OPT_LOWPOWER && i_reset)
 		partial_type <= 1'b0;
-	else
+	else if (r_stb && !r_busy)
 		partial_type <= write_table_lookup && word_type == 2'b01;
 	// }}}
 
 	// Write to our compression table
 	// {{{
-	initial	write_addr = 0;
 	always @(posedge i_clk)
-	if (write_to_table)
+	if (write_to_table && !r_busy)
 		write_table[write_addr] <= write_word[31:0];
 	// }}}
 
 	// write_addr
 	// {{{
+	initial	write_addr = 0;
 	always @(posedge i_clk)
-	if (write_to_table)
+	if (i_reset)
+		write_addr <= 0;
+	else if (write_to_table && !r_busy)
 		write_addr <= write_addr + 1;
 	// }}}
 
 	// write_table_value
 	// {{{
 	always @(posedge i_clk)
-	if (!OPT_LOWPOWER || (!i_reset && r_stb && write_table_lookup))
+	if (write_table_lookup && !r_busy)
 		write_table_value <= write_table[write_lookup_addr];
 	// }}}
 
@@ -252,20 +271,27 @@ module	exdecompress #(
 	always @(posedge i_clk)
 	if (i_reset)
 		o_stb <= 1'b0;
-	else
-		o_stb <= q_stb;
+	else if (q_stb && !q_busy)
+		o_stb <= 1'b1;
+	else if (!i_busy)
+		o_stb <= 1'b0;
 	// }}}
 
 	// o_word
 	// {{{
 	always @(posedge i_clk)
-	if (OPT_LOWPOWER && (i_reset || !q_stb))
+	if (OPT_LOWPOWER && i_reset)
 		o_word <= 0;
-	else if (partial_type)
+	else if (q_stb && !q_busy && partial_type)
 		o_word <= { 3'b010, write_table_value };
 	else
 		o_word <= partial;
 	// }}}
+
+	assign	q_busy = o_stb && i_busy;
+	assign	r_busy = q_stb && q_busy;
+	assign	o_busy = r_stb && r_busy;
+	assign	o_active = r_stb || q_stb;
 	// }}}
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////

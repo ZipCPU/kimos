@@ -41,6 +41,7 @@
 // }}}
 module	exmkword #(
 		// {{{
+		parameter [0:0]	OPT_EXTSYNC = 1'b0,
 		parameter	INSZ=7,
 		parameter	CWSZ=35,
 		parameter	LGTIMEOUT = 20
@@ -48,37 +49,47 @@ module	exmkword #(
 	) (
 		// {{{
 		input	wire			i_clk, i_reset,
+		input	wire			i_sync,
 		// i_stb is true whenever new data is present
 		input	wire			i_stb,
+		output	wire			o_busy,
 		input	wire	[(INSZ-1):0]	i_data,
 		// o_stb is true whenever we have a valid word to send
 		output	wire			o_stb,
+		input	wire			i_busy,
 		output	wire	[(CWSZ-1):0]	o_data,
 		output	reg			o_reset_design,
-		output	reg			o_reset_bridge
+		output	reg			o_reset_bridge,
+		output	wire			o_active
 		// }}}
 	);
 
 	// Local declarations
 	// {{{
 	reg			this_word;
-	reg			sync;
-	reg [LGTIMEOUT:0]	sync_timer;
+	wire			sync;
 	reg	[34:0]		sreg;
 	reg	[2:0]		bytes_remaining, addr;
 	// }}}
 
 	// sync, sync_timer
 	// {{{
-	initial	sync_timer = 0;
-	always @(posedge i_clk)
-	if (i_reset || i_stb)
-		sync_timer <= 0;
-	else if (!sync_timer[LGTIMEOUT])
-		sync_timer <= sync_timer + 1;
+	generate if (!OPT_EXTSYNC)
+	begin : GEN_SYNC
+		reg [LGTIMEOUT:0]	r_sync_timer;
 
-	always @(*)
-		sync = (sync_timer[LGTIMEOUT] && !i_stb);
+		initial	r_sync_timer = 0;
+		always @(posedge i_clk)
+		if (i_reset || i_stb)
+			r_sync_timer <= 0;
+		else if (!r_sync_timer[LGTIMEOUT])
+			r_sync_timer <= r_sync_timer + 1;
+
+
+		assign	sync = (r_sync_timer[LGTIMEOUT] && !i_stb) || i_sync;
+	end else begin : EXTERNAL_SYNC
+		assign	sync = i_sync;
+	end endgenerate
 	// }}}
 	
 	// this_word, bytes_remaining
@@ -87,7 +98,7 @@ module	exmkword #(
 	always @(posedge i_clk)
 	if (i_reset || o_reset_bridge || sync)
 		{ this_word, bytes_remaining } <= 0;
-	else if (i_stb && bytes_remaining == 0)
+	else if (i_stb && !o_busy && bytes_remaining == 0)
 	casez(i_data[6:2])
 	// New address commands
 	5'b000??: { this_word, bytes_remaining } <= { 1'b0, 3'h4 };
@@ -105,12 +116,12 @@ module	exmkword #(
 	5'b101??: { this_word, bytes_remaining } <= { 1'b0, 3'h1 };
 	// Special commands
 	5'b11???: { this_word, bytes_remaining } <= { 1'b1, 3'h0 };
-	endcase else if (i_stb)
+	endcase else if (i_stb && !o_busy)
 	begin
 		if (bytes_remaining != 0)
 			bytes_remaining <= bytes_remaining -1;
 		this_word <= (bytes_remaining == 1);
-	end else
+	end else if (!o_stb || !i_busy)
 		this_word <= 1'b0;
 	// }}}
 
@@ -120,9 +131,9 @@ module	exmkword #(
 	always @(posedge i_clk)
 	if (i_reset || o_reset_bridge || sync)
 		addr <= 0;
-	else if (this_word)
-		addr <= (i_stb) ? 1:0;
-	else if (i_stb)
+	else if (this_word && !i_busy)
+		addr <= (i_stb && !o_busy) ? 1:0;
+	else if (i_stb && !o_busy)
 		addr <= addr + 1;
 	// }}}
 
@@ -130,19 +141,23 @@ module	exmkword #(
 	// {{{
 	initial	sreg = 0;
 	always @(posedge i_clk)
-	if (i_reset || o_reset_bridge || sync)
+	if (i_reset || o_reset_bridge)
 		sreg <= 0;
-	else if (i_stb && this_word)
-		sreg <= { i_data, 28'h0 };
-	else if (i_stb)
-	case(addr)
-	3'h0:	sreg <= { i_data, 28'h0 };
-	3'h1:	sreg <= { sreg[34:28], i_data, 21'h0 };
-	3'h2:	sreg <= { sreg[34:21], i_data, 14'h0 };
-	3'h3:	sreg <= { sreg[34:14], i_data,  7'h0 };
-	3'h4:	sreg <= { sreg[34: 7], i_data };
-	default: sreg <= 0;
-	endcase
+	else if (i_stb && !o_busy)
+	begin
+		if (sync || o_stb)
+			sreg <= { i_data, 28'h0 };
+		else if (i_stb && !o_busy)
+		case(addr)
+		3'h0:	sreg <= { i_data, 28'h0 };
+		3'h1:	sreg <= { sreg[34:28], i_data, 21'h0 };
+		3'h2:	sreg <= { sreg[34:21], i_data, 14'h0 };
+		3'h3:	sreg <= { sreg[34:14], i_data,  7'h0 };
+		3'h4:	sreg <= { sreg[34: 7], i_data };
+		default: sreg <= 0;
+		endcase
+	end else if (o_stb && !o_busy)
+		sreg <= 0;
 	// }}}
 
 	// o_stb
@@ -155,6 +170,9 @@ module	exmkword #(
 	assign	o_data = sreg;
 	// }}}
 
+	assign	o_busy   = o_stb && i_busy;
+	assign	o_active = !o_stb && addr != 0;
+
 	// o_reset_bridge, o_reset_design
 	// {{{
 	initial	o_reset_bridge = 1'b1;
@@ -164,8 +182,8 @@ module	exmkword #(
 	else if (o_reset_bridge)
 		o_reset_bridge <= 0;
 	else
-		o_reset_bridge <= (i_stb && addr == 0 && i_data[6:5] == 2'b11
-			&& i_data[2:1] == 2'b00);
+		o_reset_bridge <= (i_stb && !o_busy && addr == 0
+			&& i_data[6:5] == 2'b11 && i_data[2:1] == 2'b00);
 
 	initial	o_reset_design = 1'b1;
 	always @(posedge i_clk)
@@ -174,8 +192,8 @@ module	exmkword #(
 	else if (o_reset_bridge)
 		o_reset_design <= 1'b0;
 	else
-		o_reset_design <= (i_stb && addr == 0 && i_data[6:5] == 2'b11
-			&& i_data[2:0] == 3'b000);
+		o_reset_design <= (i_stb && !o_busy && addr == 0
+			&& i_data[6:5] == 2'b11 && i_data[2:0] == 3'b000);
 	// }}}
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////

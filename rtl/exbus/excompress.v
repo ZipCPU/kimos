@@ -53,8 +53,10 @@ module	excompress #(
 		// {{{
 		output	reg		o_stb,
 		output	reg	[34:0]	o_word,
-		input	wire		i_busy
+		input	wire		i_busy,
 		// }}}
+		// o_active : do we have something in our pipeline, not o_stb?
+		output	wire		o_active
 		// }}}
 	);
 
@@ -490,6 +492,8 @@ module	excompress #(
 	assign	r_busy = o_stb && i_busy;
 	assign	tbl_reading = 1;
 	// }}}
+
+	assign	o_active = ack_stb || a_stb;
 
 	// Make Verilator happy
 	// {{{

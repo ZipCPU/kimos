@@ -46,14 +46,14 @@
 @PREFIX=netbus
 @DEVID=NETBUS
 @ACCESS=NETBUS_ACCESS
-@DEPENDS=MEGANET_ACCESS
+@DEPENDS=ETH0_ACCESS
 @MASTER.BUS=wbu
 @MASTER.TYPE=HOST
 @MASTER.PREFIX=@$(PREFIX)
 @CLOCK.NAME=clk
 @CLOCK.RESET=i_reset
 @$BUS_ADDRESS_WIDTH=@$(MASTER.BUS.AWID)
-@NET=mega
+@NET=eth0
 @MAIN.PARAM=
 	////////////////////////////////////////////////////////////////////////
 	//

@@ -60,7 +60,7 @@ CFLAGS	:= -O3 -faligned-new -Wall $(VDEFS) $(INCS)
 # A list of our sources and headers
 #
 ## COMMON sources across projects
-SIMMODELS:= flashsim.cpp sdspisim.cpp dbluartsim.cpp enetctrlsim.cpp memsim.cpp sdiosim.cpp
+SIMMODELS:= flashsim.cpp sdspisim.cpp dbluartsim.cpp enetctrlsim.cpp memsim.cpp sdiosim.cpp netsim.cpp udpsocket.cpp
 AUXSOURCES:= zipelf.cpp byteswap.cpp # udpsocket.cpp
 SIMSOURCES:= $(SIMMODELS) $(AUXSOURCES)
 SIMOBJECTS:= $(addprefix $(OBJDIR)/,$(subst .cpp,.o,$(SIMSOURCES)))

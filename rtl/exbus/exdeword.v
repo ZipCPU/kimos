@@ -51,20 +51,23 @@ module	exdeword (
 		// The incoming 35-bit codeword
 		// {{{
 		input	wire		i_stb,
-		input	wire	[34:0]	i_word,
 		output	wire		o_busy,
+		input	wire	[34:0]	i_word,
+		input	wire		i_last,
 		// }}}
 		// The outgoing 7-bit channel
 		// {{{
 		output	reg		o_stb,
+		input	wire		i_busy,
 		output	reg	[6:0]	o_byte,
-		input	wire		i_busy
+		output	reg		o_last
 		// }}}
 		// }}}
 	);
 
 	// Local declarations
 	// {{{
+	reg		r_last;
 	reg	[2:0]	w_len;
 	reg	[2:0]	r_len;
 	reg	[27:0]	r_word;
@@ -93,24 +96,29 @@ module	exdeword (
 	endcase
 	// }}}
 
-	// r_word, o_byte
+	// r_word, o_byte, o_last
 	// {{{
 	// A basic shift register, shifting out the top w_len (then r_len) bytes
 	initial	o_byte = 7'h0;
 	always @(posedge i_clk)
 	if (i_reset)
+	begin
+		r_word <= 28'h0;
 		o_byte <= 7'h0;
-	else if (i_stb && !o_busy) // Only accept when not busy
+		o_last <= 1'b0;
+		r_last <= 1'b0;
+	end else if (i_stb && !o_busy) // Only accept when not busy
 	begin
 		r_word <= i_word[27:0];
 		o_byte <= i_word[34:28];	// Type 7 bits, always
-		// if (i_word[34:33] == 2'b11)
-		//	o_byte[4:3] <= i_gpio;
+		o_last <= (w_len == 0);
+		r_last <= (w_len != 0) && i_last;
 	end else if (!i_busy && (r_len != 0))
 	begin
 		// Shift the rest of the bits out
 		o_byte <= r_word[27:21];
 		r_word <= { r_word[20:0], 7'h0 };
+		o_last <= (r_len <= 1) && r_last;
 	end
 	// }}}
 
