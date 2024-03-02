@@ -69,7 +69,7 @@ const	unsigned EXBUS::MAXWRLEN = 32;
 // Debug DBGPRINTF infrastructure
 // {{{
 // #define	DBGPRINTF	printf
-// #define	DBGPRINTF	filedump
+#define	DBGPRINTF	filedump
 #ifndef	DBGPRINTF
 #define	DBGPRINTF	null
 #else
@@ -209,6 +209,7 @@ void	EXBUS::writev(const BUSW a, const int p, const int len, const BUSW *buf) {
 			BUSW	val = buf[nw+i];
 			int	ival = (int)val;
 
+			DBGPRINTF("        WVAL: 0x%08x\n", buf[nw+i]);
 			int	caddr = 0;
 			// Let's try compression
 			for(int j=1; j<512; j++) {

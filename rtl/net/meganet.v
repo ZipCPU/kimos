@@ -10,7 +10,6 @@
 //
 // Network interfaces include:
 //		ARP, ICMP	- handled internally
-//		NTP		- handled internally
 //
 //	DBG	-- UDP, to/from debugger
 //	DATA	-- Data to the outside world, comes in UDP format.
@@ -58,14 +57,16 @@ module	meganet #(
 		parameter [47:0]	DEF_HWMAC  = 48'h82_33_48_02,
 		parameter [31:0]	DEF_IPADDR = 32'hc0_a8_07_89,
 		parameter [15:0]	UDP_DBGPORT = 8545,
-		parameter [0:0]		OPT_NETTIME = 1'b0,
-		parameter [15:0]	NTP_PORT = 16'd123,
+		// parameter [0:0]		OPT_NETTIME = 1'b0,
 		parameter [0:0]		OPT_DEBUG = 1'b1	// 0 for RX,1TX
 		// parameter [15:0]	UDP_DATAPORT = 8546
 		// }}}
 	) (
 		// {{{
-		input	wire		S_AXI_ACLK, S_AXI_ARESETN,
+		input	wire		S_AXI_ACLK,
+		// Verilator lint_off SYNCASYNCNET
+		input	wire		S_AXI_ARESETN,
+		// Verilator lint_on  SYNCASYNCNET
 		//
 		output	wire	[47:0]	o_hwmac,
 		output	wire	[31:0]	o_ipaddr,
@@ -74,7 +75,6 @@ module	meganet #(
 		// RX processing data to.
 		output	wire	[47:0]	o_ping_hwmac,
 		output	wire	[31:0]	o_ping_ipaddr,
-		output	reg		o_net_adc_enable,
 		//
 		// Wishbone: The network control interface
 		// {{{
@@ -120,13 +120,6 @@ module	meganet #(
 		output	wire		M_DBG_VALID,
 		input	wire		M_DBG_READY,
 		output	wire	[31:0]	M_DBG_DATA,
-		// }}}
-		// Time tracking interface
-		// {{{
-		output	wire		o_set_time,
-		output	wire		o_adjust_time,
-		output	wire	[63:0]	o_new_time,
-		input	wire	[63:0]	i_timestamp,
 		// }}}
 		// PHY interface
 		// {{{
@@ -223,13 +216,6 @@ module	meganet #(
 	//
 	// NTP declarations
 	// {{{
-	// Verilator lint_off UNUSED
-	wire		NTPRX_VALID, NTPRX_READY, NTPRX_LAST, NTPRX_ABORT;
-	wire	[7:0]	NTPRX_DATA;
-	wire		NTPTX_VALID, NTPTX_READY, NTPTX_LAST, NTPTX_ABORT;
-	wire	[7:0]	NTPTX_DATA;
-	// Verilator lint_on  UNUSED
-	wire		ntp_no_match, ntp_match;
 	// }}}
 	////////////////////////////////////////
 	//
@@ -276,10 +262,6 @@ module	meganet #(
 	wire	[7:0]	DATAS_DATA;
 	// }}}
 
-	wire	[31:0]	mon_drop_count;
-	wire	[31:0]	mon_drops, mon_data_packets;
-	wire	[31:0]	wb_mon_drops, wb_mon_drop_count, wb_mon_data_packets;
-
 	// }}}
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -299,15 +281,15 @@ module	meganet #(
 	// PktMerge
 
 	pktmerge #(
-		.NS(6), .DW(8)
+		.NS(5), .DW(8)
 	) u_pktmerge (
 		// {{{
 		.i_clk(i_net_tx_clk), .i_reset(tx_reset),
-		.S_AXIN_VALID({ ARPS_VALID, ICMPS_VALID, NTPTX_VALID, CPUS_VALID, DBGS_VALID, DATAS_VALID }),
-		.S_AXIN_READY({ ARPS_READY, ICMPS_READY, NTPTX_READY, CPUS_READY, DBGS_READY, DATAS_READY }),
-		.S_AXIN_DATA({  ARPS_DATA,  ICMPS_DATA,  NTPTX_DATA,  CPUS_DATA,  DBGS_DATA,  DATAS_DATA }),
-		.S_AXIN_LAST({  ARPS_LAST,  ICMPS_LAST,  NTPTX_LAST,  CPUS_LAST,  DBGS_LAST,  DATAS_LAST }),
-		.S_AXIN_ABORT({ ARPS_ABORT, ICMPS_ABORT, NTPTX_ABORT, CPUS_ABORT, DBGS_ABORT, DATAS_ABORT }),
+		.S_AXIN_VALID({ ARPS_VALID, ICMPS_VALID, CPUS_VALID, DBGS_VALID, DATAS_VALID }),
+		.S_AXIN_READY({ ARPS_READY, ICMPS_READY, CPUS_READY, DBGS_READY, DATAS_READY }),
+		.S_AXIN_DATA({  ARPS_DATA,  ICMPS_DATA,   CPUS_DATA,  DBGS_DATA,  DATAS_DATA }),
+		.S_AXIN_LAST({  ARPS_LAST,  ICMPS_LAST,   CPUS_LAST,  DBGS_LAST,  DATAS_LAST }),
+		.S_AXIN_ABORT({ ARPS_ABORT, ICMPS_ABORT, CPUS_ABORT, DBGS_ABORT, DATAS_ABORT }),
 
 		.M_AXIN_VALID(TX_VALID),
 		.M_AXIN_READY(TX_READY),
@@ -318,16 +300,16 @@ module	meganet #(
 	);
 
 	always @(posedge i_net_tx_clk)
-		merge_last <= |{ ARPS_VALID, ICMPS_VALID, NTPTX_VALID, CPUS_VALID, DBGS_VALID, DATAS_VALID };
+		merge_last <= |{ ARPS_VALID, ICMPS_VALID, CPUS_VALID, DBGS_VALID, DATAS_VALID };
 
 	always @(posedge i_net_tx_clk)
-		merge_trigger <= !merge_last && |{ ARPS_VALID, ICMPS_VALID, NTPTX_VALID, CPUS_VALID, DBGS_VALID, DATAS_VALID };
+		merge_trigger <= !merge_last && |{ ARPS_VALID, ICMPS_VALID, CPUS_VALID, DBGS_VALID, DATAS_VALID };
 
 	assign	tx_merge_debug = {
 		merge_trigger, merge_trigger, 1'b0, merge_last,
 		ARPS_VALID,  ARPS_READY,  ARPS_LAST,  ARPS_ABORT,
 		ICMPS_VALID, ICMPS_READY, ICMPS_LAST, ICMPS_ABORT,
-		NTPTX_VALID, NTPTX_READY, NTPTX_LAST, NTPTX_ABORT,
+		4'h0, // NTPTX_VALID, NTPTX_READY, NTPTX_LAST, NTPTX_ABORT,
 		CPUS_VALID,  CPUS_READY,  CPUS_LAST,  CPUS_ABORT,
 		DBGS_VALID,  DBGS_READY,  DBGS_LAST,  DBGS_ABORT,
 		DATAS_VALID, DATAS_READY, DATAS_LAST, DATAS_ABORT,
@@ -353,7 +335,7 @@ module	meganet #(
 	//
 
 	pktsplitter #(
-		.NUM_SINKS(5)
+		.NUM_SINKS(4)
 	) rxsplitter (
 		// {{{
 		.S_AXI_ACLK(i_net_rx_clk), .S_AXI_ARESETN(!rx_reset),
@@ -362,24 +344,22 @@ module	meganet #(
 			.S_AXIN_DATA(RX_DATA), .S_AXIN_LAST(RX_LAST),
 			.S_AXIN_ABORT(RX_ABORT),
 		//
-		.M_AXIN_VALID({ ARPRX_VALID, ICMPRX_VALID, NTPRX_VALID,
+		.M_AXIN_VALID({ ARPRX_VALID, ICMPRX_VALID,
 				CPURX_VALID, DBGRX_VALID }),
-		.M_AXIN_READY({ ARPRX_READY, ICMPRX_READY, NTPRX_READY,
+		.M_AXIN_READY({ ARPRX_READY, ICMPRX_READY,
 				CPURX_READY, DBGRX_READY }),
-		.M_AXIN_DATA({ ARPRX_DATA, ICMPRX_DATA, NTPRX_DATA,
+		.M_AXIN_DATA({ ARPRX_DATA, ICMPRX_DATA,
 				CPURX_DATA, DBGRX_DATA }),
-		.M_AXIN_LAST({ ARPRX_LAST, ICMPRX_LAST, NTPRX_LAST,
+		.M_AXIN_LAST({ ARPRX_LAST, ICMPRX_LAST,
 				CPURX_LAST, DBGRX_LAST }),
-		.M_AXIN_ABORT({ ARPRX_ABORT, ICMPRX_ABORT, NTPRX_ABORT,
+		.M_AXIN_ABORT({ ARPRX_ABORT, ICMPRX_ABORT,
 				CPURX_ABORT, DBGRX_ABORT }),
 		.i_match({ arp_match,
 				(icmp_match && !ip_no_match),
-				(ntp_match  && !ip_no_match),
 				(cpu_match  && !ip_no_match),
 				(dbg_match  && !ip_no_match) }),
 		.i_no_match({ arp_no_match,
 				(icmp_no_match || ip_no_match),
-				(ntp_no_match  || ip_no_match),
 				(cpu_no_match  || ip_no_match),
 				(dbg_no_match  || ip_no_match) })
 		// }}}
@@ -389,7 +369,7 @@ module	meganet #(
 		RX_VALID, 3'h0,
 		ARPRX_VALID,  ARPRX_READY,  ARPRX_LAST,  ARPRX_ABORT,
 		ICMPRX_VALID, ICMPRX_READY, ICMPRX_LAST, ICMPRX_ABORT,
-		NTPRX_VALID,  NTPRX_READY,  NTPRX_LAST,  NTPRX_ABORT,
+		4'h0, // NTPRX_VALID,  NTPRX_READY,  NTPRX_LAST,  NTPRX_ABORT,
 		CPURX_VALID,  CPURX_READY,  CPURX_LAST,  CPURX_ABORT,
 		DBGRX_VALID,  DBGRX_READY,  DBGRX_LAST,  DBGRX_ABORT,
 		4'h0,
@@ -541,14 +521,6 @@ module	meganet #(
 		.o_debug(rx_icmp_debug)
 		// }}}
 	);
-
-	initial	o_net_adc_enable = 1'b0;
-	always @(posedge S_AXI_ACLK)
-	if (!S_AXI_ARESETN)
-		o_net_adc_enable <= 1'b0;
-	else
-		o_net_adc_enable <= high_speed_net && (o_ping_ipaddr != 0)
-					&& (o_ping_hwmac != 0);
 
 	/*
 	assign	rx_icmp_debug = {
@@ -793,7 +765,7 @@ module	meganet #(
 
 	assign	cpu_no_match = ip_no_match;
 
-	assign	cpu_match=({ arp_match, icmp_match, ntp_match, dbg_match } == 0)
+	assign	cpu_match=({ arp_match, icmp_match, dbg_match } == 0)
 				&& RX_LAST;
 
 	// If something else has matched, we'll get an abort signal, and thus
@@ -924,149 +896,11 @@ module	meganet #(
 	// }}}
 	////////////////////////////////////////////////////////////////////////
 	//
-	// Monitor (incoming) DATA channel
-	// {{{
-
-	generate if (OPT_MONITOR)
-	begin : GEN_MONITOR
-		wire		mon_drop_detected, mon_datapkt;
-		reg	[31:0]	r_mon_drops, r_mon_data_packets;
-
-		mondata
-		u_monitor(
-			.i_clk(i_net_tx_clk), .i_reset(tx_reset),
-			.S_VALID(MON_VALID),
-			.S_READY(MON_READY),
-			.S_DATA( MON_DATA),
-			.S_LAST( MON_LAST),
-			.S_ABORT(MON_ABORT),
-			.o_drop(mon_drop_detected),
-			.o_drop_count(mon_drop_count),
-			.o_data_packet(mon_datapkt)
-		);
-
-		always @(posedge i_net_tx_clk)
-		if (tx_reset)
-			r_mon_drops <= 0;
-		else if (mon_drop_detected)
-			r_mon_drops <= mon_drops + 1;
-
-		always @(posedge i_net_tx_clk)
-		if (tx_reset)
-			r_mon_data_packets <= 0;
-		else if (mon_datapkt)
-			r_mon_data_packets <= mon_data_packets + 1;
-
-		assign	mon_drops = r_mon_drops;
-		assign	mon_data_packets = r_mon_data_packets;
-	end else begin : NO_MONITOR
-		assign	mon_drops = 32'h0;
-		assign	mon_data_packets = 32'h0;
-	end endgenerate
-
-	// }}}
-	////////////////////////////////////////////////////////////////////////
-	//
 	// NTP handling (none for now)
 	// {{{
 	////////////////////////////////////////////////////////////////////////
 	//
 	//
-
-	generate if (OPT_NETTIME)
-	begin : GEN_NETTIME
-		wire		NTP_VALID, NTP_READY;
-		wire	[31:0]	NTP_DATA;
-
-		wire		NTPCK_VALID, NTPCK_READY,
-				NTPCK_EMPTY, NTPCK_FULL;
-		wire	[31:0]	NTPCK_DATA;
-
-		nettime #(
-			// {{{
-			// .TX_TIME_OFFSET
-			.UDP_PORT(NTP_PORT)
-			// }}}
-		) u_nettime (
-			// {{{
-			.S_AXI_ACLK(i_net_rx_clk), .S_AXI_ARESETN(!rx_reset),
-			//
-			.S_AXIN_VALID(NTPRX_VALID), .S_AXIN_READY(NTPRX_READY),
-			.S_AXIN_DATA( NTPRX_DATA),  .S_AXIN_LAST(NTPRX_LAST),
-			.S_AXIN_ABORT(NTPRX_ABORT || ip_no_match),
-			//
-			.o_match(ntp_match), .o_no_match(ntp_no_match),
-			//
-			.o_set_time(o_set_time),
-			.o_adjust_time(o_adjust_time),
-			.o_timestamp(o_new_time),
-			.i_timestamp(i_timestamp),
-			//
-			.M_AXIN_VALID(NTP_VALID), .M_AXIN_READY(NTP_READY),
-			.M_AXIN_DATA( NTP_DATA)
-			// }}}
-		);
-
-		// Cross clock domains
-		// {{{
-		afifo #(
-			.LGFIFO(3), .WIDTH(32)
-		) ntp_afifo (
-			.i_wclk(i_clk), .i_wr_reset_n(!i_reset),
-			.i_wr(NTP_VALID), .i_wr_data(NTP_DATA),
-				.o_wr_full(NTPCK_FULL),
-			//
-			.i_rclk(i_net_tx_clk), .i_rd_reset_n(!tx_reset),
-			.i_rd(NTPCK_READY), .o_rd_data(NTPCK_DATA),
-				.o_rd_empty(NTPCK_EMPTY)
-		);
-		// }}}
-
-		assign	NTPCK_VALID  = !NTPCK_EMPTY;
-		assign	NTP_READY = !NTPCK_FULL;
-
-		// Now unwrap the packet for transmission
-		// {{{
-		stream2pkt #(
-			.BW(8), .S_AXIS_DATA_WIDTH(32)
-		) u_ntpstream (
-			.S_AXI_ACLK(i_net_tx_clk), .S_AXI_ARESETN(!tx_reset),
-			//
-			.S_AXIS_TVALID(NTPCK_VALID),
-			.S_AXIS_TREADY(NTPCK_READY),
-			.S_AXIS_TDATA( NTPCK_DATA),
-			//
-			.M_AXIN_VALID(NTPTX_VALID),
-			.M_AXIN_READY(NTPTX_READY),
-			.M_AXIN_DATA( NTPTX_DATA),
-			.M_AXIN_LAST( NTPTX_LAST),
-			.M_AXIN_ABORT(NTPTX_ABORT)
-		);
-		// }}}
-
-		// }}}
-	end else begin : NO_NETTIME
-		// {{{
-		assign	o_set_time    = 1'b0;
-		assign	o_adjust_time = 1'b0;
-		assign	o_new_time    = 64'h0;
-
-		assign	ntp_no_match = 1'b1;
-		assign	ntp_match    = 1'b0;
-		assign	NTPRX_READY  = 1'b1;
-
-		assign	NTPTX_VALID = 1'b0;
-
-		assign	NTPTX_LAST  = 1'b0;
-		assign	NTPTX_ABORT = 1'b0;
-		assign	NTPTX_DATA  = 8'h0;
-
-		// Verilator lint_off UNUSED
-		wire	unused_time;
-		assign	unused_time = &{ 1'b0, i_timestamp };
-		// Verilator lint_on  UNUSED
-		// }}}
-	end endgenerate
 
 	// }}}
 	////////////////////////////////////////////////////////////////////////
@@ -1081,8 +915,7 @@ module	meganet #(
 		// {{{
 		.RXSCOPE(!OPT_DEBUG),
 		.DEF_HWMAC(DEF_HWMAC),
-		.DEF_IPADDR(DEF_IPADDR),
-		.OPT_MONITOR(OPT_MONITOR)
+		.DEF_IPADDR(DEF_IPADDR)
 		// }}}
 	) net_core (
 		// {{{
@@ -1102,11 +935,6 @@ module	meganet #(
 		.S_AXI_TVALID(TX_VALID), .S_AXI_TREADY(TX_READY),
 			.S_AXI_TDATA(TX_DATA),
 		//
-		// CLOCK: i_net_tx_clk
-		.MON_VALID(MON_VALID), .MON_READY(MON_READY),
-			.MON_DATA(MON_DATA), .MON_LAST(MON_LAST),
-			.MON_ABORT(MON_ABORT),
-		//
 		// CLOCK: i_net_rx_clk
 		.M_AXIN_VALID(RX_VALID), .M_AXIN_READY(RX_READY),
 			.M_AXIN_DATA(RX_DATA),
@@ -1120,7 +948,6 @@ module	meganet #(
 		//
 		.o_hw_mac(o_hwmac),
 		.o_ipaddr(o_ipaddr),
-		.i_addr_switch(i_addr_switch),
 		//
 		.o_debug_clk(core_debug_clk), .o_debug(core_debug)
 		// }}}
@@ -1294,8 +1121,7 @@ module	meganet #(
 			tx_in_progress[5] <= ARPS_LAST;
 		if (ICMPS_VALID && ICMPS_READY)
 			tx_in_progress[4] <= ICMPS_LAST;
-		if (NTPTX_VALID && NTPTX_READY)
-			tx_in_progress[3] <= NTPTX_LAST;
+		// tx_in_progress[3] <= 1'b0;
 		if (CPUS_VALID && CPUS_READY)
 			tx_in_progress[2] <= CPUS_LAST;
 		if (DBGS_VALID && DBGS_READY)
@@ -1314,13 +1140,6 @@ module	meganet #(
 		begin
 			tx_in_progress[4] <= 1'b0;
 			// tx_aborts[31:28] <= 4'h4;
-			tx_aborts[27:0] <= tx_aborts[27:0] + 1;
-		end
-
-		if (NTPTX_ABORT && (!NTPTX_VALID || NTPTX_READY) && tx_in_progress[3])
-		begin
-			tx_in_progress[3] <= 1'b0;
-			// tx_aborts[31:28] <= 4'h3;
 			tx_aborts[27:0] <= tx_aborts[27:0] + 1;
 		end
 
@@ -1347,21 +1166,17 @@ module	meganet #(
 	end
 
 	tfrvalue #(
-		.W(9*32), .DEFAULT({(9*32){1'b0}})
+		.W(6*32), .DEFAULT({(6*32){1'b0}})
 	) tfr_txcounters (
 		// {{{
 		.i_a_clk(i_net_tx_clk), .i_a_reset_n(!tx_reset),
 		.i_a_valid(1'b1), .o_a_ready(ign_tfrtx_ready),
 			.i_a_data({ pkts_tx, arp_packets_tx, icmp_packets_tx,
-				mon_drops, mon_drop_count,
-				mon_data_packets,
 				data_packets_tx, tx_aborts, dbg_packets_tx }),
 		.i_b_clk(i_clk), .i_b_reset_n(!i_reset),
 		.o_b_valid(ign_tfrtx_valid), .i_b_ready(1'b1),
 			.o_b_data({ wb_pkts_tx, wb_arp_packets_tx,
 				wb_icmp_packets_tx,
-				wb_mon_drops, wb_mon_drop_count,
-				wb_mon_data_packets,
 				wb_data_packets_tx,
 				wb_tx_aborts, wb_dbg_packets_tx })
 		// }}}
@@ -1393,9 +1208,6 @@ module	meganet #(
 	5'h10:  pipe_data <= wb_dbg_packets_rcvd;
 	5'h11:  pipe_data <= wb_dbg_packets_tx;
 	//
-	5'h12:  pipe_data <= wb_mon_drops;
-	5'h13:  pipe_data <= wb_mon_drop_count;
-	5'h14:  pipe_data <= wb_mon_data_packets;
 	default: pipe_data <= 0;
 	endcase
 
@@ -1527,7 +1339,8 @@ module	meganet #(
 			ign_tfrrxdbg_valid, ign_tfrrxdbg_ready,
 			ign_tfrtxdbg_valid, ign_tfrtxdbg_ready,
 			n_rx_debugsel, n_tx_debugsel,
-			rx_debug, tx_debug };
+			high_speed_net,
+			tx_in_progress[3], rx_debug, tx_debug };
 	// Verilator lint_on  UNUSED
 	// }}}
 endmodule

@@ -40,6 +40,7 @@
 // }}}
 module	exidle #(
 		// {{{
+		parameter [0:0]	OPT_IDLE = 1'b1,	// Generate idle msgs
 `ifdef	VERILATOR
 		parameter	LGIDLE = 12
 `else
@@ -51,8 +52,11 @@ module	exidle #(
 		// }}}
 	) (
 		// {{{
-		input	wire		i_clk, i_reset, i_stb,
+		input	wire		i_clk, i_reset,
+		//
+		input	wire		i_stb,
 		input	wire	[34:0]	i_word,
+		input	wire		i_last,
 		output	wire		o_busy,
 		//
 		input	wire	[1:0]	i_aux,
@@ -62,19 +66,19 @@ module	exidle #(
 		//
 		output	reg		o_stb,
 		output	reg	[34:0]	o_word,
+		output	reg		o_last,
+		output	wire	[6:0]	o_null,
 		input	wire		i_busy
 		// }}}
 	);
 
 	// Local registers
 	// {{{
-	reg		last_err;
+	reg		last_err, r_last;
 	reg		r_aux_flag;
 	reg	[1:0]	last_aux;
 	reg		r_int, last_int;
 	reg		cts_flag;
-	reg		idle_timeout;
-	reg	[LGIDLE-1:0]	idle_counter;
 	reg		fifo_err_flag;
 	wire		trigger;
 	reg		r_busy, outgoing_special;
@@ -88,6 +92,7 @@ module	exidle #(
 	// 3. Else, on either an interrupt or a change in CTS,
 	//	send an idle update
 	// 4. Else on a timeout or change in i_aux, send an idle update
+	//	Timeouts only change if/when OPT_IDLE
 	//
 	// If an idle response is queued, and a higher priority comes in,
 	// the higher priority response is sent
@@ -185,20 +190,32 @@ module	exidle #(
 		cts_flag <= 1'b0;
 	// }}}
 
-	// Idle timeout
+	// Idle timeout and trigger
 	// {{{
-	initial	{ idle_timeout, idle_counter } = 0;
-	always @(posedge i_clk)
-	if (i_reset || o_stb)
-		{ idle_timeout, idle_counter } <= 0;
-	else if (!idle_timeout)
-		{ idle_timeout, idle_counter } <= idle_counter + 1;
+	generate if (OPT_IDLE)
+	begin : GEN_IDLE_TRIGGER
+		reg			idle_timeout;
+		reg	[LGIDLE-1:0]	idle_counter;
+
+		initial	{ idle_timeout, idle_counter } = 0;
+		always @(posedge i_clk)
+		if (i_reset || o_stb)
+			{ idle_timeout, idle_counter } <= 0;
+		else if (!idle_timeout)
+			{ idle_timeout, idle_counter } <= idle_counter + 1;
+
+		assign	trigger = idle_timeout||r_aux_flag||fifo_err_flag;
+	end else begin : NO_IDLE_TRIGGER
+		// We'll append to any message special AUX or ERR flags
+		// as necessary
+		assign	trigger = r_aux_flag||fifo_err_flag;
+	end endgenerate
 	// }}}
 
-	assign	trigger = idle_timeout||r_aux_flag||fifo_err_flag;
-
-	// o_stb, o_word, r_busy
+	// o_stb, o_word, r_busy, o_null
 	// {{{
+	assign	o_null = { 2'b11, i_aux, 1'b1, !cts_flag, r_int };
+	
 	initial	{ o_stb, o_word, r_busy } = 0;
 	always @(posedge i_clk)
 	if (i_reset)
@@ -206,34 +223,44 @@ module	exidle #(
 		// {{{
 		o_stb <= 1'b0;
 		o_word <= 0;
+		o_last <= 1'b0;
 		r_busy <= 1'b0;
+		r_last <= 1'b0;
 		// }}}
 	end else if (i_stb && !o_busy)
 	begin // Incoming data has the right of way
 		// {{{
 		o_stb  <= 1'b1;
 		o_word <= i_word;
+		o_last <= i_last && !trigger && !OPT_IDLE;
+		r_last <= i_last &&  trigger && !OPT_IDLE;
 		r_busy <= 1'b1;
 		if (i_word[34:33] == 2'b11)
 			o_word[32:31] <= i_aux;
 		// }}}
-	end else if ((!o_stb || !i_busy) && trigger)
+	end else if ((OPT_IDLE && (!o_stb || !i_busy) && trigger)
+		|| (!OPT_IDLE && r_last && !i_busy && trigger))
 	begin // If there's  no data, we can send an idle cycle
 		// {{{
 		o_stb <= 1'b1;
 		o_word <= 0;
+		o_last <= 1'b1;
+		r_last <= !r_aux_flag || !fifo_err_flag;
 
 		// IDLE word
-		o_word[34:28] <= { 2'b11, i_aux, 1'b1, !cts_flag, r_int };
-		if (fifo_err_flag)
-			o_word[34:28] <= { 2'b11, i_aux, 3'b011 };
+		o_word[34:28] <= o_null;
+		if (fifo_err_flag && (!o_stb || o_word[34:31] != o_null[6:3]
+						|| o_word[30:28] != 3'b011))
+			// Send a FIFO error flag, but *ONLY* if it's not
+			// already being sent.
+			o_word[30:28] <= 3'b011;
 		r_busy <= 1'b0;
 		// }}}
 	end else if (!i_busy)
 		o_stb <= 0;
 	// }}}
 
-	assign	o_busy = r_busy && i_busy;
+	assign	o_busy   = r_busy && i_busy;
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
