@@ -1,6 +1,6 @@
 ################################################################################
 ##
-## Filename:	rtl/make.inc
+## Filename:	./rtl.make.inc
 ## {{{
 ## Project:	KIMOS, a Mercury KX2 demonstration project
 ##

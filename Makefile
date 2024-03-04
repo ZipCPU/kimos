@@ -254,8 +254,8 @@ sw-boot: check-zip-gcc sw-zlib
 ## Load the device
 ## {{{
 ## BITFILE := blinky.bit
-BITFILE := wetend.bit
-$(BITFILE): ../../xilinxwet/wetend.runs/impl_1/toplevel.bit
+BITFILE := kimos.bit
+$(BITFILE): ../xilinx/kimos.runs/impl_1/toplevel.bit
 	@cp $< $@
 
 .PHONY: load

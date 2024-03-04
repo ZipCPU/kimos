@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename:	sw/host/regdefs.cpp
+// Filename:	./regdefs.cpp
 // {{{
 // Project:	KIMOS, a Mercury KX2 demonstration project
 //

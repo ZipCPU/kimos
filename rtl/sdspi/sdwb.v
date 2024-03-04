@@ -114,7 +114,7 @@ module	sdwb #(
 		input	wire	[32/8-1:0]	i_wb_sel,
 		output	wire			o_wb_stall,
 		output	reg			o_wb_ack,
-		output	reg	[32-1:0]	o_wb_data,
+		output	wire	[32-1:0]	o_wb_data,
 		// }}}
 		// Configuration options
 		// {{{

@@ -1,7 +1,7 @@
 `timescale	1ps / 1ps
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename:	rtl/main.v
+// Filename:	./main.v
 // {{{
 // Project:	KIMOS, a Mercury KX2 demonstration project
 //
@@ -806,7 +806,6 @@ module	main(i_clk, i_reset,
 		.SLAVE_ADDR({
 			// Address width    = 25
 			// Address LSBs     = 6
-			// Slave name width = 10
 			{ 25'h1000000 }, //      sdram: 0x40000000
 			{ 25'h0280000 }, //      bkram: 0x0a000000
 			{ 25'h0200000 }, //   crossbus: 0x08000000
@@ -815,7 +814,6 @@ module	main(i_clk, i_reset,
 		.SLAVE_MASK({
 			// Address width    = 25
 			// Address LSBs     = 6
-			// Slave name width = 10
 			{ 25'h1000000 }, //      sdram
 			{ 25'h1f80000 }, //      bkram
 			{ 25'h1f80000 }, //   crossbus
@@ -961,14 +959,12 @@ module	main(i_clk, i_reset,
 		.SLAVE_ADDR({
 			// Address width    = 30
 			// Address LSBs     = 2
-			// Slave name width = 11
 			{ 30'h20000000 }, //         zip: 0x80000000
 			{ 30'h00000000 }  // wbu_arbiter: 0x00000000
 		}),
 		.SLAVE_MASK({
 			// Address width    = 30
 			// Address LSBs     = 2
-			// Slave name width = 11
 			{ 30'h38000000 }, //         zip
 			{ 30'h20000000 }  // wbu_arbiter
 		}),
@@ -1154,7 +1150,6 @@ module	main(i_clk, i_reset,
 		.SLAVE_ADDR({
 			// Address width    = 9
 			// Address LSBs     = 2
-			// Slave name width = 8
 			{ 9'h1a0 }, //     mdio: 0x680
 			{ 9'h180 }, //     eth0: 0x600
 			{ 9'h160 }, //      cfg: 0x580
@@ -1165,7 +1160,6 @@ module	main(i_clk, i_reset,
 		.SLAVE_MASK({
 			// Address width    = 9
 			// Address LSBs     = 2
-			// Slave name width = 8
 			{ 9'h1e0 }, //     mdio
 			{ 9'h1e0 }, //     eth0
 			{ 9'h1e0 }, //      cfg
@@ -1313,14 +1307,12 @@ module	main(i_clk, i_reset,
 		.SLAVE_ADDR({
 			// Address width    = 25
 			// Address LSBs     = 2
-			// Slave name width = 5
 			{ 25'h1000000 }, // flash: 0x4000000
 			{ 25'h0800000 }  //  sdio: 0x2000000
 		}),
 		.SLAVE_MASK({
 			// Address width    = 25
 			// Address LSBs     = 2
-			// Slave name width = 5
 			{ 25'h1000000 }, // flash
 			{ 25'h1800000 }  //  sdio
 		}),

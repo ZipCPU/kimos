@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename:	rtl/iscachable.v
+// Filename:	./iscachable.v
 // {{{
 // Project:	KIMOS, a Mercury KX2 demonstration project
 //

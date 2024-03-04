@@ -444,10 +444,11 @@ set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *tfr_*/b_l
 
 # @$(DEVID)RX ->CLK
 #
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/net_core/n_rx_err*}] -to [ get_cells -hier -filter {NAME =~ *net_core/rx_err_pipe*}] 8.0
 set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/net_core/tfrrxspd/a_data*}] -to [ get_cells -hier -filter {NAME =~ *net_core/tfrrxspd/o_b_data*}] 8.0
 set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/net_core/n_rx_reset*}]      -to [ get_cells -hier -filter {NAME =~ *net_core/tfrrxspd/b_last*}] 8.0
 set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/net_core/n_rx_reset*}]      -to [ get_cells -hier -filter {NAME =~ *net_core/tfrrxspd/b_pipe*}] 8.0
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/net_core/n_rx_reset*}]      -to [ get_cells -hier -filter NAME =~ *net_core/tfrrxspd/b_req*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/net_core/n_rx_reset*}]      -to [ get_cells -hier -filter {NAME =~ *net_core/tfrrxspd/b_req*}] 8.0
 ## set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/net_core/txclk_check*}]  -to [ get_cells -hier -filter {NAME =~ *net_core/net_reset_timer*}] 8.0
 set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/net_core/n_rx_crcerr*}]     -to [ get_cells -hier -filter {NAME =~ *net_core/rx_crc_pipe*}] 8.0
 set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/net_core/tfrrxspd/a*}]      -to [ get_cells -hier -filter {NAME =~ *net_core/tfrrxspd/b*}] 8.0
@@ -457,10 +458,10 @@ set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX
 set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/tfr_*/a_req*}]              -to [ get_cells -hier -filter {NAME =~ *u_@$(PREFIX)/tfr*/b_pipe*}] 8.0
 #
 #
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/cpu_rx/u_afifo/mem*}]     -to [ get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/cpu_rx/u_afifo/o_rd_data*}] 8.0
+## set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/cpu_rx/u_afifo/mem*}]     -to [ get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/cpu_rx/u_afifo/o_rd_data*}] 8.0
 # }}}
 @XDC.INSERT=
 @$(PREXDC)
 # Eth0 only constraints
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/dbgtx_afifo/mem*}]     -to [ get_cells -hier -filter {NAME =~ *u_@$(PREFIX)/dbgtx_afifo/o_rd_data*}] 8.0
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/dbg_afifo/mem*}]       -to [ get_cells -hier -filter {NAME =~ *u_@$(PREFIX)/dbg_afifo/o_rd_data*}] 8.0
+## set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/dbgtx_afifo/mem*}]     -to [ get_cells -hier -filter {NAME =~ *u_@$(PREFIX)/dbgtx_afifo/o_rd_data*}] 8.0
+## set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/dbg_afifo/mem*}]       -to [ get_cells -hier -filter {NAME =~ *u_@$(PREFIX)/dbg_afifo/o_rd_data*}] 8.0
