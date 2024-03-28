@@ -266,7 +266,7 @@ int	main(int argc, char **argv) {
 	int	skt = setup_listener(FPGAPORT),
 		console = setup_listener(FPGAPORT+1);
 	int	tty;
-	bool	done = false;
+	bool	done = false, syncd = false;
 	int	last_idle, idle_count = 0;
 
 	// Disable signals
@@ -437,7 +437,7 @@ int	main(int argc, char **argv) {
 		//
 		//
 
-		// Start by flusing everything on the TTY channel
+		// Start by flushing everything on the TTY channel
 		// {{{
 		if (p[0].revents & POLLIN) {
 			char	rawbuf[256];
@@ -456,7 +456,11 @@ int	main(int argc, char **argv) {
 						lbcmd.m_buf[ncmd++] = rawbuf[i] & 0x07f;
 						if (0xe4 == (rawbuf[i] & 0xe4)){
 							last_idle = rawbuf[i];
-							if (idle_count < 256)
+							if (idle_count == 5) {
+								if (!syncd)
+									printf("SYNCD!\n");
+								syncd = true;
+							} if (idle_count < 256)
 								idle_count++;
 						} else {
 							idle_count = 0;
@@ -518,6 +522,8 @@ int	main(int argc, char **argv) {
 					// lbcmd.flush_out(stdout, "< ");
 					// printf("Disconnect\n");
 					lbcmd.close();
+					if (idle_count < 5)
+						syncd = false;
 				} else if (nr > 0) {
 					// printf("%d read from SKT\n", nr);
 					lbcmd.write(tty, nr, 0x80);
