@@ -51,13 +51,18 @@ module	migsdram #(
 		// DDRAWID: The number of physical address wires to the DDR3
 		// memory.
 		parameter	DDRAWID = 14,
-		// All DDR3 memories have 8 timeslots.  This, if the DDR3 memory
-		// has 16 bits to it (as above), the entire transaction must
-		// take AXIWIDTH bits ...
+		// All DDR3 memories have 8 timeslots.  Thus, if the DDR3 memory
+		// has DDRWIDTH bits to it, the entire transaction must take
+		// AXIWIDTH = 8 times that many bits ...
 		localparam	AXIWIDTH= DDRWIDTH *8,
 		localparam	DW=WBDATAWIDTH,
 		localparam	AW=RAMABITS-$clog2(WBDATAWIDTH/8),
-		localparam	SELW= (WBDATAWIDTH/8)
+		localparam	SELW= (WBDATAWIDTH/8),
+		// ACTIVE_LOW_MIG_RESET is based upon how the MIG is configured.
+		// If it's configured to produce an active low reset, then we'll
+		// need to swap polarity here before we can use it to generate
+		// an active high reset output.
+		localparam [0:0]	ACTIVE_LOW_MIG_RESET = 1'b1
 		// }}}
 	) (
 		// {{{
@@ -292,7 +297,7 @@ module	migsdram #(
 	reg	r_sys_reset;
 	initial	r_sys_reset = 1'b1;
 	always @(posedge o_sys_clk)
-		r_sys_reset <= (w_sys_reset)
+		r_sys_reset <= (w_sys_reset ^ ACTIVE_LOW_MIG_RESET)
 				||(!init_calib_complete)
 				||(!mmcm_locked);
 

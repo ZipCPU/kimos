@@ -74,7 +74,7 @@
 @$ABITS=@$(LGMEMSZ)-@$(UNUSED)
 @LD.PERM=wx
 @$DDRWIDTH=64
-@$DDRAWID=14
+@$DDRAWID=15
 @TOP.PORTLIST=
 		// SDRAM I/O port wires
 		ddr3_reset_n, ddr3_cke, ddr3_ck_p, ddr3_ck_n,
@@ -82,6 +82,7 @@
 		ddr3_ras_n, ddr3_cas_n, ddr3_we_n,
 		ddr3_dqs_p, ddr3_dqs_n,
 		ddr3_addr, ddr3_ba,
+		o_ddr3_vsel,
 		ddr3_dq, ddr3_dm, ddr3_odt
 @TOP.IODECL=
 	// I/O declarations for the DDR3 SDRAM
@@ -93,6 +94,8 @@
 	output	wire		ddr3_ras_n, ddr3_cas_n, ddr3_we_n;
 	output	wire	[2:0]	ddr3_ba;
 	output	wire	[@$(DDRAWID)-1:0]	ddr3_addr;
+	// set o_ddr3_vsel = 1'bz for 1.5V SDRAM, = 1'b0 for 1.35V SDRAM
+	output	wire		o_ddr3_vsel;
 	output	wire	[0:0]			ddr3_odt;
 	output	wire	[@$(DDRWIDTH)/8-1:0]	ddr3_dm;
 	inout	wire	[@$(DDRWIDTH)/8-1:0]	ddr3_dqs_p, ddr3_dqs_n;
@@ -121,6 +124,9 @@
 @TOP.INSERT=
 	wire	[31:0]	@$(PREFIX)_debug;
 
+	// Force VSEL to 1'bz, to make the DDR3 SDRAM operate at 1.5V.
+	assign	o_ddr3_vsel = 1'bz;
+
 	migsdram #(
 		// {{{
 		.AXIDWIDTH(1), .WBDATAWIDTH(@$(BUS.WIDTH)),
@@ -134,7 +140,7 @@
 		.i_clk_200mhz(s_clk_200mhz),
 		.o_sys_clk(s_clk),
 		// .i_rst(!i_cpu_resetn),
-		.i_rst(upper_plls_stable[3:2] != 2'b11),
+		.i_rst(pll_reset),
 		.o_sys_reset(s_reset),
 		//
 		.i_wb_cyc(@$(PREFIX)_cyc), .i_wb_stb(@$(PREFIX)_stb),

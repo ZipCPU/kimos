@@ -74,6 +74,7 @@ module	toplevel(i_clk,
 		ddr3_ras_n, ddr3_cas_n, ddr3_we_n,
 		ddr3_dqs_p, ddr3_dqs_n,
 		ddr3_addr, ddr3_ba,
+		o_ddr3_vsel,
 		ddr3_dq, ddr3_dm, ddr3_odt,
 		// SDIO SD Card
 o_sdcard_clk,
@@ -177,7 +178,9 @@ i_sdcard_cd_n,
 	output	wire	[0:0]	ddr3_cs_n;
 	output	wire		ddr3_ras_n, ddr3_cas_n, ddr3_we_n;
 	output	wire	[2:0]	ddr3_ba;
-	output	wire	[14-1:0]	ddr3_addr;
+	output	wire	[15-1:0]	ddr3_addr;
+	// set o_ddr3_vsel = 1'bz for 1.5V SDRAM, = 1'b0 for 1.35V SDRAM
+	output	wire		o_ddr3_vsel;
 	output	wire	[0:0]			ddr3_odt;
 	output	wire	[64/8-1:0]	ddr3_dm;
 	inout	wire	[64/8-1:0]	ddr3_dqs_p, ddr3_dqs_n;
@@ -216,6 +219,7 @@ i_sdcard_cd_n,
 	wire		w_qspi_sck, w_qspi_cs_n;
 	wire	[1:0]	qspi_bmod;
 	wire	[3:0]	qspi_dat;
+	// wire	s_clk, s_reset;
 	// Wires necessary to run the SDRAM
 	// {{{
 	wire	sdram_cyc, sdram_stb, sdram_we,
@@ -231,20 +235,20 @@ i_sdcard_cd_n,
 	// Clock/reset definitions
 	// {{{
 	wire	s_clk_200mhz,  s_clk_200mhz_unbuffered,
-		sysclk_locked, sysclk_feedback,
+		sysclk_locked, sysclk_feedback, sysclk_feedback_buffered,
 		s_clk_125mhz,  s_clk_125_unbuffered,
 		// s_clk_150mhz	-- needed for SATA
 		s_clk_250mhz,  s_clk_250_unbuffered,
 		s_clksync,     s_clksync_unbuffered,
 		s_clk_400mhz,  s_clk_400mhz_unbuffered,	// Pixclk * 10
 		s_clk_40mhz_unbuffered,	// 40MHz
-		netclk_locked, netclk_feedback;
+		netclk_locked, netclk_feedback, netclk_feedback_buffered;
 	wire	i_clk_buffered;
 	wire	clocks_locked;
 	reg	[3:0]	sysclk_stable, netclk_stable,
 			upper_plls_stable;
 	reg	[4:0]	pre_reset_counter;
-	reg		pre_reset;
+	reg		pre_reset, pll_reset;
 	// }}}
 	// SDIO SD Card definitions
 	// {{{
@@ -361,8 +365,13 @@ i_sdcard_cd_n,
 	//
 
 
+	reg	[27:0]	blinky_counter;
+	initial	blinky_counter = 0;
+	always @(posedge i_clk_buffered)
+		blinky_counter <= blinky_counter + 1;
+
 	assign	o_led = { w_led[8-1:2], (w_led[1] && clocks_locked),
-			w_led[0] && !s_reset };
+			w_led[0] && !s_reset } ^ {(8){blinky_counter[27]}};
 
 	assign	w_btn = { !i_btn };
 
@@ -464,13 +473,21 @@ i_sdcard_cd_n,
 	);
 
 
+`ifndef	SDRAM_ACCESS
+	// assign	s_clk = i_clk_buffered;
+	// assign	s_reset = pre_reset;
+`endif
+
 	wire	[31:0]	sdram_debug;
+
+	// Force VSEL to 1'bz, to make the DDR3 SDRAM operate at 1.5V.
+	assign	o_ddr3_vsel = 1'bz;
 
 	migsdram #(
 		// {{{
 		.AXIDWIDTH(1), .WBDATAWIDTH(512),
 		.DDRWIDTH(64),
-		.DDRAWID(14),
+		.DDRAWID(15),
 		.RAMABITS(30)
 		// }}}
 	) sdrami(
@@ -479,7 +496,7 @@ i_sdcard_cd_n,
 		.i_clk_200mhz(s_clk_200mhz),
 		.o_sys_clk(s_clk),
 		// .i_rst(!i_cpu_resetn),
-		.i_rst(upper_plls_stable[3:2] != 2'b11),
+		.i_rst(pll_reset),
 		.o_sys_reset(s_reset),
 		//
 		.i_wb_cyc(sdram_cyc), .i_wb_stb(sdram_stb),
@@ -503,6 +520,11 @@ i_sdcard_cd_n,
 
 	// Buffer the incoming clock
 	BUFG masterclkclkbufi(.I(i_clk), .O(i_clk_buffered));
+
+	// pll_reset
+	initial	pll_reset = 1'b1;
+	always @(posedge i_clk_buffered)
+		pll_reset <= 1'b0;
 
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -532,9 +554,9 @@ i_sdcard_cd_n,
 		.CLKOUT1(s_clk_400mhz_unbuffered),
 		.CLKOUT2(s_clksync_unbuffered),
 		.CLKOUT3(s_clk_40mhz_unbuffered),
-		.PWRDWN(1'b0), .RST(1'b0),
+		.PWRDWN(1'b0), .RST(pll_reset),
 		.CLKFBOUT(sysclk_feedback),
-		.CLKFBIN(sysclk_feedback),
+		.CLKFBIN(sysclk_feedback_buffered),
 		.LOCKED(sysclk_locked)
 		// }}}
 	);
@@ -542,6 +564,7 @@ i_sdcard_cd_n,
 	BUFG	sysbuf(     .I(s_clk_200mhz_unbuffered),.O(s_clk_200mhz));
 	BUFG	clksync_buf(.I(s_clksync_unbuffered),   .O(s_clksync));
 	BUFG	clk4x_buf(  .I(s_clk_400mhz_unbuffered),.O(s_clk_400mhz));
+	BUFG	sys_feedback(.I(sysclk_feedback),.O(sysclk_feedback_buffered));
 
 	// sysclk_stable
 	// {{{
@@ -581,15 +604,16 @@ i_sdcard_cd_n,
 		.CLKIN1(i_clk_buffered),
 		.CLKOUT0(s_clk_125_unbuffered),
 		.CLKOUT1(s_clk_250_unbuffered),
-		.PWRDWN(1'b0), .RST(1'b0),
+		.PWRDWN(1'b0), .RST(pll_reset),
 		.CLKFBOUT(netclk_feedback),
-		.CLKFBIN(netclk_feedback),
+		.CLKFBIN(netclk_feedback_buffered),
 		.LOCKED(netclk_locked)
 		// }}}
 	);
 
 	BUFG	netbuf(.I(s_clk_125_unbuffered), .O(s_clk_125mhz));
 	BUFG	netbf5(.I(s_clk_250_unbuffered), .O(s_clk_250mhz));
+	BUFG	netfb(.I(netclk_feedback), .O(netclk_feedback_buffered));
 
 	assign	clocks_locked = (netclk_locked && sysclk_locked);
 

@@ -52,20 +52,20 @@
 	// Clock/reset definitions
 	// {{{
 	wire	s_clk_200mhz,  s_clk_200mhz_unbuffered,
-		sysclk_locked, sysclk_feedback,
+		sysclk_locked, sysclk_feedback, sysclk_feedback_buffered,
 		s_clk_125mhz,  s_clk_125_unbuffered,
 		// s_clk_150mhz	-- needed for SATA
 		s_clk_250mhz,  s_clk_250_unbuffered,
 		s_clksync,     s_clksync_unbuffered,
 		s_clk_400mhz,  s_clk_400mhz_unbuffered,	// Pixclk * 10
 		s_clk_40mhz_unbuffered,	// 40MHz
-		netclk_locked, netclk_feedback;
+		netclk_locked, netclk_feedback, netclk_feedback_buffered;
 	wire	i_clk_buffered;
 	wire	clocks_locked;
 	reg	[3:0]	sysclk_stable, netclk_stable,
 			upper_plls_stable;
 	reg	[4:0]	pre_reset_counter;
-	reg		pre_reset;
+	reg		pre_reset, pll_reset;
 	// }}}
 @TOP.PORTLIST=
 @TOP.IODECL=
@@ -75,6 +75,11 @@
 @TOP.INSERT=
 	// Buffer the incoming clock
 	BUFG @$(PREFIX)clkbufi(.I(i_clk), .O(i_clk_buffered));
+
+	// pll_reset
+	initial	pll_reset = 1'b1;
+	always @(posedge i_clk_buffered)
+		pll_reset <= 1'b0;
 
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -104,9 +109,9 @@
 		.CLKOUT1(s_clk_400mhz_unbuffered),
 		.CLKOUT2(s_clksync_unbuffered),
 		.CLKOUT3(s_clk_40mhz_unbuffered),
-		.PWRDWN(1'b0), .RST(1'b0),
+		.PWRDWN(1'b0), .RST(pll_reset),
 		.CLKFBOUT(sysclk_feedback),
-		.CLKFBIN(sysclk_feedback),
+		.CLKFBIN(sysclk_feedback_buffered),
 		.LOCKED(sysclk_locked)
 		// }}}
 	);
@@ -114,6 +119,7 @@
 	BUFG	sysbuf(     .I(s_clk_200mhz_unbuffered),.O(s_clk_200mhz));
 	BUFG	clksync_buf(.I(s_clksync_unbuffered),   .O(s_clksync));
 	BUFG	clk4x_buf(  .I(s_clk_400mhz_unbuffered),.O(s_clk_400mhz));
+	BUFG	sys_feedback(.I(sysclk_feedback),.O(sysclk_feedback_buffered));
 
 	// sysclk_stable
 	// {{{
@@ -153,15 +159,16 @@
 		.CLKIN1(i_clk_buffered),
 		.CLKOUT0(s_clk_125_unbuffered),
 		.CLKOUT1(s_clk_250_unbuffered),
-		.PWRDWN(1'b0), .RST(1'b0),
+		.PWRDWN(1'b0), .RST(pll_reset),
 		.CLKFBOUT(netclk_feedback),
-		.CLKFBIN(netclk_feedback),
+		.CLKFBIN(netclk_feedback_buffered),
 		.LOCKED(netclk_locked)
 		// }}}
 	);
 
 	BUFG	netbuf(.I(s_clk_125_unbuffered), .O(s_clk_125mhz));
 	BUFG	netbf5(.I(s_clk_250_unbuffered), .O(s_clk_250mhz));
+	BUFG	netfb(.I(netclk_feedback), .O(netclk_feedback_buffered));
 
 	assign	clocks_locked = (netclk_locked && sysclk_locked);
 

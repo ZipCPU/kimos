@@ -40,8 +40,6 @@
 ################################################################################
 ##
 ## }}}
-UPSZ := wbupsz.v
-
 ICAP := wbicapetwo.v
 
 WBUBUSD := exbus
@@ -52,6 +50,8 @@ ENETMDIOD := net
 ENETMDIO  := $(addprefix $(ENETMDIOD)/,enetctrl.v)
 CONSOLED := wbuart
 CONSOLE  := $(addprefix $(CONSOLED)/,txuartlite.v rxuartlite.v ufifo.v)
+UPSZ := wbupsz.v
+
 BKRAM := memdev.v
 
 FLASH := qflexpress.v
@@ -66,5 +66,5 @@ BUSPICD := cpu
 BUSPIC  := $(addprefix $(BUSPICD)/,icontrol.v)
 ZIPCPUD := cpu
 ZIPCPU  := $(addprefix $(ZIPCPUD)/,zipsystem.v zipcore.v zipwb.v cpuops.v pfcache.v pipemem.v dblfetch.v pffifo.v pfcache.v idecode.v wbpriarbiter.v zipsystem.v zipcounter.v zipjiffies.v ziptimer.v icontrol.v wbwatchdog.v busdelay.v zipdma_ctrl.v zipdma_fsm.v zipdma_mm2s.v zipdma_rxgears.v zipdma_s2mm.v zipdma_txgears.v zipdma.v)
-VFLIST := main.v  $(UPSZ) $(ICAP) $(WBUBUS) $(ENET) $(ENETMDIO) $(CONSOLE) $(BKRAM) $(FLASH) $(SDIO) $(PROTO) $(PROTO2) $(BUSPIC) $(ZIPCPU)
+VFLIST := main.v  $(ICAP) $(WBUBUS) $(ENET) $(ENETMDIO) $(CONSOLE) $(UPSZ) $(BKRAM) $(FLASH) $(SDIO) $(PROTO) $(PROTO2) $(BUSPIC) $(ZIPCPU)
 AUTOVDIRS :=  -y exbus -y net -y wbuart -y sdspi -y proto -y cpu

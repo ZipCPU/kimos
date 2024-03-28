@@ -352,13 +352,13 @@ set_property -dict {PACKAGE_PIN AD23  IOSTANDARD LVCMOS18    } [get_ports {i_btn
 ## Controls wires
 ## {{{
 # set_property -dict {PACKAGE_PIN AB7   IOSTANDARD SSTL15    } [get_ports {o_ddr3_reset_n}];
-# set_property SLEW SLOW [get_ports o_ddr3_vsel]
+set_property SLEW SLOW [get_ports o_ddr3_vsel]
 
 # set_property -dict {PACKAGE_PIN AC12  IOSTANDARD DIFF_SSTL15} [get_ports {o_ddr3_clk_n}];
 # set_property -dict {PACKAGE_PIN AB12  IOSTANDARD DIFF_SSTL15} [get_ports {o_ddr3_clk_p}];
 # set_property -dict {PACKAGE_PIN AA13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[0]}];
 # set_property -dict {PACKAGE_PIN AF13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[1]}];
-# set_property -dict {PACKAGE_PIN AA3   IOSTANDARD SSTL15    } [get_ports {o_ddr3_vsel}];
+set_property -dict {PACKAGE_PIN AA3   IOSTANDARD SSTL15    } [get_ports {o_ddr3_vsel}];
 # set_property -dict {PACKAGE_PIN Y12   IOSTANDARD SSTL15    } [get_ports {o_ddr3_s_n[0]}];
 # set_property -dict {PACKAGE_PIN Y13   IOSTANDARD SSTL15    } [get_ports {o_ddr3_s_n[1]}];
 # set_property -dict {PACKAGE_PIN AE12  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cas_n}];
@@ -628,8 +628,6 @@ set_property -dict {PACKAGE_PIN D21   IOSTANDARD LVCMOS18  } [get_ports {i_sdcar
 ## No XDC.INSERT tag in XDC
 ## No XDC.INSERT tag in mem_bkram_only
 ## No XDC.INSERT tag in mem_flash_sdram
-## No XDC.INSERT tag in wbu_arbiter
-## No XDC.INSERT tag in zip_alt_uic
 ## No XDC.INSERT tag in spio
 ## No XDC.INSERT tag in rtccount
 ## No XDC.INSERT tag in pwrcount
@@ -713,13 +711,16 @@ set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *clkrxeth0ck
 ## From adcclk
 set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *clkadcclkctr/avgs*}]       -to [ get_cells -hier -filter {NAME =~*clkadcclkctr/q_v*}]   8.0
 ## No XDC.INSERT tag in zip_alt_mtc
-## No XDC.INSERT tag in ck_pps
 ## No XDC.INSERT tag in DEFAULT
 ## No XDC.INSERT tag in flash
+## No XDC.INSERT tag in ck_pps
+## No XDC.INSERT tag in wbwide
 ## No XDC.INSERT tag in wb32
 ## No XDC.INSERT tag in SIM
 ## No XDC.INSERT tag in uart
 ## No XDC.INSERT tag in altpic
+## No XDC.INSERT tag in wbu_arbiter
+## No XDC.INSERT tag in zip_alt_uic
 ## No XDC.INSERT tag in TMA
 ## No XDC.INSERT tag in bkram
 ## No XDC.INSERT tag in crossflash
@@ -738,8 +739,8 @@ set_property -dict { PULLTYPE PULLUP } [get_ports io_sdcard_cmd]
 ## No XDC.INSERT tag in zip_tmb
 ## No XDC.INSERT tag in crossbus
 ## No XDC.INSERT tag in zip_tmc
-## No XDC.INSERT tag in REGISTER
 ## No XDC.INSERT tag in mem_sdram_only
+## No XDC.INSERT tag in REGISTER
 ## No XDC.INSERT tag in zip_dmac
 ## No XDC.INSERT tag in zip_jiffies
 ## No XDC.INSERT tag in zip
