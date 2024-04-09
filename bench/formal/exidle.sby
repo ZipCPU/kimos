@@ -1,0 +1,21 @@
+[tasks]
+prf
+cvr
+
+[options]
+prf: mode prove
+cvr: mode cover
+
+[engines]
+smtbmc
+
+[script]
+read -formal exidle.v
+--pycode-begin--
+cmd = "hierarchy -top exidle"
+output(cmd)
+--pycode-end--
+prep -top exidle
+
+[files]
+../../rtl/exidle.v

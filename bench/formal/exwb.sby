@@ -1,0 +1,31 @@
+[tasks]
+prf
+prfp   prf opt_pipe
+prflp  prf          opt_lowpower
+prflpp prf opt_pipe opt_lowpower
+cvr
+cvrp   cvr opt_pipe
+
+[options]
+prf: mode prove
+cvr: mode cover
+prf: depth 4
+
+[engines]
+smtbmc
+
+[script]
+read -formal exwb.v
+read -formal fwb_master.v
+--pycode-begin--
+cmd = "hierarchy -top exwb"
+cmd += " -chparam OPT_PIPELINED %d" % (1 if "opt_pipe" in tags else 0)
+cmd += " -chparam OPT_LOWPOWER  %d" % (1 if "opt_lowpower" in tags else 0)
+output(cmd)
+--pycode-end--
+proc -norom
+prep -top exwb
+
+[files]
+../../rtl/exwb.v
+fwb_master.v

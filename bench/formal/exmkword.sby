@@ -1,0 +1,21 @@
+[tasks]
+prf
+cvr
+
+[options]
+prf: mode prove
+cvr: mode cover
+
+[engines]
+smtbmc
+
+[script]
+read -formal exmkword.v
+--pycode-begin--
+cmd = "hierarchy -top exmkword"
+output(cmd)
+--pycode-end--
+prep -top exmkword
+
+[files]
+../../rtl/exmkword.v
