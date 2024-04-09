@@ -111,7 +111,7 @@ static const unsigned	F_RESET = (CFG_USERMODE|0x0ff),
 #endif
 
 FLASHDRVR::FLASHDRVR(DEVBUS *fpga) : m_fpga(fpga),
-		m_debug(false), m_id(FLASH_UNKNOWN) {
+		m_debug(true), m_id(FLASH_UNKNOWN) {
 }
 
 unsigned FLASHDRVR::flashid(void) {
@@ -212,7 +212,7 @@ void	FLASHDRVR::restore_quadio(DEVBUS *fpga) {
 		fpga->writeio(R_FLASHCFG, F_END);
 	}
 
-	fpga->writeio(R_FLASHCFG, QUAD_IO_READ);
+	fpga->writeio(R_FLASHCFG, CFG_WEDIR | QUAD_IO_READ);
 	// 3 address bytes
 	fpga->writeio(R_FLASHCFG, CFG_USERMODE | CFG_QSPEED | CFG_WEDIR);
 	fpga->writeio(R_FLASHCFG, CFG_USERMODE | CFG_QSPEED | CFG_WEDIR);
@@ -380,6 +380,8 @@ bool	FLASHDRVR::page_program(const unsigned addr, const unsigned len,
 	// Turn quad-mode read back on, so we can verify the program
 	place_online();
 	if (verify_write) {
+		bool	passed = true;
+
 		// printf("Attempting to verify page\n");
 		// NOW VERIFY THE PAGE
 		m_fpga->readi(addr, len>>2, buf);
@@ -388,9 +390,11 @@ bool	FLASHDRVR::page_program(const unsigned addr, const unsigned len,
 				printf("\nVERIFY FAILS[%d]: %08x\n", i, (i<<2)+addr);
 				printf("\t(Flash[%d]) %08x != %08x (Goal[%08x])\n", 
 					(i<<2), buf[i], bswapd[i], (i<<2)+addr);
-				return false;
+				passed = false;
 			}
-		} if (m_debug)
+		} if (!passed)
+			return false;
+		else if (m_debug)
 			printf(" -- Successfully verified\n");
 	} return true;
 #else

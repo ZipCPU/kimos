@@ -60,7 +60,7 @@ SCOPES :=
 SCOPESRCS := $(addsuffix .cpp,$(SCOPES))
 BUSSRCS   := exbus.cpp devbus.cpp regdefs.cpp llcomms.cpp byteswap.cpp flashdrvr.cpp
 BUSOBJS   := $(addprefix $(OBJDIR)/,$(subst .cpp,.o,$(BUSSRCS)))
-MAINPROG  := exregs exuart zipload zipstate zipdbg
+MAINPROG  := excheck exregs exuart flashscope flashid zipload zipstate zipdbg
 SOURCES   := $(addsuffix .cpp,$(MAINPROG)) zipelf.cpp twoc.cpp byteswap.cpp $(BUSSRCS) $(SCOPESRCS)
 HEADERS   := $(wildcard $(addsuffix .h,$(MAINPROG))) $(wildcard $(subst .cpp,.h,$(BUSSRCS)))
 OBJECTS   := $(addprefix $(OBJDIR)/,$(subst .cpp,.o,$(SOURCES)))
@@ -89,7 +89,13 @@ $(OBJDIR)/%.o: %.c
 ##	$(CXX) $(CFLAGS) $^ -o $@
 exuart: $(OBJDIR)/exuart.o
 	$(CXX) $(CFLAGS) $^ -o $@
+excheck: $(OBJDIR)/excheck.o $(BUSOBJS)
+	$(CXX) $(CFLAGS) $^ -o $@
 exregs: $(OBJDIR)/exregs.o $(BUSOBJS)
+	$(CXX) $(CFLAGS) $^ -o $@
+flashscope: $(OBJDIR)/flashscope.o $(OBJDIR)/scopecls.o $(BUSOBJS)
+	$(CXX) $(CFLAGS) $^ -o $@
+flashid: $(OBJDIR)/flashid.o $(BUSOBJS)
 	$(CXX) $(CFLAGS) $^ -o $@
 zipload: $(OBJDIR)/zipload.o $(BUSOBJS) $(OBJDIR)/zipelf.o
 	$(CXX) $(CFLAGS) $^ -lelf -o $@

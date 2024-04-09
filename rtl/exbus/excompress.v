@@ -314,9 +314,11 @@ module	excompress #(
 	begin
 		match <= 0;
 		matchv <= 0;
-	end else if (a_stb && !a_busy && a_word[34:33] == 2'b01)
+	end else if (a_stb && !a_busy)
 	begin
-		if (rd_amatch == 0)
+		if (a_word[34:33] == 2'b00)
+			matchv <= 0;
+		else if(a_word[34:33] == 2'b01 && rd_amatch == 0)
 		begin
 			match <= { match[95:0], a_word[31:0] };
 			matchv <= { matchv[2:0], 1'b1 };
@@ -398,6 +400,12 @@ module	excompress #(
 			if (tbl_full)
 				tbl_full <= 1'b1;
 		end
+
+		// On any address ACK -- clear the table
+		//	Since any new connection will start by setting an
+		//	address.  Hence, we clear our codebook at that time.
+		if (r_word[34:33] == 2'b00)
+			{ tbl_full, tbl_base } <= 0;
 
 		// On any reset ACK -- clear the table
 		if ((r_word[34:33] == 2'b11)&&(r_word[30:29] == 2'b00))

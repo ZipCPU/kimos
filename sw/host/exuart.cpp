@@ -191,8 +191,11 @@ public:
 			if ((nw < 0)&&(errno == EAGAIN)) {
 				nw = 0;
 				usleep(10);
+			} else if ((nw < 0)&&(errno == EPIPE)) {
+				pos = 0;
+				break;
 			} else if (nw < 0) {
-				fprintf(stderr, "ERR: %4d\n", errno);
+				fprintf(stderr, "WR-ERR: %4d\n", errno);
 				perror("O/S Err: ");
 				// exit(EXIT_FAILURE);
 				break;

@@ -151,7 +151,7 @@ int	EXBUS::lclreadcode(char *buf, int len) {
 void	EXBUS::writeio(const BUSW a, const BUSW v) {
 
 	writev(a, 0, 1, &v);
-	m_lastaddr = a; m_addr_set = true;
+	m_txaddr = a; m_txaddr_set = true;
 }
 // }}}
 
@@ -195,7 +195,7 @@ void	EXBUS::writev(const BUSW a, const int p, const int len, const BUSW *buf) {
 	ptr = encode_address(a);
 	if (p)
 		ptr[-1] |= 1;	// Increment addressing
-	m_lastaddr = a; m_addr_set = true;
+	m_txaddr = a; m_txaddr_set = true;
 	// }}}
 
 	while(nw < len) {
@@ -264,7 +264,7 @@ void	EXBUS::writev(const BUSW a, const int p, const int len, const BUSW *buf) {
 					m_wrloaded = true;
 			}
 
-			if (p == 1) m_lastaddr+=4;
+			if (p == 1) m_txaddr += 4;
 		}
 
 		m_dev->write(m_buf, ptr-m_buf);
@@ -279,7 +279,7 @@ void	EXBUS::writev(const BUSW a, const int p, const int len, const BUSW *buf) {
 		nw += ln;
 		ptr = m_buf;
 	}
-	DBGPRINTF("WR: LAST ADDRESS LEFT AT %08x\n", m_lastaddr);
+	DBGPRINTF("WR: LAST TX-ADDRESS LEFT AT %08x\n", m_txaddr);
 
 	// Need to clear the incoming queue ... if there's anything there.
 	// We could do a ...
@@ -341,9 +341,10 @@ EXBUS::BUSW	EXBUS::readio(const EXBUS::BUSW a) {
 		throw BUSERR(a);
 	}
 
-	if (m_lastaddr != a) {
-		DBGPRINTF("LAST-ADDR MIS-MATCH: (RCVD) %08x != %08x (XPECTED)\n", m_lastaddr, a);
-		m_addr_set = false;
+	if (m_rxaddr != a) {
+		DBGPRINTF("LAST-ADDR MIS-MATCH: (RCVD) %08x != %08x (XPECTED)\n", m_rxaddr, a);
+		m_rxaddr_set = false;
+		m_txaddr_set = false;
 
 		// throw BUSERR(a);
 	}
@@ -368,13 +369,14 @@ char	*EXBUS::encode_address(const EXBUS::BUSW a) {
 		throw BUSERR(a);
 	}
 
-	if ((m_addr_set)&&(a == m_lastaddr))
+	if ((m_txaddr_set)&&(a == m_txaddr))
 		return ptr;
-	
-	if (m_addr_set) { // Encode a difference address
+
+	if (m_txaddr_set) { // Encode a difference address
 		// {{{
-		int	diffaddr = (a - m_lastaddr)>>2;
+		int	diffaddr = (a - m_txaddr)>>2;
 		ptr = m_buf;
+
 		if ((diffaddr >= -2)&&(diffaddr < 2)) {
 			if (diffaddr == 1)		// 0100
 				*ptr++ = 0x12;
@@ -393,12 +395,16 @@ char	*EXBUS::encode_address(const EXBUS::BUSW a) {
 			*ptr++ = (diffaddr << 1) & 0x07e;
 		}
 		*ptr = '\0';
-		/*
-		DBGPRINTF("DIF-ADDR: (%ld) \'%s\' encodes last_addr(0x%08x) %c %d(0x%08x)\n",
-			ptr-m_buf, m_buf,
-			m_lastaddr, (diffaddr<0)?'-':'+',
+
+#ifdef	EXDEBUG
+		DBGPRINTF("DIF-ADDR: (%ld) encodes last_addr(0x%08x) %c %d(0x%08x):",
+			ptr-m_buf,
+			m_txaddr, (diffaddr<0)?'-':'+',
 			diffaddr, diffaddr&0x0ffffffff);
-		*/
+		for(char *sptr = m_buf; sptr < ptr; sptr++)
+			DBGPRINTF("%02x ", (uint32_t)*sptr);
+		DBGPRINTF("\n");
+#endif
 	}
 	// }}}
 
@@ -496,6 +502,7 @@ void	EXBUS::readv(const EXBUS::BUSW a, const int inc, const int len, EXBUS::BUSW
 	DBGPRINTF("READV(%08x,%d,#%4d)\n", a, inc, len);
 
 	ptr = encode_address(a);
+	m_txaddr_set = true; m_txaddr = a;
 	if (inc)
 		ptr[-1] |= 1;
 	try {
@@ -509,6 +516,8 @@ void	EXBUS::readv(const EXBUS::BUSW a, const int inc, const int len, EXBUS::BUSW
 					nrd = READAHEAD+READBLOCK-(cmdrd-nread);
 				ptr = readcmd(nrd, ptr);
 				cmdrd += nrd;
+				if (inc)
+					m_txaddr += 4*nrd;
 			} while((cmdrd-nread
 				< READAHEAD+READBLOCK)&&(cmdrd< len));
 
@@ -667,7 +676,7 @@ DBGPRINTF("Read-rest from %02x\n", sbyte & 0x0ff);
 
 			DBGPRINTF("READ-WORD() -- FULL-READ %02x:%02x:%02x:%02x:%02x -- %08x, A=%08x --> TBL[%04x]\n",
 				m_buf[0], m_buf[1], m_buf[2], m_buf[3],
-				m_buf[4], val, m_lastaddr, m_rdaddr);
+				m_buf[4], val, m_rxaddr & -2, m_rdaddr);
 
 			m_readtbl[m_rdaddr++] = val; m_rdaddr &= 0x01ff;
 			m_quiktbl[m_qkaddr++] = val; m_qkaddr &= 3;
@@ -679,7 +688,7 @@ DBGPRINTF("Read-rest from %02x\n", sbyte & 0x0ff);
 			idx = (m_buf[0] & 0x03);
 			rdaddr = (m_qkaddr - idx - 1) & 0x03;
 			val = m_quiktbl[rdaddr];
-			DBGPRINTF("READ-WORD() -- quick table value[0x%04x-%3d=0x%04x], %08x, A=%08x\n", m_qkaddr, idx, rdaddr, val, m_lastaddr);
+			DBGPRINTF("READ-WORD() -- quick table value[0x%04x-%3d=0x%04x], %08x, A=%08x\n", m_qkaddr, idx, rdaddr, val, m_rxaddr & -2);
 			// Since the item was found in the quick table, it
 			//   doesn't need to go back into the quick table,
 			//   lest we fill up the quick table with all identical
@@ -698,7 +707,7 @@ DBGPRINTF("Read-rest from %02x\n", sbyte & 0x0ff);
 			idx |= (m_buf[0] & 0x03) << 7;
 			rdaddr = (m_rdaddr - idx - 1) & 0x01ff;
 			val = m_readtbl[rdaddr];
-			DBGPRINTF("READ-WORD() -- long table value[%3d], %08x, A=%08x\n", idx, val, m_lastaddr);
+			DBGPRINTF("READ-WORD() -- long table value[%3d], %08x, A=%08x\n", idx, val, m_rxaddr & -2);
 			m_quiktbl[m_qkaddr++] = val; m_qkaddr &= 3;
 			// }}}
 		} else if ((sbyte & 0x07c) == 0x38) {
@@ -717,7 +726,7 @@ DBGPRINTF("Read-rest from %02x\n", sbyte & 0x0ff);
 
 
 			DBGPRINTF("READ-WORD() -- SMALL-READ %02x:%02x -- %08x, A=%08x\n",
-			m_buf[0], m_buf[1], val, m_lastaddr);
+			m_buf[0], m_buf[1], val, m_rxaddr & -2);
 			m_quiktbl[m_qkaddr++] = val; m_qkaddr &= 3;
 			// }}}
 		} else if ((sbyte & 0x07c) == 0x3c) {
@@ -737,22 +746,24 @@ DBGPRINTF("Read-rest from %02x\n", sbyte & 0x0ff);
 
 
 			DBGPRINTF("READ-WORD() -- MEDIUM-READ %02x:%02x:%02x -- %08x, A=%08x --> TBL[0x%04x]\n",
-				m_buf[0], m_buf[1], m_buf[2], val, m_lastaddr,
-				m_rdaddr);
+				m_buf[0], m_buf[1], m_buf[2], val,
+				m_rxaddr & -2, m_rdaddr);
 
 			m_readtbl[m_rdaddr++] = val; m_rdaddr &= 0x01ff;
 			m_quiktbl[m_qkaddr++] = val; m_qkaddr &= 3;
 			// }}}
 		}
 
-		m_lastaddr += 4;
+		if (m_rxaddr & 1)
+			m_rxaddr += 4;
 
 		return val;
 	} else if ((sbyte & 0x060) == 0x40) {
 		// Write acknowledgment -- ignore it here
+		if (m_rxaddr & 1) m_rxaddr += (1+(sbyte & 0x1f)) * 4;
 	} else if ((sbyte & 0x060) == 0x00) {
 		// Address acknowledgment
-DBGPRINTF("Address ACK\n");
+DBGPRINTF("Address ACK: RxAddr = %08x\n", m_rxaddr);
 		// {{{
 		if ((sbyte & 0x070) == 0x00) {
 			// {{{
@@ -766,8 +777,8 @@ DBGPRINTF("Address ACK\n");
 			val |= (m_buf[1] & 0x7f) << 21;
 			val |= (m_buf[0] & 0x7f) << 28;
 
-			m_addr_set = true;
-			m_lastaddr = val;
+			m_rxaddr_set = true;
+			m_rxaddr = val;
 
 			DBGPRINTF("RCVD ADDR: 0x%08x\n", val);
 			// }}}
@@ -786,14 +797,14 @@ DBGPRINTF("Address ACK\n");
 
 			if (m_buf[0] & 0x02)
 				// Signed displacement
-				m_lastaddr += val;
+				m_rxaddr += val;
 			else {
-				m_lastaddr = val;
-				m_addr_set = true;
+				m_rxaddr = val;
+				m_rxaddr_set = true;
 			}
 
-			if (m_addr_set)
-				DBGPRINTF("RCVD ADDR: 0x%08x\n", m_lastaddr);
+			if (m_rxaddr_set)
+				DBGPRINTF("RCVD ADDR: 0x%08x\n", m_rxaddr);
 			// }}}
 		} else if ((sbyte & 0x01c) == 0x1c) {
 			// {{{
@@ -805,20 +816,25 @@ DBGPRINTF("Address ACK\n");
 			val |= (m_buf[1] & 0x07f) << 7;
 			val |= (m_buf[0] & 0x07f) << 14;
 
+DBGPRINTF("VAL: %02x:%02x:%02x -- %08x\n", m_buf[0] & 0x0ff, m_buf[1] & 0x0ff, m_buf[2] & 0x0ff, val);
+
 			// Sign extend val
 			val <<= (sizeof(BUSW)*8 - 15);
 			val = ((int)val >> (sizeof(BUSW)*8 - 17));
 
 			if (m_buf[0] & 0x02)
+{
 				// Signed displacement
-				m_lastaddr += val;
+				m_rxaddr += val;
+DBGPRINTF("ADDR-DISPLACEMENT: %08x\n", val);
+}
 			else {
-				m_lastaddr = val;
-				m_addr_set = true;
+				m_rxaddr = val;
+				m_rxaddr_set = true;
 			}
 
-			if (m_addr_set)
-				DBGPRINTF("RCVD ADDR: 0x%08x\n", m_lastaddr);
+			if (m_rxaddr_set)
+				DBGPRINTF("RCVD ADDR: 0x%08x\n", m_rxaddr);
 			// }}}
 		} else {
 			// {{{
@@ -827,10 +843,10 @@ DBGPRINTF("Address ACK\n");
 			val = ((int)val >> (sizeof(BUSW)*8 - 5));
 
 			// Signed displacement
-			m_lastaddr += val;
+			m_rxaddr += val;
 
-			if (m_addr_set)
-				DBGPRINTF("RCVD ADDR: 0x%08x\n", m_lastaddr);
+			if (m_rxaddr_set)
+				DBGPRINTF("RCVD ADDR: 0x%08x\n", m_rxaddr);
 			// }}}
 		}
 		// }}}

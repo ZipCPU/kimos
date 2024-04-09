@@ -41,14 +41,11 @@
 module	exidle #(
 		// {{{
 		parameter [0:0]	OPT_IDLE = 1'b1,	// Generate idle msgs
-`ifdef	VERILATOR
-		parameter	LGIDLE = 12
-`else
+		parameter	SHORT_LGIDLE = 15,
 		// It takes 5 idles to sync and know where you are in the
 		// data stream.  Let's synchronize in 0.4s in h/w, faster in
 		// simulation
 		parameter	LGIDLE = 23
-`endif
 		// }}}
 	) (
 		// {{{
@@ -196,12 +193,46 @@ module	exidle #(
 	begin : GEN_IDLE_TRIGGER
 		reg			idle_timeout;
 		reg	[LGIDLE-1:0]	idle_counter;
+		reg	[3:0]		short_count;
+
+		initial	short_count = 0;
+		always @(posedge i_clk)
+		if (i_reset)
+			short_count <= 0;
+		else if (o_stb && o_word[34:33] != 2'b11)
+			short_count <= 0;
+		else if (o_stb && !i_busy && !short_count[3])
+			short_count <= short_count + 1;
 
 		initial	{ idle_timeout, idle_counter } = 0;
 		always @(posedge i_clk)
-		if (i_reset || o_stb)
-			{ idle_timeout, idle_counter } <= 0;
-		else if (!idle_timeout)
+		if (i_reset)
+		begin
+			idle_timeout <= 0;
+			idle_counter <= -1 -(1<<SHORT_LGIDLE);
+		end else if (idle_timeout)
+		begin
+			if (!o_stb || !i_busy)
+			begin
+				idle_timeout <= 0;
+				if (!short_count[3])
+				begin
+					// Use a short counter, send some quick
+					// idles for synchronization, then
+					// switch to the longer counter
+					idle_counter <= -1 -(1<<SHORT_LGIDLE);
+				end else
+					idle_counter <= 0;
+			end
+		end else if (o_stb && ((o_word[34:33] != 2'b11)
+							|| !short_count[3]))
+		begin
+			idle_timeout <= 0;
+			if (o_word[34:33] == 2'b11 && short_count[3])
+				idle_counter <= 0;
+			else
+				idle_counter <= -1 -(1<<SHORT_LGIDLE);
+		end else // if (!idle_timeout)
 			{ idle_timeout, idle_counter } <= idle_counter + 1;
 
 		assign	trigger = idle_timeout||r_aux_flag||fifo_err_flag;

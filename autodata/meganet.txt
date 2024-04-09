@@ -413,6 +413,9 @@ set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/tf
 # set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/txspdi/o_ck*}] -to [ get_cells -hier -filter {NAME =~ txck/ODDR*}] 2.0
 
 ## NETTX -> @$(DEVID)RX
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/arp_afifo/mem*}]      -to [ get_cells -hier -filter {NAME =~*u_@$(PREFIX)/arp_afifo/GEN_REGISTERED_READ.o_rd_data*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/icmp_afifo/mem*}]      -to [ get_cells -hier -filter {NAME =~*u_@$(PREFIX)/icmp_afifo/GEN_REGISTERED_READ.o_rd_data*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/net_core/n_rx_link_spd*}]      -to [ get_cells -hier -filter {NAME =~*u_@$(PREFIX)/net_core/n_tx_spd*}] 8.0
 
 ## CLK -> @$(DEVID)RX
 # set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]       -to [ get_cells -hier -filter {NAME =~ *net_core/pre_rx_reset*}] 8.0

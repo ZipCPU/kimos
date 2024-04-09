@@ -110,10 +110,3 @@ const	char *addrname(const unsigned v) {
 @BUS.CLOCK=clk
 @BUS.TYPE=wb
 @BUS.RESET=i_reset
-@TOP.DEFNS=
-	// wire	s_clk, s_reset;
-@TOP.INSERT=
-`ifndef	SDRAM_ACCESS
-	// assign	s_clk = i_clk_buffered;
-	// assign	s_reset = pre_reset;
-`endif

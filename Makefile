@@ -147,6 +147,25 @@ autodata: check-autofpga
 	$(call copyif-changed,$(AUTOD)/rtl.make.inc,rtl/make.inc)
 	$(call copyif-changed,$(AUTOD)/testb.h,$(SIMD)/testb.h)
 	$(call copyif-changed,$(AUTOD)/main_tb.cpp,$(SIMD)/main_tb.cpp)
+
+.PHONY: altauto
+## Build our main (and toplevel) Verilog files via autofpga
+##
+altauto: check-autofpga
+	$(SUBMAKE) $(AUTOD) lddata
+	$(call copyif-changed,$(AUTOD)/toplevel.v,rtl/toplevel.v)
+	$(call copyif-changed,$(AUTOD)/main.v,rtl/main.v)
+	$(call copyif-changed,$(AUTOD)/iscachable.v,rtl/iscachable.v)
+	$(call copyif-changed,$(AUTOD)/build.xdc,rtl/board.xdc)
+	$(call copyif-changed,$(AUTOD)/regdefs.h,sw/host/regdefs.h)
+	$(call copyif-changed,$(AUTOD)/regdefs.cpp,sw/host/regdefs.cpp)
+	$(call copyif-changed,$(AUTOD)/board.h,sw/zlib/board.h)
+	$(call copyif-changed,$(AUTOD)/board.h,sw/board/board.h)
+	$(call copyif-changed,$(AUTOD)/bkram.ld,sw/board/bkram.ld)
+	$(call copyif-changed,$(AUTOD)/board.ld,sw/board/board.ld)
+	$(call copyif-changed,$(AUTOD)/rtl.make.inc,rtl/make.inc)
+	$(call copyif-changed,$(AUTOD)/testb.h,$(SIMD)/testb.h)
+	$(call copyif-changed,$(AUTOD)/main_tb.cpp,$(SIMD)/main_tb.cpp)
 ## }}}
 ################################################################################
 ##

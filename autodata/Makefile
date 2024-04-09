@@ -53,20 +53,25 @@ AUX     := version.txt pic.txt pwrcount.txt rtccount.txt # buserr.txt
 IO      := spio.txt # gpio.txt
 RTC     := #
 DBGBUS  := exconsole.txt wbuuart.txt wbuarbiter.txt
-MEMORY  := bkram.txt flash.txt flashcfg.txt sdram.txt # ddr3.txt bkrom.txt
+MEMORY  := bkram.txt flash.txt flashcfg.txt # bkrom.txt
+SDRAM   := sdram.txt mem_sdram_only.txt mem_flash_sdram.txt # ddr3.txt
 CPU     := zipmaster.txt
 NETWORK := mdio.txt meganet.txt protocols.txt # netbus.txt # cpunet.txt # eth1.txt eth1cpu.txt
 SDCARD  := sdio.txt
-SCOPES  := # netscope.txt i2cscope.txt sdscope.txt cpuscope.txt
+SCOPES  := flashscope.txt # netscope.txt i2cscope.txt sdscope.txt cpuscope.txt
 CLOCKS  := allclocks.txt clkcheck.txt # sclk.txt
 OTHER   := xdc.txt
-LDSCRIPT:= mem_flash_bkram.txt mem_sdram_only.txt mem_flash_sdram.txt mem_bkram_only.txt
+LDSCRIPT:= mem_flash_bkram.txt mem_bkram_only.txt
 # LDSCRIPT:= mem_bkram_only.txt mem_bootrom_bkram.txt
 # GFX     := # The KX2 base board has no video resources
 # AUDIO   := # The KX2 base board has no audio resources
 DATA := $(CLOCKS) $(BASE) $(AUX) $(IO) $(RTC) $(SONAR)		\
+	$(DBGBUS) $(MEMORY) $(SDRAM) $(CPU) $(NETWORK)		\
+	$(SDCARD) $(SCOPES) $(LDSCRIPT) $(OTHER)
+
+LDDATA := $(CLOCKS) $(BASE) $(AUX) $(IO) $(RTC) $(SONAR)		\
 	$(DBGBUS) $(MEMORY) $(CPU) $(NETWORK) $(SDCARD)		\
-	$(SCOPES) $(LDSCRIPT) $(OTHER)
+	$(SCOPES) $(LDSCRIPT) $(OTHER) noddr.txt
 
 AUTOFPGA := autofpga
 $(AUTOFPGA):
@@ -74,6 +79,10 @@ $(AUTOFPGA):
 .PHONY: data
 data: $(AUTOFPGA) $(DATA)
 	$(AUTOFPGA) -I $(COMMON)/ -d -o . $(DATA)
+
+.PHONY: lddata
+lddata: $(AUTOFPGA) $(DATA)
+	$(AUTOFPGA) -I $(COMMON)/ -d -o . $(LDDATA)
 
 .PHONY: clean
 ## {{{

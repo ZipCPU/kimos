@@ -625,9 +625,9 @@ set_property -dict {PACKAGE_PIN D21   IOSTANDARD LVCMOS18  } [get_ports {i_sdcar
 
 ## Adding in any XDC_INSERT tags
 
+## No XDC.INSERT tag in noddr
 ## No XDC.INSERT tag in XDC
 ## No XDC.INSERT tag in mem_bkram_only
-## No XDC.INSERT tag in mem_flash_sdram
 ## No XDC.INSERT tag in spio
 ## No XDC.INSERT tag in rtccount
 ## No XDC.INSERT tag in pwrcount
@@ -658,6 +658,9 @@ set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *tfr_*/b_las
 set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/tfrtxspd/b_last*}] -to [ get_cells -hier -filter {NAME =~ *tfrtxspd/a_pipe*}] 8.0
 
 
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/arp_afifo/mem*}]      -to [ get_cells -hier -filter {NAME =~*u_eth0/arp_afifo/GEN_REGISTERED_READ.o_rd_data*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/icmp_afifo/mem*}]      -to [ get_cells -hier -filter {NAME =~*u_eth0/icmp_afifo/GEN_REGISTERED_READ.o_rd_data*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/n_rx_link_spd*}]      -to [ get_cells -hier -filter {NAME =~*u_eth0/net_core/n_tx_spd*}] 8.0
 
 set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]       -to [ get_cells -hier -filter {NAME =~ *net_core/preq_rx_reset*}] 8.0
 set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]       -to [ get_cells -hier -filter {NAME =~ *tfrrxspd/a_ack*}] 8.0
@@ -717,16 +720,12 @@ set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *clkadcclkct
 ## No XDC.INSERT tag in wbwide
 ## No XDC.INSERT tag in wb32
 ## No XDC.INSERT tag in SIM
-## No XDC.INSERT tag in uart
-## No XDC.INSERT tag in altpic
 ## No XDC.INSERT tag in wbu_arbiter
 ## No XDC.INSERT tag in zip_alt_uic
 ## No XDC.INSERT tag in TMA
 ## No XDC.INSERT tag in bkram
 ## No XDC.INSERT tag in crossflash
 ## No XDC.INSERT tag in flashcfg
-## No XDC.INSERT tag in sdram
-## No XDC.INSERT tag in syspic
 ## No XDC.INSERT tag in masterclk
 ## No XDC.INSERT tag in zip_alt_mic
 ## From sdio
@@ -739,9 +738,12 @@ set_property -dict { PULLTYPE PULLUP } [get_ports io_sdcard_cmd]
 ## No XDC.INSERT tag in zip_tmb
 ## No XDC.INSERT tag in crossbus
 ## No XDC.INSERT tag in zip_tmc
-## No XDC.INSERT tag in mem_sdram_only
 ## No XDC.INSERT tag in REGISTER
 ## No XDC.INSERT tag in zip_dmac
 ## No XDC.INSERT tag in zip_jiffies
 ## No XDC.INSERT tag in zip
+## No XDC.INSERT tag in syspic
+## No XDC.INSERT tag in uart
+## No XDC.INSERT tag in altpic
+## No XDC.INSERT tag in flashdbg
 ## No XDC.INSERT tag in mem_flash_bkram

@@ -60,8 +60,9 @@
 	wire	[@$(NLED)-1:0]	w_led;
 	wire	[@$(NBTN)-1:0]	w_btn;
 @TOP.INSERT=
-	assign	o_led = { w_led[@$(NLED)-1:2], (w_led[1] && clocks_locked),
-			w_led[0] && !s_reset };
+	// LEDs are inverted.  A '1' is off, a '0' is on
+	assign	o_led = { w_led[@$(NLED)-1:2], (w_led[1] || !clocks_locked),
+			w_led[0] || s_reset };
 
 	assign	w_btn = { !i_btn };
 @TOP.MAIN=
