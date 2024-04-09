@@ -210,6 +210,10 @@ module	exidle #(
 		begin
 			idle_timeout <= 0;
 			idle_counter <= -1 -(1<<SHORT_LGIDLE);
+		end else if (i_stb)
+		begin
+			idle_timeout <= 0;
+			idle_counter <= -1 -(1<<SHORT_LGIDLE);
 		end else if (idle_timeout)
 		begin
 			if (!o_stb || !i_busy)
