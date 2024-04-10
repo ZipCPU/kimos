@@ -18,7 +18,8 @@ read -formal excompress.v
 cmd = "hierarchy -top excompress"
 output(cmd)
 --pycode-end--
+proc -norom
 prep -top excompress
 
 [files]
-../../rtl/excompress.v
+../../rtl/exbus/excompress.v

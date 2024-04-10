@@ -280,14 +280,16 @@ module	excompress #(
 		rd_amatch <= 0;
 		if (a_stb && a_word[34:33] == 2'b01 && rd_amatch == 0)
 		begin
+			// New value in the a_* pipeline stage, a value that
+			// hasn't been written to the table yet
 			rd_amatch[3:0] <= w_match[3:0];
 		end else begin
 			rd_amatch[3:0] <= w_match[4:1];
 		end
 
-		if (ack_word[34:33] != 2'b01)
+		if (ack_word[34:33] != 2'b01
+					|| (a_stb && a_word[34:33] == 2'b00))
 			rd_amatch <= 0;
-		// rd_amatch <= 0;
 	end
 `ifdef	FORMAL
 	always @(*)
@@ -317,6 +319,7 @@ module	excompress #(
 	end else if (a_stb && !a_busy)
 	begin
 		if (a_word[34:33] == 2'b00)
+			// Clear any potential matches following a new address
 			matchv <= 0;
 		else if(a_word[34:33] == 2'b01 && rd_amatch == 0)
 		begin
@@ -324,6 +327,18 @@ module	excompress #(
 			matchv <= { matchv[2:0], 1'b1 };
 		end
 	end
+`ifdef	FORMAL
+	always @(*)
+	if (!i_reset)
+	case(matchv)
+	4'b0000: begin end
+	4'b0001: begin end
+	4'b0011: begin end
+	4'b0111: begin end
+	4'b1111: begin end
+	default: assert(0);
+	endcase
+`endif
 	// }}}
 
 	// }}}
@@ -344,7 +359,7 @@ module	excompress #(
 
 	// r_word (r_matched)
 	// {{{
-	initial	{ r_matched, rd_amatch } = 0;
+	initial r_matched = 0;
 	always @(posedge i_clk)
 	begin
 		if (a_stb && !r_busy)
@@ -448,7 +463,10 @@ module	excompress #(
 		f_ckindex = tbl_read_index + 2;
 
 	always @(posedge i_clk)
-	if ($past(i_reset) || $past(r_stb && r_word[34:33] == 2'b11 && r_word[30:29] == 2'b00))
+	if (!f_past_valid || $past(i_reset))
+	begin end else if ($past(r_stb && r_word[34:33] == 2'b11
+						&& r_word[30:29] == 2'b00))
+	begin end else if ($past(r_stb && r_word[34:33] == 2'b00))
 	begin end else if (r_stb && ($changed(tbl_base) || $past(r_stb && !i_busy)))
 		assert(f_ckindex == tbl_base);
 `endif
@@ -573,12 +591,15 @@ module	excompress #(
 		assert(o_stb);
 		if (o_word[34:33] != 2'b01)
 		begin
+			// All but read responses are stable
 			assert($stable(o_word));
 		end else if ($past(o_word[32:31]) == 2'b10)
 		begin
+			// Short compressed read responses are stable
 			assert($stable(o_word));
 		end else if ($past(o_word[32:30]) == 3'b110)
 		begin
+			// Longer compressed read responses are stable
 			assert($stable(o_word));
 		end
 	end
@@ -591,15 +612,19 @@ module	excompress #(
 	begin
 		case(i_word[34:33])
 		2'b00: begin
+			// Address
 			assume(!i_word[32]); // Full address word only
 			assume(i_word[31:0] != f_nvraddr);
 			end
 		2'b01: begin
+			// Read response
 			assume(!i_word[32]);
 			assume(i_word[31:0] != f_nvrdata);
 			end
-		2'b10: assume(i_word[32:0] == 0);
-		2'b11: assume(i_word == { 2'b11, 2'b00, 3'h0, 28'h0 }
+		2'b10: // Write acknowledgments
+			assume(i_word[32:0] == 0);
+		2'b11: // Special responses
+			assume(i_word == { 2'b11, 2'b00, 3'h0, 28'h0 }
 				|| i_word == { 2'b11, 2'b00, 3'h1, 28'h0 }
 				|| i_word == { 2'b11, 2'b00, 3'h2, 28'h0 }
 				|| i_word == { 2'b11, 2'b00, 3'h3, 28'h0 });
@@ -935,6 +960,31 @@ module	excompress #(
 			assert(r_matched);
 		end
 	end
+	// }}}
+	////////////////////////////////////////////////////////////////////////
+	//
+	// Activity check
+	// {{{
+
+	// Can only become active on an i_stb && !o_busy request
+	always @(posedge i_clk)
+	if (!f_past_valid || $past(i_reset))
+		assert(!o_active);
+	else if ($past(i_stb && !o_busy))
+		assert(o_active);
+	else if ($past(o_active))
+		assert(o_active || o_stb);
+	else
+		assert(!o_active);
+
+	// Can't generate an output without a prior o_active
+	always @(posedge i_clk)
+	if (!f_past_valid || $past(i_reset))
+		assert(!o_active);
+	else if ($past(i_stb && !o_busy))
+		assert(o_active);
+	else if (!$past(o_active) && !$past(o_stb))
+		assert(!o_stb && !o_active);
 	// }}}
 `endif
 // }}}

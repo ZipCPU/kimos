@@ -18,4 +18,4 @@ output(cmd)
 prep -top exdeword
 
 [files]
-../../rtl/exdeword.v
+../../rtl/exbus/exdeword.v

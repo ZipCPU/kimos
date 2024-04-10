@@ -18,4 +18,4 @@ output(cmd)
 prep -top exmkword
 
 [files]
-../../rtl/exmkword.v
+../../rtl/exbus/exmkword.v

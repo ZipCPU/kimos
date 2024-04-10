@@ -18,4 +18,4 @@ output(cmd)
 prep -top exidle
 
 [files]
-../../rtl/exidle.v
+../../rtl/exbus/exidle.v

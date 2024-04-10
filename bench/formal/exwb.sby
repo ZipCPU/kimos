@@ -27,5 +27,5 @@ proc -norom
 prep -top exwb
 
 [files]
-../../rtl/exwb.v
+../../rtl/exbus/exwb.v
 fwb_master.v
