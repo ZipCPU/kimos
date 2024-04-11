@@ -82,7 +82,8 @@ module	excompress #(
 	reg	[31:0]	r_value;
 	reg	[34:0]	r_word;
 
-	reg	[8:0]	tbl_base, tbl_read_index, tbl_rdindex;
+	reg	[8:0]	tbl_base, tbl_rdindex;
+	reg	[9:0]	tbl_read_index;
 	reg		tbl_full, tbl_valid, table_match;
 	wire		tbl_reading;
 	reg	[31:0]	tbl_mem		[0:511];
@@ -129,6 +130,9 @@ module	excompress #(
 		assert(!ack_stb);
 `endif
 
+	// ack_addr -- what address are we acknowledging data for
+	// {{{
+	// This will be used with diff_addr to return differential addresses
 	initial	ack_addr = 0;
 	always @(posedge i_clk)
 	if (i_reset)
@@ -144,7 +148,10 @@ module	excompress #(
 		2'b11: begin end
 		endcase
 	end
+	// }}}
 
+	// diff_adr -- when using difference addressing, what's the difference?
+	// {{{
 	initial	diff_addr = 0;
 	always @(posedge i_clk)
 	if (OPT_LOWPOWER && i_reset)
@@ -155,6 +162,7 @@ module	excompress #(
 		if (!OPT_LOWPOWER || i_word[34:33] == 2'b00)
 			diff_addr[31:2] <= i_word[31:2] - ack_addr[31:2];
 	end
+	// }}}
 	// }}}
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -359,11 +367,12 @@ module	excompress #(
 
 	// r_word (r_matched)
 	// {{{
-	initial r_matched = 0;
+	initial r_matched = 1;
 	always @(posedge i_clk)
 	begin
 		if (a_stb && !r_busy)
 		begin
+			// {{{
 			r_matched <= (a_word[34:33] != 2'b01)
 				|| rd_small || (|rd_amatch);
 			r_word  <= a_word;
@@ -381,7 +390,7 @@ module	excompress #(
 			4'b1000: r_word[34:28] <= 7'b01100_11;
 			default: begin end
 			endcase
-
+			// }}}
 		end else if (i_busy && r_stb && !r_matched)
 		begin
 			if (table_match)
@@ -395,7 +404,7 @@ module	excompress #(
 		end
 
 		if (i_reset)
-			r_matched <= 1'b0;
+			r_matched <= 1'b1;
 	end
 	// }}}
 
@@ -404,6 +413,8 @@ module	excompress #(
 	initial	{ tbl_full, tbl_base } = 0;
 	always @(posedge i_clk)
 	if (i_reset)
+		{ tbl_full, tbl_base } <= 0;
+	else if (a_stb && !r_busy && a_word[34:33] == 2'b00)
 		{ tbl_full, tbl_base } <= 0;
 	else if (r_stb && !r_busy)
 	begin
@@ -419,8 +430,8 @@ module	excompress #(
 		// On any address ACK -- clear the table
 		//	Since any new connection will start by setting an
 		//	address.  Hence, we clear our codebook at that time.
-		if (r_word[34:33] == 2'b00)
-			{ tbl_full, tbl_base } <= 0;
+		// if (r_word[34:33] == 2'b00)
+		//	{ tbl_full, tbl_base } <= 0;
 
 		// On any reset ACK -- clear the table
 		if ((r_word[34:33] == 2'b11)&&(r_word[30:29] == 2'b00))
@@ -449,15 +460,21 @@ module	excompress #(
 	always @(posedge i_clk)
 	if (i_reset)
 		tbl_read_index <= 0;
+	else if (r_stb && !r_matched && !r_busy)
+		// This word is done.  It didn't match anything.  Therefore,
+		// we're writing it to the table.  Advance the read index
+		// by one
+		tbl_read_index <= tbl_base - 1;
 	else if (!r_stb || !r_busy || r_matched)
 	begin
-		if (r_stb && !r_matched)
-			tbl_read_index <= tbl_base - 1;
-		else
-			tbl_read_index <= tbl_base - 2;
-	end else if (!table_match && !r_matched)
+		// Reset pointer, with no impact to the table
+		tbl_read_index <= tbl_base - 2;
+	end else if (!table_match && !r_matched
+				&& (tbl_read_index[8:0] != tbl_base[8:0])
+				&& (!tbl_read_index[9] || tbl_full))
 		tbl_read_index <= tbl_read_index - 1;
 `ifdef	FORMAL
+	// {{{
 	reg	[8:0]	f_ckindex;
 	always @(*)
 		f_ckindex = tbl_read_index + 2;
@@ -467,29 +484,31 @@ module	excompress #(
 	begin end else if ($past(r_stb && r_word[34:33] == 2'b11
 						&& r_word[30:29] == 2'b00))
 	begin end else if ($past(r_stb && r_word[34:33] == 2'b00))
+	begin end else if ($past(a_stb && a_word[34:33] == 2'b00))
 	begin end else if (r_stb && ($changed(tbl_base) || $past(r_stb && !i_busy)))
 		assert(f_ckindex == tbl_base);
+	// }}}
 `endif
 	// }}}
 
-	// TBL.2: tbl_rdvalue
+	// TBL.2: tbl_rdvalue <= tbl_mem[tbl_read_index]
 	// {{{
 	always @(posedge i_clk)
 	if (tbl_reading)
-		tbl_rdvalue <= tbl_mem[tbl_read_index];
+		tbl_rdvalue <= tbl_mem[tbl_read_index[8:0]];
 	// }}}
 
 	// TBL.2: tbl_rdindex
 	// {{{
 	always @(posedge i_clk)
 	if (tbl_reading)
-		tbl_rdindex <= tbl_base - tbl_read_index;
+		tbl_rdindex <= tbl_base - tbl_read_index[8:0] - 1;
 	// }}}
 
 	// TBL.2: tbl_valid
 	always @(posedge i_clk)
 		tbl_valid <= (r_stb && r_word[34:33] == 2'b01) && i_busy
-			&& tbl_reading && (!tbl_read_index[8] || tbl_full);
+			&& tbl_reading && (!tbl_read_index[9] || tbl_full);
 
 	// TBL.3: table_match
 	initial	table_match = 1'b0;
@@ -505,7 +524,7 @@ module	excompress #(
 	always @(posedge i_clk)
 	begin
 		tbl_word <= 0;
-		tbl_word[8:0] <= tbl_rdindex - 1;
+		tbl_word[8:0] <= tbl_rdindex[8:0];
 		tbl_word[13:9] <= 5'b01101;
 	end
 
@@ -646,21 +665,21 @@ module	excompress #(
 	end
 	// }}}
 
-	// Contract word input check
+	// Contract word input check -- make sure it remains within bounds
 	// {{{
 	always @(*)
 	if (|f_tracking)
 	begin
 		case(f_word[34:33])
-		2'b00: begin
+		2'b00: begin // Address
 			assert(!f_word[32]); // Full address word only
 			assert(f_word[31:0] != f_nvraddr);
 			end
-		2'b01: begin
+		2'b01: begin // Read return data
 			assert(!f_word[32]);
 			assert(f_word[31:0] != f_nvrdata);
 			end
-		2'b10: assert(f_word[31:0] == 0);
+		2'b10: assert(f_word[31:0] == 0); // Write acknowledgments
 		2'b11: assert(f_word == { 2'b11, 2'b00, 3'h0, 28'h0 }
 				|| f_word == { 2'b11, 2'b00, 3'h1, 28'h0 }
 				|| f_word == { 2'b11, 2'b00, 3'h2, 28'h0 }
@@ -680,6 +699,8 @@ module	excompress #(
 	if (i_reset || f_tracking != 0 || !i_stb)
 		assume(!f_track_input);
 
+	// f_tracking -- which stage of our compression pipeline is being trackd
+	// {{{
 	initial	f_tracking = 0;
 	always @(posedge i_clk)
 	if (i_reset)
@@ -708,18 +729,26 @@ module	excompress #(
 		if (!i_busy)
 			f_tracking <= 0;
 	end
+	// }}}
 
+	// f_word -- which word are we tracking through the pipeline
+	// {{{
 	always @(posedge i_clk)
 	if (i_reset)
 		f_word <= 0;
 	else if (f_tracking == 0 && i_stb && !o_busy && f_track_input)
 		f_word <= i_word;
+	// }}}
 
+	// fc_addr -- what was the last address when this word came in
+	// {{{
+	// Useful for verifying difference address returns
 	always @(posedge i_clk)
 	if (i_reset)
 		fc_addr <= 0;
 	else if (f_tracking == 0 && i_stb && !o_busy && f_track_input)
 		fc_addr <= ack_addr;
+	// }}}
 
 	always @(posedge i_clk)
 	if (i_reset)
@@ -825,7 +854,7 @@ module	excompress #(
 
 	always @(*)
 	if (f_tracking != 0 && f_word[34:33] == 2'b10)
-	begin
+	begin // on a write (ack) return ...
 		if (f_tracking[0])
 		begin
 			assert(ack_word[34:33] == 2'b10);
@@ -851,6 +880,8 @@ module	excompress #(
 	//
 	reg	[8:0]	f_rddiff;
 
+	// Assert f_nvrdata never ends up in our pipeline
+	// {{{
 	always  @(*)
 	if (ack_stb && ack_word[34:33] == 2'b01)
 		assert(!ack_word[32] && ack_word[31:0] != f_nvrdata);
@@ -862,6 +893,7 @@ module	excompress #(
 	always  @(*)
 	if (r_stb && r_word[34:32] == 3'b010)
 		assert(r_word[31:0] != f_nvrdata);
+	// }}}
 
 	always @(posedge i_clk)
 	if (r_stb && !i_busy && (tbl_base == f_const_index) && !r_matched)
@@ -871,6 +903,7 @@ module	excompress #(
 		f_rddiff = tbl_base - f_const_index-1;
 
 	always @(*)
+		// Is my special, chosen value, known
 		f_rvknown = (tbl_base > f_const_index) || tbl_full;
 
 	always @(*)
@@ -882,35 +915,67 @@ module	excompress #(
 	end
 
 	always @(*)
+	if (f_tracking[2] && f_word[34:33] != 2'b01)
+		assert(r_matched);
+
+	always @(*)
+	if (!o_stb)
+		assert(r_matched);
+
+	always @(*)
 	if (f_tracking != 0 && f_word[34:33] == 2'b01)
-	begin
+	begin	// Read response
 		if (f_tracking[0])
+			// Doesn't get changed in the first stage
 			assert(f_word == ack_word);
 		if (f_tracking[1])
+			// Doesn't get changed in the second stage
 			assert(f_word == a_word);
 		if (f_tracking[2])
 		begin
 			assert(r_word[34:33] == 2'b01);
 			if (!r_matched)
-				assert(r_value[31:0] == f_word[31:0]);
+				assert(r_value == f_word[31:0]);
 			casez(r_word[32:30])
 			3'b0??: begin
 				assert(r_word[31:0] == f_word[31:0]);
+				assert(!r_matched);
 				cover(1);
 				end
 			3'b100: begin
+					assert(r_matched);
+					// Quick 2b table lookup
+					// Assertions are above
 					cover(r_word[29:28] == 2'b00);
 					cover(r_word[29:28] == 2'b01);
 					cover(r_word[29:28] == 2'b10);
 					cover(r_word[29:28] == 2'b11);
 				end
-			3'b101: if (f_rvknown && r_word[29:21] == f_rddiff)
-				begin
-					assert(f_word[31:0] == f_rvalue);
-					cover(1);
+			3'b101: begin
+					assert(r_matched);
+					if (f_rvknown && r_word[29:21] == f_rddiff)
+					begin
+						// Full table lookup
+						assert(f_word[31:0] == f_rvalue);
+						cover(1);
+					end
 				end
-			3'b110: cover(1);
-			3'b111: cover(1);
+			3'b110:	begin
+				// Small value
+				assert(r_matched);
+				assert(f_word <= 32'h00_00ff || f_word >= 32'hffff_ff80);
+				assert(r_word[34:21] == { 5'b01110,
+								f_word[8:0] });
+				cover(1);
+				end
+			3'b111: begin
+				// Bigger value
+				// assert(r_matched);
+				assert(f_word <= 32'h00_7fff || f_word >= 32'hffff_4000);
+				assert(r_word[34:14] == { 5'b01111,
+								f_word[15:0] });
+				cover(1);
+				end
 			default: begin end
 			endcase
 		end

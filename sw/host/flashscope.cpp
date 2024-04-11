@@ -2,7 +2,7 @@
 //
 // Filename: 	flashscope.cpp
 // {{{
-// Project:	Demonstration SONAR project
+// Project:	KIMOS, a Mercury KX2 demonstration project
 //
 // Purpose:	This program decodes the bits in the debugging wires output
 //		from the qflexpress module, and stored in the (compressed)
@@ -17,10 +17,26 @@
 // }}}
 // Copyright (C) 2022-2024, Symbiotic EDA, Gmbh
 // {{{
-// This file is part of the demonstration SONAR project.  The demonstration
-// SONAR project is proprietary to Symbiotic EDA, Gmbh.  It may not be
-// redistributed without the express permission of an authorized representative
-// of Symbiotic EDA, Gmbh.
+// This file is part of the KIMOS project.
+//
+// The KIMOS project is free software and gateware: you can redistribute it
+// and/or modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation, either version 3 of the License,
+// or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+// target there if the PDF file isn't present.)  If not, see
+// <http://www.gnu.org/licenses/> for a copy.
+// }}}
+// License:	GPL, v3, as defined and found on www.gnu.org,
+// {{{
+//		http://www.gnu.org/licenses/gpl.html
 //
 ////////////////////////////////////////////////////////////////////////////////
 //

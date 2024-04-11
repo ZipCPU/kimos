@@ -4,8 +4,14 @@
 // {{{
 // Project:	KIMOS, a Mercury KX2 demonstration project
 //
-// Purpose:	A quick program to check whether or not the ExBus compression
-//		works correctly as advertised.
+// Purpose:	This is just a quick program to check whether or not the ExBus
+//		compression works correctly as advertised.  Specifically, we're
+//	testing the table compression--not the address, ack, or read repeat
+//	compressions.  Table compression allows you to describe a value based
+//	upon how long its been since it was last seen.  It's used in two place:
+//	first, when writing to the device, and second when reading from the
+//	device.  A value written twice will first enter the table, and then
+//	be referenced on the second write to spare bandwidth.
 //
 // Creator:	Dan Gisselquist, Ph.D.
 //		Gisselquist Technology, LLC
@@ -61,6 +67,7 @@ void	closeup(int v) {
 }
 
 bool	isvalue(const char *v) {
+	// {{{
 	const char *ptr = v;
 
 	while(isspace(*ptr))
@@ -78,6 +85,7 @@ bool	isvalue(const char *v) {
 
 	return (isdigit(*ptr));
 }
+// }}}
 
 int main(int argc, char **argv) {
 	const	unsigned NLEN = 768;
@@ -136,7 +144,7 @@ int main(int argc, char **argv) {
 	}
 	// }}}
 
-	for(unsigned offset=511; (offset<NLEN) && passed; offset++) {
+	for(unsigned offset=0; (offset<NLEN) && passed; offset++) {
 		// {{{
 		printf("Read check, testing offset  %d\n", offset);
 
@@ -153,12 +161,12 @@ int main(int argc, char **argv) {
 		printf(", CHECK\n"); fflush(stdout);
 		for(unsigned k=0; k<offset; k++) {
 			if (checkbuf[k] != testbuf[k]) {
-				printf("RD-ERR: CHECK[%d]=%08x != 0x%08x (expected)\n", k, checkbuf[k], testbuf[k]);
+				printf("RD-ERR: @0x%08x -- CHECK[%d]=%08x != 0x%08x (expected)\n", R_BKRAM + k, k, checkbuf[k], testbuf[k]);
 				passed = false;
 			}
 		} for(unsigned k=0; k<NLEN; k++) {
 			if (checkbuf[offset+k] != testbuf[k]) {
-				printf("RD-ERR: CHECK[%d+%d]=%08x != 0x%08x (expected)\n", offset, k, checkbuf[offset+k], testbuf[k]);
+				printf("RD-ERR: @0x%08x -- CHECK[%d+%d]=%08x != 0x%08x (expected)\n", R_BKRAM + offset + k, offset, k, checkbuf[offset+k], testbuf[k]);
 				passed = false;
 			}
 		}
