@@ -143,7 +143,7 @@ public:
 		// From eth0
 		// Network init
 		// {{{
-		m_eth0 = new NETSIM(); // 5929, 5930);
+		m_eth0 = new NETSIM(); // DBGPORT: 5929, DATAPORT: 5930;
 		m_eth0->external_mac[0] = 0xde;
 		m_eth0->external_mac[1] = 0xad;
 		m_eth0->external_mac[2] = 0xbe;
@@ -154,16 +154,16 @@ public:
 		m_eth0->external_ip[1] = 0;
 		m_eth0->external_ip[2] = 0;
 		m_eth0->external_ip[3] = 1;
-		m_eth0->local_mac[0] = 0x0082 & 0x0ff;
-		m_eth0->local_mac[1] = 0x0033 & 0x0ff;
-		m_eth0->local_mac[2] = 0x00000048 & 0x0ff;
-		m_eth0->local_mac[3] = 0x00000002 & 0x0ff;
-		m_eth0->local_mac[4] = 0x000000e1 & 0x0ff;
-		m_eth0->local_mac[5] = 0x000000d0 & 0x0ff;
-		m_eth0->local_ip[0] = 0xc0 & 0x0ff;
-		m_eth0->local_ip[1] = 0xa8 & 0x0ff;
-		m_eth0->local_ip[2] = 0x01 & 0x0ff;
-		m_eth0->local_ip[3] = 0x18 & 0x0ff;
+		m_eth0->local_mac[0] = 0x82 & 0x0ff;
+		m_eth0->local_mac[1] = 0x33 & 0x0ff;
+		m_eth0->local_mac[2] = 0x48 & 0x0ff;
+		m_eth0->local_mac[3] = 0x02 & 0x0ff;
+		m_eth0->local_mac[4] = 0xe1 & 0x0ff;
+		m_eth0->local_mac[5] = 0xd0 & 0x0ff;
+		m_eth0->local_ip[0] = 0xc0 & 0x0ff; // 192
+		m_eth0->local_ip[1] = 0xa8 & 0x0ff; // 168
+		m_eth0->local_ip[2] = 0x01 & 0x0ff; //   1
+		m_eth0->local_ip[3] = 0x18 & 0x0ff; //  24
 		m_eth0->local_ipu = 0xc0a80118;
 		// }}}
 		// From mdio

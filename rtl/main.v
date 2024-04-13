@@ -218,7 +218,7 @@ module	main(i_clk, i_reset,
 	// }}}
 	parameter	[15:0]	UDP_DBGPORT  = 5929;
 
-	localparam	[47:0]	DEF_ETH0_HWMAC  = 48'h8233_4848e1d0;
+	localparam	[47:0]	DEF_ETH0_HWMAC  = 48'h8233_4802e1d0;
 	localparam	[31:0]	DEF_ETH0_IPADDR = 32'hc0a80118;
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -231,7 +231,7 @@ module	main(i_clk, i_reset,
 	localparam	RESET_ADDRESS = @$(/bkrom.BASE);
 `else
 `ifdef	FLASH_ACCESS
-	localparam	RESET_ADDRESS = 73400320;
+	localparam	RESET_ADDRESS = 79691776;
 `else
 	localparam	RESET_ADDRESS = 167772160;
 `endif	// FLASH_ACCESS
@@ -610,7 +610,7 @@ module	main(i_clk, i_reset,
 	// Wishbone definitions for bus wb32, component crossbus
 	// Verilator lint_off UNUSED
 	wire		wb32_crossbus_cyc, wb32_crossbus_stb, wb32_crossbus_we;
-	wire	[8:0]	wb32_crossbus_addr;
+	wire	[10:0]	wb32_crossbus_addr;
 	wire	[31:0]	wb32_crossbus_data;
 	wire	[3:0]	wb32_crossbus_sel;
 	wire		wb32_crossbus_stall, wb32_crossbus_ack, wb32_crossbus_err;
@@ -619,7 +619,7 @@ module	main(i_clk, i_reset,
 	// Wishbone definitions for bus wb32(SIO), component adcclk
 	// Verilator lint_off UNUSED
 	wire		wb32_adcclk_cyc, wb32_adcclk_stb, wb32_adcclk_we;
-	wire	[8:0]	wb32_adcclk_addr;
+	wire	[10:0]	wb32_adcclk_addr;
 	wire	[31:0]	wb32_adcclk_data;
 	wire	[3:0]	wb32_adcclk_sel;
 	wire		wb32_adcclk_stall, wb32_adcclk_ack, wb32_adcclk_err;
@@ -628,7 +628,7 @@ module	main(i_clk, i_reset,
 	// Wishbone definitions for bus wb32(SIO), component buildtime
 	// Verilator lint_off UNUSED
 	wire		wb32_buildtime_cyc, wb32_buildtime_stb, wb32_buildtime_we;
-	wire	[8:0]	wb32_buildtime_addr;
+	wire	[10:0]	wb32_buildtime_addr;
 	wire	[31:0]	wb32_buildtime_data;
 	wire	[3:0]	wb32_buildtime_sel;
 	wire		wb32_buildtime_stall, wb32_buildtime_ack, wb32_buildtime_err;
@@ -637,7 +637,7 @@ module	main(i_clk, i_reset,
 	// Wishbone definitions for bus wb32(SIO), component buspic
 	// Verilator lint_off UNUSED
 	wire		wb32_buspic_cyc, wb32_buspic_stb, wb32_buspic_we;
-	wire	[8:0]	wb32_buspic_addr;
+	wire	[10:0]	wb32_buspic_addr;
 	wire	[31:0]	wb32_buspic_data;
 	wire	[3:0]	wb32_buspic_sel;
 	wire		wb32_buspic_stall, wb32_buspic_ack, wb32_buspic_err;
@@ -646,7 +646,7 @@ module	main(i_clk, i_reset,
 	// Wishbone definitions for bus wb32(SIO), component pwrcount
 	// Verilator lint_off UNUSED
 	wire		wb32_pwrcount_cyc, wb32_pwrcount_stb, wb32_pwrcount_we;
-	wire	[8:0]	wb32_pwrcount_addr;
+	wire	[10:0]	wb32_pwrcount_addr;
 	wire	[31:0]	wb32_pwrcount_data;
 	wire	[3:0]	wb32_pwrcount_sel;
 	wire		wb32_pwrcount_stall, wb32_pwrcount_ack, wb32_pwrcount_err;
@@ -655,7 +655,7 @@ module	main(i_clk, i_reset,
 	// Wishbone definitions for bus wb32(SIO), component rtccount
 	// Verilator lint_off UNUSED
 	wire		wb32_rtccount_cyc, wb32_rtccount_stb, wb32_rtccount_we;
-	wire	[8:0]	wb32_rtccount_addr;
+	wire	[10:0]	wb32_rtccount_addr;
 	wire	[31:0]	wb32_rtccount_data;
 	wire	[3:0]	wb32_rtccount_sel;
 	wire		wb32_rtccount_stall, wb32_rtccount_ack, wb32_rtccount_err;
@@ -664,7 +664,7 @@ module	main(i_clk, i_reset,
 	// Wishbone definitions for bus wb32(SIO), component rxeth0ck
 	// Verilator lint_off UNUSED
 	wire		wb32_rxeth0ck_cyc, wb32_rxeth0ck_stb, wb32_rxeth0ck_we;
-	wire	[8:0]	wb32_rxeth0ck_addr;
+	wire	[10:0]	wb32_rxeth0ck_addr;
 	wire	[31:0]	wb32_rxeth0ck_data;
 	wire	[3:0]	wb32_rxeth0ck_sel;
 	wire		wb32_rxeth0ck_stall, wb32_rxeth0ck_ack, wb32_rxeth0ck_err;
@@ -673,7 +673,7 @@ module	main(i_clk, i_reset,
 	// Wishbone definitions for bus wb32(SIO), component spio
 	// Verilator lint_off UNUSED
 	wire		wb32_spio_cyc, wb32_spio_stb, wb32_spio_we;
-	wire	[8:0]	wb32_spio_addr;
+	wire	[10:0]	wb32_spio_addr;
 	wire	[31:0]	wb32_spio_data;
 	wire	[3:0]	wb32_spio_sel;
 	wire		wb32_spio_stall, wb32_spio_ack, wb32_spio_err;
@@ -682,7 +682,7 @@ module	main(i_clk, i_reset,
 	// Wishbone definitions for bus wb32(SIO), component txclk
 	// Verilator lint_off UNUSED
 	wire		wb32_txclk_cyc, wb32_txclk_stb, wb32_txclk_we;
-	wire	[8:0]	wb32_txclk_addr;
+	wire	[10:0]	wb32_txclk_addr;
 	wire	[31:0]	wb32_txclk_data;
 	wire	[3:0]	wb32_txclk_sel;
 	wire		wb32_txclk_stall, wb32_txclk_ack, wb32_txclk_err;
@@ -691,7 +691,7 @@ module	main(i_clk, i_reset,
 	// Wishbone definitions for bus wb32(SIO), component version
 	// Verilator lint_off UNUSED
 	wire		wb32_version_cyc, wb32_version_stb, wb32_version_we;
-	wire	[8:0]	wb32_version_addr;
+	wire	[10:0]	wb32_version_addr;
 	wire	[31:0]	wb32_version_data;
 	wire	[3:0]	wb32_version_sel;
 	wire		wb32_version_stall, wb32_version_ack, wb32_version_err;
@@ -700,7 +700,7 @@ module	main(i_clk, i_reset,
 	// Wishbone definitions for bus wb32, component flashcfg
 	// Verilator lint_off UNUSED
 	wire		wb32_flashcfg_cyc, wb32_flashcfg_stb, wb32_flashcfg_we;
-	wire	[8:0]	wb32_flashcfg_addr;
+	wire	[10:0]	wb32_flashcfg_addr;
 	wire	[31:0]	wb32_flashcfg_data;
 	wire	[3:0]	wb32_flashcfg_sel;
 	wire		wb32_flashcfg_stall, wb32_flashcfg_ack, wb32_flashcfg_err;
@@ -709,7 +709,7 @@ module	main(i_clk, i_reset,
 	// Wishbone definitions for bus wb32, component flashdbg
 	// Verilator lint_off UNUSED
 	wire		wb32_flashdbg_cyc, wb32_flashdbg_stb, wb32_flashdbg_we;
-	wire	[8:0]	wb32_flashdbg_addr;
+	wire	[10:0]	wb32_flashdbg_addr;
 	wire	[31:0]	wb32_flashdbg_data;
 	wire	[3:0]	wb32_flashdbg_sel;
 	wire		wb32_flashdbg_stall, wb32_flashdbg_ack, wb32_flashdbg_err;
@@ -718,7 +718,7 @@ module	main(i_clk, i_reset,
 	// Wishbone definitions for bus wb32, component uart
 	// Verilator lint_off UNUSED
 	wire		wb32_uart_cyc, wb32_uart_stb, wb32_uart_we;
-	wire	[8:0]	wb32_uart_addr;
+	wire	[10:0]	wb32_uart_addr;
 	wire	[31:0]	wb32_uart_data;
 	wire	[3:0]	wb32_uart_sel;
 	wire		wb32_uart_stall, wb32_uart_ack, wb32_uart_err;
@@ -727,7 +727,7 @@ module	main(i_clk, i_reset,
 	// Wishbone definitions for bus wb32, component wb32_sio
 	// Verilator lint_off UNUSED
 	wire		wb32_sio_cyc, wb32_sio_stb, wb32_sio_we;
-	wire	[8:0]	wb32_sio_addr;
+	wire	[10:0]	wb32_sio_addr;
 	wire	[31:0]	wb32_sio_data;
 	wire	[3:0]	wb32_sio_sel;
 	wire		wb32_sio_stall, wb32_sio_ack, wb32_sio_err;
@@ -736,7 +736,7 @@ module	main(i_clk, i_reset,
 	// Wishbone definitions for bus wb32, component cfg
 	// Verilator lint_off UNUSED
 	wire		wb32_cfg_cyc, wb32_cfg_stb, wb32_cfg_we;
-	wire	[8:0]	wb32_cfg_addr;
+	wire	[10:0]	wb32_cfg_addr;
 	wire	[31:0]	wb32_cfg_data;
 	wire	[3:0]	wb32_cfg_sel;
 	wire		wb32_cfg_stall, wb32_cfg_ack, wb32_cfg_err;
@@ -745,7 +745,7 @@ module	main(i_clk, i_reset,
 	// Wishbone definitions for bus wb32, component eth0
 	// Verilator lint_off UNUSED
 	wire		wb32_eth0_cyc, wb32_eth0_stb, wb32_eth0_we;
-	wire	[8:0]	wb32_eth0_addr;
+	wire	[10:0]	wb32_eth0_addr;
 	wire	[31:0]	wb32_eth0_data;
 	wire	[3:0]	wb32_eth0_sel;
 	wire		wb32_eth0_stall, wb32_eth0_ack, wb32_eth0_err;
@@ -754,7 +754,7 @@ module	main(i_clk, i_reset,
 	// Wishbone definitions for bus wb32, component mdio
 	// Verilator lint_off UNUSED
 	wire		wb32_mdio_cyc, wb32_mdio_stb, wb32_mdio_we;
-	wire	[8:0]	wb32_mdio_addr;
+	wire	[10:0]	wb32_mdio_addr;
 	wire	[31:0]	wb32_mdio_data;
 	wire	[3:0]	wb32_mdio_sel;
 	wire		wb32_mdio_stall, wb32_mdio_ack, wb32_mdio_err;
@@ -820,6 +820,7 @@ module	main(i_clk, i_reset,
 		.SLAVE_ADDR({
 			// Address width    = 25
 			// Address LSBs     = 6
+			// Slave name width = 10
 			{ 25'h1000000 }, //      sdram: 0x40000000
 			{ 25'h0280000 }, //      bkram: 0x0a000000
 			{ 25'h0200000 }, //   crossbus: 0x08000000
@@ -828,6 +829,7 @@ module	main(i_clk, i_reset,
 		.SLAVE_MASK({
 			// Address width    = 25
 			// Address LSBs     = 6
+			// Slave name width = 10
 			{ 25'h1000000 }, //      sdram
 			{ 25'h1f80000 }, //      bkram
 			{ 25'h1f80000 }, //   crossbus
@@ -973,12 +975,14 @@ module	main(i_clk, i_reset,
 		.SLAVE_ADDR({
 			// Address width    = 25
 			// Address LSBs     = 2
+			// Slave name width = 5
 			{ 25'h1000000 }, // flash: 0x4000000
 			{ 25'h0800000 }  //  sdio: 0x2000000
 		}),
 		.SLAVE_MASK({
 			// Address width    = 25
 			// Address LSBs     = 2
+			// Slave name width = 5
 			{ 25'h1000000 }, // flash
 			{ 25'h1800000 }  //  sdio
 		}),
@@ -1161,28 +1165,30 @@ module	main(i_clk, i_reset,
 	//
 	//
 	wbxbar #(
-		.NM(1), .NS(7), .AW(9), .DW(32),
+		.NM(1), .NS(7), .AW(11), .DW(32),
 		.SLAVE_ADDR({
-			// Address width    = 9
+			// Address width    = 11
 			// Address LSBs     = 2
-			{ 9'h1c0 }, //     mdio: 0x700
-			{ 9'h1a0 }, //     eth0: 0x680
-			{ 9'h180 }, //      cfg: 0x600
-			{ 9'h160 }, // wb32_sio: 0x580
-			{ 9'h140 }, //     uart: 0x500
-			{ 9'h120 }, // flashdbg: 0x480
-			{ 9'h100 }  // flashcfg: 0x400
+			// Slave name width = 8
+			{ 11'h400 }, //     mdio: 0x1000
+			{ 11'h380 }, //     eth0: 0x0e00
+			{ 11'h300 }, //      cfg: 0x0c00
+			{ 11'h280 }, // wb32_sio: 0x0a00
+			{ 11'h200 }, //     uart: 0x0800
+			{ 11'h180 }, // flashdbg: 0x0600
+			{ 11'h100 }  // flashcfg: 0x0400
 		}),
 		.SLAVE_MASK({
-			// Address width    = 9
+			// Address width    = 11
 			// Address LSBs     = 2
-			{ 9'h1e0 }, //     mdio
-			{ 9'h1e0 }, //     eth0
-			{ 9'h1e0 }, //      cfg
-			{ 9'h1e0 }, // wb32_sio
-			{ 9'h1e0 }, //     uart
-			{ 9'h1e0 }, // flashdbg
-			{ 9'h1e0 }  // flashcfg
+			// Slave name width = 8
+			{ 11'h400 }, //     mdio
+			{ 11'h780 }, //     eth0
+			{ 11'h780 }, //      cfg
+			{ 11'h780 }, // wb32_sio
+			{ 11'h780 }, //     uart
+			{ 11'h780 }, // flashdbg
+			{ 11'h780 }  // flashcfg
 		}),
 		.OPT_DBLBUFFER(1'b1))
 	wb32_xbar(
@@ -1334,12 +1340,14 @@ module	main(i_clk, i_reset,
 		.SLAVE_ADDR({
 			// Address width    = 30
 			// Address LSBs     = 2
+			// Slave name width = 11
 			{ 30'h20000000 }, //         zip: 0x80000000
 			{ 30'h00000000 }  // wbu_arbiter: 0x00000000
 		}),
 		.SLAVE_MASK({
 			// Address width    = 30
 			// Address LSBs     = 2
+			// Slave name width = 11
 			{ 30'h38000000 }, //         zip
 			{ 30'h20000000 }  // wbu_arbiter
 		}),
@@ -2003,7 +2011,7 @@ module	main(i_clk, i_reset,
 	) u_mdio (
 		.i_clk(i_clk), .i_reset(i_reset),
 		.i_wb_cyc(wb32_mdio_cyc), .i_wb_stb(wb32_mdio_stb), .i_wb_we(wb32_mdio_we),
-			.i_wb_addr(wb32_mdio_addr[5-1:0]),
+			.i_wb_addr(wb32_mdio_addr[10-1:0]),
 			.i_wb_data(wb32_mdio_data), // 32 bits wide
 			.i_wb_sel(wb32_mdio_sel),  // 32/8 bits wide
 		.o_wb_stall(wb32_mdio_stall),.o_wb_ack(wb32_mdio_ack), .o_wb_data(wb32_mdio_idata),
@@ -2445,9 +2453,9 @@ module	main(i_clk, i_reset,
 	wbdown #(
 		// {{{
 		// Slave bus address width: 25
-		// Slave address width    : 5
-		// Master address width   : 9
-		.ADDRESS_WIDTH(5+$clog2(512/8)),
+		// Slave address width    : 7
+		// Master address width   : 11
+		.ADDRESS_WIDTH(7+$clog2(512/8)),
 		.WIDE_DW(512),
 		.SMALL_DW(32),
 		.OPT_LITTLE_ENDIAN(1'b0),
@@ -2462,7 +2470,7 @@ module	main(i_clk, i_reset,
 		.i_wcyc(  wbwide_crossbus_cyc),
 		.i_wstb(  wbwide_crossbus_stb),
 		.i_wwe(   wbwide_crossbus_we),
-		.i_waddr( wbwide_crossbus_addr[5-1:0]),
+		.i_waddr( wbwide_crossbus_addr[7-1:0]),
 		.i_wdata( wbwide_crossbus_data),
 		.i_wsel(  wbwide_crossbus_sel),
 		.o_wstall(wbwide_crossbus_stall),
@@ -2475,7 +2483,7 @@ module	main(i_clk, i_reset,
 		.o_scyc(  wb32_crossbus_cyc),
 		.o_sstb(  wb32_crossbus_stb),
 		.o_swe(   wb32_crossbus_we),
-		.o_saddr( wb32_crossbus_addr[9-1:0]),
+		.o_saddr( wb32_crossbus_addr[11-1:0]),
 		.o_sdata( wb32_crossbus_data),
 		.o_ssel(  wb32_crossbus_sel),
 		.i_sstall(wb32_crossbus_stall),

@@ -73,96 +73,96 @@
 // FLASH erase/program configuration registers
 #define	R_FLASHCFG      	0x08000400	// 08000400, wbregs names: FLASHCFG, QSPIC
 // flashdbg compressed scope
-#define	R_FLASHSCOPE    	0x08000480	// 08000480, wbregs names: FLASHSCOPE
-#define	R_FLASHSCOPED   	0x08000484	// 08000480, wbregs names: FLASHSCOPED
+#define	R_FLASHSCOPE    	0x08000600	// 08000600, wbregs names: FLASHSCOPE
+#define	R_FLASHSCOPED   	0x08000604	// 08000600, wbregs names: FLASHSCOPED
 // CONSOLE registers
-#define	R_CONSOLE_FIFO  	0x08000504	// 08000500, wbregs names: UFIFO
-#define	R_CONSOLE_UARTRX	0x08000508	// 08000500, wbregs names: RX
-#define	R_CONSOLE_UARTTX	0x0800050c	// 08000500, wbregs names: TX
+#define	R_CONSOLE_FIFO  	0x08000804	// 08000800, wbregs names: UFIFO
+#define	R_CONSOLE_UARTRX	0x08000808	// 08000800, wbregs names: RX
+#define	R_CONSOLE_UARTTX	0x0800080c	// 08000800, wbregs names: TX
 // SYSCLK Clock Counter (measures clock speed)
-#define	R_ADCCLK        	0x08000580	// 08000580, wbregs names: ADCCLK
-#define	R_BUILDTIME     	0x08000584	// 08000584, wbregs names: BUILDTIME
-#define	R_PIC           	0x08000588	// 08000588, wbregs names: PIC
-#define	R_PWRCOUNT      	0x0800058c	// 0800058c, wbregs names: PWRCOUNT
-#define	R_RTCCOUNT      	0x08000590	// 08000590, wbregs names: RTCCOUNT
+#define	R_ADCCLK        	0x08000a00	// 08000a00, wbregs names: ADCCLK
+#define	R_BUILDTIME     	0x08000a04	// 08000a04, wbregs names: BUILDTIME
+#define	R_PIC           	0x08000a08	// 08000a08, wbregs names: PIC
+#define	R_PWRCOUNT      	0x08000a0c	// 08000a0c, wbregs names: PWRCOUNT
+#define	R_RTCCOUNT      	0x08000a10	// 08000a10, wbregs names: RTCCOUNT
 // SYSCLK Clock Counter (measures clock speed)
-#define	R_RXETH0CK      	0x08000594	// 08000594, wbregs names: RXETH0CK
-#define	R_SPIO          	0x08000598	// 08000598, wbregs names: SPIO
+#define	R_RXETH0CK      	0x08000a14	// 08000a14, wbregs names: RXETH0CK
+#define	R_SPIO          	0x08000a18	// 08000a18, wbregs names: SPIO
 // SYSCLK Clock Counter (measures clock speed)
-#define	R_TXCLK         	0x0800059c	// 0800059c, wbregs names: TXCLK
-#define	R_VERSION       	0x080005a0	// 080005a0, wbregs names: VERSION
+#define	R_TXCLK         	0x08000a1c	// 08000a1c, wbregs names: TXCLK
+#define	R_VERSION       	0x08000a20	// 08000a20, wbregs names: VERSION
 // FPGA CONFIG REGISTERS: 0x4e0-0x4ff
-#define	R_CFG_CRC       	0x08000600	// 08000600, wbregs names: FPGACRC
-#define	R_CFG_FAR       	0x08000604	// 08000600, wbregs names: FPGAFAR
-#define	R_CFG_FDRI      	0x08000608	// 08000600, wbregs names: FPGAFDRI
-#define	R_CFG_FDRO      	0x0800060c	// 08000600, wbregs names: FPGAFDRO
-#define	R_CFG_CMD       	0x08000610	// 08000600, wbregs names: FPGACMD
-#define	R_CFG_CTL0      	0x08000614	// 08000600, wbregs names: FPGACTL0
-#define	R_CFG_MASK      	0x08000618	// 08000600, wbregs names: FPGAMASK
-#define	R_CFG_STAT      	0x0800061c	// 08000600, wbregs names: FPGASTAT
-#define	R_CFG_LOUT      	0x08000620	// 08000600, wbregs names: FPGALOUT
-#define	R_CFG_COR0      	0x08000624	// 08000600, wbregs names: FPGACOR0
-#define	R_CFG_MFWR      	0x08000628	// 08000600, wbregs names: FPGAMFWR
-#define	R_CFG_CBC       	0x0800062c	// 08000600, wbregs names: FPGACBC
-#define	R_CFG_IDCODE    	0x08000630	// 08000600, wbregs names: FPGAIDCODE
-#define	R_CFG_AXSS      	0x08000634	// 08000600, wbregs names: FPGAAXSS
-#define	R_CFG_COR1      	0x08000638	// 08000600, wbregs names: FPGACOR1
-#define	R_CFG_WBSTAR    	0x08000640	// 08000600, wbregs names: WBSTAR
-#define	R_CFG_TIMER     	0x08000644	// 08000600, wbregs names: CFGTIMER
-#define	R_CFG_BOOTSTS   	0x08000658	// 08000600, wbregs names: BOOTSTS
-#define	R_CFG_CTL1      	0x08000660	// 08000600, wbregs names: FPGACTL1
-#define	R_CFG_BSPI      	0x0800067c	// 08000600, wbregs names: FPGABSPI
+#define	R_CFG_CRC       	0x08000c00	// 08000c00, wbregs names: FPGACRC
+#define	R_CFG_FAR       	0x08000c04	// 08000c00, wbregs names: FPGAFAR
+#define	R_CFG_FDRI      	0x08000c08	// 08000c00, wbregs names: FPGAFDRI
+#define	R_CFG_FDRO      	0x08000c0c	// 08000c00, wbregs names: FPGAFDRO
+#define	R_CFG_CMD       	0x08000c10	// 08000c00, wbregs names: FPGACMD
+#define	R_CFG_CTL0      	0x08000c14	// 08000c00, wbregs names: FPGACTL0
+#define	R_CFG_MASK      	0x08000c18	// 08000c00, wbregs names: FPGAMASK
+#define	R_CFG_STAT      	0x08000c1c	// 08000c00, wbregs names: FPGASTAT
+#define	R_CFG_LOUT      	0x08000c20	// 08000c00, wbregs names: FPGALOUT
+#define	R_CFG_COR0      	0x08000c24	// 08000c00, wbregs names: FPGACOR0
+#define	R_CFG_MFWR      	0x08000c28	// 08000c00, wbregs names: FPGAMFWR
+#define	R_CFG_CBC       	0x08000c2c	// 08000c00, wbregs names: FPGACBC
+#define	R_CFG_IDCODE    	0x08000c30	// 08000c00, wbregs names: FPGAIDCODE
+#define	R_CFG_AXSS      	0x08000c34	// 08000c00, wbregs names: FPGAAXSS
+#define	R_CFG_COR1      	0x08000c38	// 08000c00, wbregs names: FPGACOR1
+#define	R_CFG_WBSTAR    	0x08000c40	// 08000c00, wbregs names: WBSTAR
+#define	R_CFG_TIMER     	0x08000c44	// 08000c00, wbregs names: CFGTIMER
+#define	R_CFG_BOOTSTS   	0x08000c58	// 08000c00, wbregs names: BOOTSTS
+#define	R_CFG_CTL1      	0x08000c60	// 08000c00, wbregs names: FPGACTL1
+#define	R_CFG_BSPI      	0x08000c7c	// 08000c00, wbregs names: FPGABSPI
 // Meganet register definitions
-#define	R_ETH0_RXCMD    	0x08000680	// 08000680, wbregs names: ETH0RX
-#define	R_ETH0_TXCMD    	0x08000684	// 08000680, wbregs names: ETH0TX
-#define	R_ETH0_MACHI    	0x08000688	// 08000680, wbregs names: ETH0MACHI
-#define	R_ETH0_MACLO    	0x0800068c	// 08000680, wbregs names: ETH0MACLO
-#define	R_ETH0_IPADDR   	0x08000690	// 08000680, wbregs names: ETH0IPADDR, ETH0IP
-#define	R_ETH0_RXMISS   	0x08000694	// 08000680, wbregs names: ETH0MISS
-#define	R_ETH0_RXERR    	0x08000698	// 08000680, wbregs names: ETH0ERR
-#define	R_ETH0_RXCRC    	0x0800069c	// 08000680, wbregs names: ETH0CRCER
-#define	R_ETH0_DBGSEL   	0x080006a0	// 08000680, wbregs names: ETH0DBGSL
-#define	R_ETH0_RXPKTS   	0x080006a0	// 08000680, wbregs names: ETH0RXPKT
-#define	R_ETH0_ARPRX    	0x080006a4	// 08000680, wbregs names: ETH0ARPRX
-#define	R_ETH0_ICMPRX   	0x080006a8	// 08000680, wbregs names: ETH0ICMRX
-#define	R_ETH0_TXPKTS   	0x080006ac	// 08000680, wbregs names: ETH0TXPKT
-#define	R_ETH0_ARPTX    	0x080006b0	// 08000680, wbregs names: ETH0ARPTX
-#define	R_ETH0_ICMPTX   	0x080006b4	// 08000680, wbregs names: ETH0ICMTX
-#define	R_ETH0_DATATX   	0x080006b8	// 08000680, wbregs names: ETH0DATTX
-#define	R_ETH0_TXABORTS 	0x080006bc	// 08000680, wbregs names: ETH0ABRTS
-#define	R_ETH0_DBGRX    	0x080006c0	// 08000680, wbregs names: ETH0DBGRX
-#define	R_ETH0_DBGTX    	0x080006c4	// 08000680, wbregs names: ETH0DBGTX
+#define	R_ETH0_RXCMD    	0x08000e00	// 08000e00, wbregs names: ETH0RX
+#define	R_ETH0_TXCMD    	0x08000e04	// 08000e00, wbregs names: ETH0TX
+#define	R_ETH0_MACHI    	0x08000e08	// 08000e00, wbregs names: ETH0MACHI
+#define	R_ETH0_MACLO    	0x08000e0c	// 08000e00, wbregs names: ETH0MACLO
+#define	R_ETH0_IPADDR   	0x08000e10	// 08000e00, wbregs names: ETH0IPADDR, ETH0IP
+#define	R_ETH0_RXMISS   	0x08000e14	// 08000e00, wbregs names: ETH0MISS
+#define	R_ETH0_RXERR    	0x08000e18	// 08000e00, wbregs names: ETH0ERR
+#define	R_ETH0_RXCRC    	0x08000e1c	// 08000e00, wbregs names: ETH0CRCER
+#define	R_ETH0_DBGSEL   	0x08000e20	// 08000e00, wbregs names: ETH0DBGSL
+#define	R_ETH0_RXPKTS   	0x08000e20	// 08000e00, wbregs names: ETH0RXPKT
+#define	R_ETH0_ARPRX    	0x08000e24	// 08000e00, wbregs names: ETH0ARPRX
+#define	R_ETH0_ICMPRX   	0x08000e28	// 08000e00, wbregs names: ETH0ICMRX
+#define	R_ETH0_TXPKTS   	0x08000e2c	// 08000e00, wbregs names: ETH0TXPKT
+#define	R_ETH0_ARPTX    	0x08000e30	// 08000e00, wbregs names: ETH0ARPTX
+#define	R_ETH0_ICMPTX   	0x08000e34	// 08000e00, wbregs names: ETH0ICMTX
+#define	R_ETH0_DATATX   	0x08000e38	// 08000e00, wbregs names: ETH0DATTX
+#define	R_ETH0_TXABORTS 	0x08000e3c	// 08000e00, wbregs names: ETH0ABRTS
+#define	R_ETH0_DBGRX    	0x08000e40	// 08000e00, wbregs names: ETH0DBGRX
+#define	R_ETH0_DBGTX    	0x08000e44	// 08000e00, wbregs names: ETH0DBGTX
 // Ethernet configuration (MDIO) port
-#define	R_MDIO_BMCR     	0x08000700	// 08000700, wbregs names: BMCR
-#define	R_MDIO_BMSR     	0x08000704	// 08000700, wbregs names: BMSR
-#define	R_MDIO_PHYIDR1  	0x08000708	// 08000700, wbregs names: PHYIDR1
-#define	R_MDIO_PHYIDR2  	0x0800070c	// 08000700, wbregs names: PHYIDR2
-#define	R_MDIO_ANAR     	0x08000710	// 08000700, wbregs names: ANAR
-#define	R_MDIO_ANLPAR   	0x08000714	// 08000700, wbregs names: ANLPAR
-#define	R_MDIO_ANER     	0x08000718	// 08000700, wbregs names: ANER
-#define	R_MDIO_ANNPTR   	0x0800071c	// 08000700, wbregs names: ANNPTR
-#define	R_MDIO_ANNPRR   	0x08000720	// 08000700, wbregs names: ANNPRR
-#define	R_MDIO_GBCR     	0x08000724	// 08000700, wbregs names: GBCR
-#define	R_MDIO_GBSR     	0x08000728	// 08000700, wbregs names: GBSR
-#define	R_MDIO_MACR     	0x08000734	// 08000700, wbregs names: MACR
-#define	R_MDIO_MAADR    	0x08000738	// 08000700, wbregs names: MAADR
-#define	R_MDIO_GBESR    	0x0800073c	// 08000700, wbregs names: GBESR
-#define	R_MDIO_PHYCR    	0x08000740	// 08000700, wbregs names: PHYCR
-#define	R_MDIO_PHYSR    	0x08000744	// 08000700, wbregs names: PHYSR
-#define	R_MDIO_INER     	0x08000748	// 08000700, wbregs names: INER
-#define	R_MDIO_INSR     	0x0800074c	// 08000700, wbregs names: INSR
-#define	R_MDIO_RXERC    	0x08000760	// 08000700, wbregs names: RXERC
-#define	R_MDIO_LDPSR    	0x0800076c	// 08000700, wbregs names: LDPSR
-#define	R_MDIO_EPAGSR   	0x08000778	// 08000700, wbregs names: EPAGSR
-#define	R_MDIO_PAGSEL   	0x0800077c	// 08000700, wbregs names: PAGSEL
-#define	R_XMDIO_PC1R    	0x08000700	// 08000700, wbregs names: XPC1R
-#define	R_XMDIO_PS1R    	0x08000704	// 08000700, wbregs names: XPS1R
-#define	R_XMDIO_EEECR   	0x08000750	// 08000700, wbregs names: XEEECR
-#define	R_XMDIO_EEEWER  	0x08000740	// 08000700, wbregs names: XEEEWER
-#define	R_XMDIO_EEEAR   	0x080007f0	// 08000700, wbregs names: XEEEAR
-#define	R_XMDIO_EEELPAR 	0x080007f4	// 08000700, wbregs names: XEEELPAR
-#define	R_XMDIO_LACR    	0x08000768	// 08000700, wbregs names: XLACR
-#define	R_XMDIO_LCR     	0x08000770	// 08000700, wbregs names: XLCR
+#define	R_MDIO_BMCR     	0x08001000	// 08001000, wbregs names: BMCR
+#define	R_MDIO_BMSR     	0x08001004	// 08001000, wbregs names: BMSR
+#define	R_MDIO_PHYIDR1  	0x08001008	// 08001000, wbregs names: PHYIDR1
+#define	R_MDIO_PHYIDR2  	0x0800100c	// 08001000, wbregs names: PHYIDR2
+#define	R_MDIO_ANAR     	0x08001010	// 08001000, wbregs names: ANAR
+#define	R_MDIO_ANLPAR   	0x08001014	// 08001000, wbregs names: ANLPAR
+#define	R_MDIO_ANER     	0x08001018	// 08001000, wbregs names: ANER
+#define	R_MDIO_ANNPTR   	0x0800101c	// 08001000, wbregs names: ANNPTR
+#define	R_MDIO_ANNPRR   	0x08001020	// 08001000, wbregs names: ANNPRR
+#define	R_MDIO_GBCR     	0x08001024	// 08001000, wbregs names: GBCR
+#define	R_MDIO_GBSR     	0x08001028	// 08001000, wbregs names: GBSR
+#define	R_MDIO_MACR     	0x08001034	// 08001000, wbregs names: MACR
+#define	R_MDIO_MAADR    	0x08001038	// 08001000, wbregs names: MAADR
+#define	R_MDIO_GBESR    	0x0800103c	// 08001000, wbregs names: GBESR
+#define	R_MDIO_PHYCR    	0x08001040	// 08001000, wbregs names: PHYCR
+#define	R_MDIO_PHYSR    	0x08001044	// 08001000, wbregs names: PHYSR
+#define	R_MDIO_INER     	0x08001048	// 08001000, wbregs names: INER
+#define	R_MDIO_INSR     	0x0800104c	// 08001000, wbregs names: INSR
+#define	R_MDIO_RXERC    	0x08001060	// 08001000, wbregs names: RXERC
+#define	R_MDIO_LDPSR    	0x0800106c	// 08001000, wbregs names: LDPSR
+#define	R_MDIO_EPAGSR   	0x08001078	// 08001000, wbregs names: EPAGSR
+#define	R_MDIO_PAGSEL   	0x0800107c	// 08001000, wbregs names: PAGSEL
+#define	R_XMDIO_PC1R    	0x08001000	// 08001000, wbregs names: XPC1R
+#define	R_XMDIO_PS1R    	0x08001004	// 08001000, wbregs names: XPS1R
+#define	R_XMDIO_EEECR   	0x08001050	// 08001000, wbregs names: XEEECR
+#define	R_XMDIO_EEEWER  	0x08001040	// 08001000, wbregs names: XEEEWER
+#define	R_XMDIO_EEEAR   	0x080010f0	// 08001000, wbregs names: XEEEAR
+#define	R_XMDIO_EEELPAR 	0x080010f4	// 08001000, wbregs names: XEEELPAR
+#define	R_XMDIO_LACR    	0x08001068	// 08001000, wbregs names: XLACR
+#define	R_XMDIO_LCR     	0x08001070	// 08001000, wbregs names: XLCR
 #define	R_BKRAM         	0x0a000000	// 0a000000, wbregs names: RAM
 #define	R_SDRAM         	0x40000000	// 40000000, wbregs names: SDRAM
 // ZipCPU control/debug registers
@@ -273,7 +273,7 @@
 #define	RESET_ADDRESS	@$[0x%08x](bkrom.REGBASE)
 #else
 #ifdef	FLASH_ACCESS
-#define	RESET_ADDRESS	0x04600000
+#define	RESET_ADDRESS	0x04c00000
 #else
 #define	RESET_ADDRESS	0x0a000000
 #endif	// FLASH_ACCESS

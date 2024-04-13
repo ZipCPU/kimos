@@ -45,7 +45,7 @@
 module	enetctrl #(
 		// {{{
 		parameter	CLKBITS=2, // = 3 for 200MHz src, 2 for 100 MHz
-		parameter [4:0]	PHYADDR = 5'h01,
+		parameter [4:0]	PHYADDR = 5'h00,
 `ifdef	FORMAL
 		parameter [0:0]		F_OPT_COVER =  1'b0,
 `else
@@ -61,7 +61,7 @@ module	enetctrl #(
 		// {{{
 		input	wire		i_clk, i_reset,
 		input	wire		i_wb_cyc, i_wb_stb, i_wb_we,
-		input	wire	[4:0]	i_wb_addr,
+		input	wire	[9:0]	i_wb_addr,
 		input	wire	[31:0]	i_wb_data,
 		input	wire	[3:0]	i_wb_sel,
 		output	reg		o_wb_stall, o_wb_ack,
@@ -79,7 +79,7 @@ module	enetctrl #(
 	// Local declarations
 	// {{{
 	reg		read_pending, write_pending;
-	reg	[4:0]	r_addr;
+	reg	[9:0]	r_addr;
 	reg	[15:0]	read_reg;
 	reg	[15:0]	write_reg, r_data;
 	reg	[2:0]	ctrl_state;
@@ -256,6 +256,9 @@ module	enetctrl #(
 			// {{{
 			o_mdwe <= 1'b1; // Write
 			write_reg <= { 4'he, PHYADDR, r_addr, 2'b11 };
+			write_reg[11:7] <= r_addr[9:5] ^ PHYADDR;
+			write_reg[ 6:2] <= r_addr[4:0];
+			write_reg[ 1:0] <= 2'b11;
 			if (write_pending)
 			begin
 				write_reg[15:12] <= { 4'h5 };

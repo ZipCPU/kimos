@@ -130,27 +130,27 @@ typedef struct ENETSTREAM_S {
 //
 // The Ethernet MDIO interface
 //
-#define MDIO_BMCR	0x00
-#define MDIO_BMSR	0x01
-#define MDIO_PHYIDR1	0x02
-#define MDIO_PHYIDR2	0x03
-#define MDIO_ANAR	0x04
-#define MDIO_ANLPAR	0x05
-#define MDIO_ANER	0x06
-#define MDIO_ANNPTR	0x07
-#define MDIO_ANNPRR	0x08
-#define MDIO_GBCR	0x09
-#define MDIO_GBSR	0x0a
-#define MDIO_MACR	0x0d
-#define MDIO_MAADR	0x0e
-#define MDIO_GBESR	0x0f
-#define MDIO_PHYCR	0x10
-#define MDIO_PHYSR	0x11
-#define MDIO_INER	0x12
-#define MDIO_INSR	0x13
-#define MDIO_LDPSR	0x1b
-#define MDIO_EPAGSR	0x1e
-#define MDIO_PAGSEL	0x1f
+#define MDIO_CONTROL	0x00
+#define MDIO_STATUS	0x01
+#define MDIO_PHYIDR1	0x02	// PHY ID Register #1
+#define MDIO_PHYIDR2	0x03	// PHY ID Register #2
+#define MDIO_ANAR	0x04	// Autonegotiation advertisement
+#define MDIO_ANLPAR	0x05	// Autonegotiation link partner ability
+#define MDIO_ANER	0x06	// Autonegotiation expansion
+#define MDIO_ANNPTR	0x07	// Autonegotiation next page
+#define MDIO_ANNPRR	0x08	// Autonegotiation link partner next page
+#define MDIO_GBCR	0x09	// 1GBase-T Control
+#define MDIO_GBSR	0x0a	// 1GBase-T Status
+#define MDIO_MACR	0x0d	// MMD Access control
+#define MDIO_MAADR	0x0e	// MMD Access register/data
+#define MDIO_GBESR	0x0f	// Extended status
+#define MDIO_LOOPBACK	0x11	// Vendor specific: remote loopback
+#define MDIO_CBLDIAG	0x12	// Vendor specific: link MD cable diagnostic
+#define MDIO_PMASTAT	0x13	// Vendor specific: Digital PMA/PCS status
+#define MDIO_RXERCNT	0x15	// Vendor specific: RXER Counter
+#define MDIO_INT	0x1b	// Vendor specific: Interrupt control/status
+#define MDIO_AUTOMDIl	0x1b	// Vendor specific: Auto MDI/MDI-X
+#define MDIO_PHYCTRL	0x1f	// Vendor specific: PHY control
 
 #define XMDIO_PC1R	0x00
 #define XMDIO_PS1R	0x01
@@ -163,7 +163,7 @@ typedef struct ENETSTREAM_S {
 // #define XMDIO_ACCR	0x1b
 
 typedef struct ENETMDIO_S {
-	unsigned	e_v[32];
+	unsigned	e_v[32][32];
 } ENETMDIO;
 
 
@@ -210,37 +210,37 @@ static volatile struct SDIO_S *const _sdio = ((struct SDIO_S *)0x02000000);
 #endif	// SDIO_ACCESS
 #ifdef	SPIO_ACCESS
 #define	_BOARD_HAS_SPIO
-static volatile unsigned *const _spio = ((unsigned *)0x08000598);
+static volatile unsigned *const _spio = ((unsigned *)0x08000a18);
 #endif	// SPIO_ACCESS
 #ifdef	PWRCOUNT_ACCESS
-static volatile unsigned *const _pwrcount = ((unsigned *)0x0800058c);
+static volatile unsigned *const _pwrcount = ((unsigned *)0x08000a0c);
 #endif	// PWRCOUNT_ACCESS
 #ifdef	CFG_ACCESS
 #define	_BOARD_HAS_ICAPTETWO
-static volatile unsigned *const _icape = ((unsigned *)0x00000600);
+static volatile unsigned *const _icape = ((unsigned *)0x00000c00);
 #endif	// CFG_ACCESS
 #ifdef	VERSION_ACCESS
 #define	_BOARD_HAS_VERSION
-static volatile unsigned *const _version = ((unsigned *)0x080005a0);
+static volatile unsigned *const _version = ((unsigned *)0x08000a20);
 #endif	// VERSION_ACCESS
 #ifdef	ETH0_ACCESS
 #define	_BOARD_HAS_ETH0
-static volatile ENETSTREAM *const io_eth0 = ((ENETSTREAM *)0x08000680);
+static volatile ENETSTREAM *const io_eth0 = ((ENETSTREAM *)0x08000e00);
 #endif	// ETH0_ACCESS
 #ifdef	TXCLK
-static volatile unsigned *const _txclk = ((unsigned *)0x0800059c);
+static volatile unsigned *const _txclk = ((unsigned *)0x08000a1c);
 #endif	// TXCLK
 #define	_BOARD_HAS_BUILDTIME
-static volatile unsigned *const _buildtime = ((unsigned *)0x08000584);
+static volatile unsigned *const _buildtime = ((unsigned *)0x08000a04);
 #ifdef	NETCTRL_ACCESS
 #define	_BOARD_HAS_NETMDIO
-static volatile ENETMDIO *const _mdio = ((ENETMDIO *)0x08000700);
+static volatile ENETMDIO *const _mdio = ((ENETMDIO *)0x08001000);
 #endif	// NETCTRL_ACCESS
 #ifdef	RXETH0CK
-static volatile unsigned *const _rxeth0ck = ((unsigned *)0x08000594);
+static volatile unsigned *const _rxeth0ck = ((unsigned *)0x08000a14);
 #endif	// RXETH0CK
 #ifdef	ADCCLK
-static volatile unsigned *const _adcclk = ((unsigned *)0x08000580);
+static volatile unsigned *const _adcclk = ((unsigned *)0x08000a00);
 #endif	// ADCCLK
 #ifdef	FLASH_ACCESS
 #define	_BOARD_HAS_FLASH
@@ -248,11 +248,11 @@ extern int _flash[1];
 #endif	// FLASH_ACCESS
 #ifdef	FLASHSCOPE_SCOPC
 #define	_BOARD_HAS_FLASHSCOPE
-static volatile WBSCOPE *const _flashdbg = ((WBSCOPE *)0x08000480);
+static volatile WBSCOPE *const _flashdbg = ((WBSCOPE *)0x08000600);
 #endif	// FLASHSCOPE_SCOPC
 #ifdef	BUSCONSOLE_ACCESS
 #define	_BOARD_HAS_BUSCONSOLE
-static volatile CONSOLE *const _uart = ((CONSOLE *)0x08000500);
+static volatile CONSOLE *const _uart = ((CONSOLE *)0x08000800);
 #endif	// BUSCONSOLE_ACCESS
 #ifdef	BKRAM_ACCESS
 #define	_BOARD_HAS_BKRAM
@@ -268,7 +268,7 @@ extern char	_sdram[0x40000000];
 #endif	// SDRAM_ACCESS
 #ifdef	BUSPIC_ACCESS
 #define	_BOARD_HAS_BUSPIC
-static volatile unsigned *const _buspic = ((unsigned *)0x08000588);
+static volatile unsigned *const _buspic = ((unsigned *)0x08000a08);
 #endif	// BUSPIC_ACCESS
 //
 // Interrupt assignments (3 PICs)

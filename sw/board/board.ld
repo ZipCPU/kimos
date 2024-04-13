@@ -83,7 +83,7 @@ _top_of_stack = ORIGIN(sdram) + LENGTH(sdram);
 /* LD.SCRIPT from zipmaster.txt */
 SECTIONS
 {
-       .rocode 0x04600000 : ALIGN(4) {
+       .rocode 0x04c00000 : ALIGN(4) {
                _boot_address = .;
                *(.start) *(.boot)
                *(.text.startup)

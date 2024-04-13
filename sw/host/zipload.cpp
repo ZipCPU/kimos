@@ -232,7 +232,7 @@ int main(int argc, char **argv) {
 #ifdef	FLASH_ACCESS
 	flash = new FLASHDRVR(m_fpga);
 	char	*fbuf = new char[FLASHLEN];
-	unsigned	bitend = fbuf+sz;
+	unsigned	bitend = 0;
 
 	// Set the flash buffer to all ones
 	memset(fbuf, -1, FLASHLEN);

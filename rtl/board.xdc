@@ -1,118 +1,3 @@
-set_max_delay -datapath_only -from [get_cells [list {thedesign/u_eth0/arp_afifo/wgray_reg[0]} \
-          {thedesign/u_eth0/arp_afifo/wgray_reg[1]} \
-          {thedesign/u_eth0/arp_afifo/wgray_reg[2]} \
-          {thedesign/u_eth0/arp_afifo/wgray_reg[3]} \
-          {thedesign/u_eth0/cpu_rx/u_afifo/wgray_reg[0]} \
-          {thedesign/u_eth0/cpu_rx/u_afifo/wgray_reg[1]} \
-          {thedesign/u_eth0/cpu_rx/u_afifo/wgray_reg[2]} \
-          {thedesign/u_eth0/cpu_rx/u_afifo/wgray_reg[3]} \
-          {thedesign/u_eth0/dbg_afifo/wgray_reg[0]} \
-          {thedesign/u_eth0/dbg_afifo/wgray_reg[1]} \
-          {thedesign/u_eth0/dbg_afifo/wgray_reg[2]} \
-          {thedesign/u_eth0/dbg_afifo/wgray_reg[3]} \
-          {thedesign/u_eth0/icmp_afifo/wgray_reg[0]} \
-          {thedesign/u_eth0/icmp_afifo/wgray_reg[1]} \
-          {thedesign/u_eth0/icmp_afifo/wgray_reg[2]} \
-          {thedesign/u_eth0/icmp_afifo/wgray_reg[3]}]] -to [get_cells [list {thedesign/u_eth0/arp_afifo/wgray_cross_reg[0]} \
-          {thedesign/u_eth0/arp_afifo/wgray_cross_reg[1]} \
-          {thedesign/u_eth0/arp_afifo/wgray_cross_reg[2]} \
-          {thedesign/u_eth0/arp_afifo/wgray_cross_reg[3]} \
-          {thedesign/u_eth0/cpu_rx/u_afifo/wgray_cross_reg[0]} \
-          {thedesign/u_eth0/cpu_rx/u_afifo/wgray_cross_reg[1]} \
-          {thedesign/u_eth0/cpu_rx/u_afifo/wgray_cross_reg[2]} \
-          {thedesign/u_eth0/cpu_rx/u_afifo/wgray_cross_reg[3]} \
-          {thedesign/u_eth0/cputx_afifo/wgray_cross_reg[0]} \
-          {thedesign/u_eth0/cputx_afifo/wgray_cross_reg[1]} \
-          {thedesign/u_eth0/cputx_afifo/wgray_cross_reg[2]} \
-          {thedesign/u_eth0/cputx_afifo/wgray_cross_reg[3]} \
-          {thedesign/u_eth0/data_afifo/wgray_cross_reg[0]} \
-          {thedesign/u_eth0/data_afifo/wgray_cross_reg[1]} \
-          {thedesign/u_eth0/data_afifo/wgray_cross_reg[2]} \
-          {thedesign/u_eth0/data_afifo/wgray_cross_reg[3]} \
-          {thedesign/u_eth0/dbg_afifo/wgray_cross_reg[0]} \
-          {thedesign/u_eth0/dbg_afifo/wgray_cross_reg[1]} \
-          {thedesign/u_eth0/dbg_afifo/wgray_cross_reg[2]} \
-          {thedesign/u_eth0/dbg_afifo/wgray_cross_reg[3]} \
-          {thedesign/u_eth0/dbgtx_afifo/wgray_cross_reg[0]} \
-          {thedesign/u_eth0/dbgtx_afifo/wgray_cross_reg[1]} \
-          {thedesign/u_eth0/dbgtx_afifo/wgray_cross_reg[2]} \
-          {thedesign/u_eth0/dbgtx_afifo/wgray_cross_reg[3]} \
-          {thedesign/u_eth0/icmp_afifo/wgray_cross_reg[0]} \
-          {thedesign/u_eth0/icmp_afifo/wgray_cross_reg[1]} \
-          {thedesign/u_eth0/icmp_afifo/wgray_cross_reg[2]} \
-          {thedesign/u_eth0/icmp_afifo/wgray_cross_reg[3]}]] 8.000
-set_max_delay -datapath_only -from [get_cells [list {thedesign/u_eth0/arp_afifo/rgray_reg[0]} \
-          {thedesign/u_eth0/arp_afifo/rgray_reg[1]} \
-          {thedesign/u_eth0/arp_afifo/rgray_reg[2]} \
-          {thedesign/u_eth0/arp_afifo/rgray_reg[3]} \
-          {thedesign/u_eth0/cpu_rx/u_afifo/rgray_reg[0]} \
-          {thedesign/u_eth0/cpu_rx/u_afifo/rgray_reg[1]} \
-          {thedesign/u_eth0/cpu_rx/u_afifo/rgray_reg[2]} \
-          {thedesign/u_eth0/cpu_rx/u_afifo/rgray_reg[3]} \
-          {thedesign/u_eth0/cputx_afifo/rgray_reg[0]} \
-          {thedesign/u_eth0/cputx_afifo/rgray_reg[1]} \
-          {thedesign/u_eth0/cputx_afifo/rgray_reg[2]} \
-          {thedesign/u_eth0/cputx_afifo/rgray_reg[3]} \
-          {thedesign/u_eth0/data_afifo/rgray_reg[0]} \
-          {thedesign/u_eth0/data_afifo/rgray_reg[1]} \
-          {thedesign/u_eth0/data_afifo/rgray_reg[2]} \
-          {thedesign/u_eth0/data_afifo/rgray_reg[3]} \
-          {thedesign/u_eth0/dbg_afifo/rgray_reg[0]} \
-          {thedesign/u_eth0/dbg_afifo/rgray_reg[1]} \
-          {thedesign/u_eth0/dbg_afifo/rgray_reg[2]} \
-          {thedesign/u_eth0/dbg_afifo/rgray_reg[3]} \
-          {thedesign/u_eth0/dbgtx_afifo/rgray_reg[0]} \
-          {thedesign/u_eth0/dbgtx_afifo/rgray_reg[1]} \
-          {thedesign/u_eth0/dbgtx_afifo/rgray_reg[2]} \
-          {thedesign/u_eth0/dbgtx_afifo/rgray_reg[3]} \
-          {thedesign/u_eth0/icmp_afifo/rgray_reg[0]} \
-          {thedesign/u_eth0/icmp_afifo/rgray_reg[1]} \
-          {thedesign/u_eth0/icmp_afifo/rgray_reg[2]} \
-          {thedesign/u_eth0/icmp_afifo/rgray_reg[3]}]] -to [get_cells [list {thedesign/u_eth0/arp_afifo/rgray_cross_reg[0]} \
-          {thedesign/u_eth0/arp_afifo/rgray_cross_reg[1]} \
-          {thedesign/u_eth0/arp_afifo/rgray_cross_reg[2]} \
-          {thedesign/u_eth0/arp_afifo/rgray_cross_reg[3]} \
-          {thedesign/u_eth0/cpu_rx/u_afifo/rgray_cross_reg[0]} \
-          {thedesign/u_eth0/cpu_rx/u_afifo/rgray_cross_reg[1]} \
-          {thedesign/u_eth0/cpu_rx/u_afifo/rgray_cross_reg[2]} \
-          {thedesign/u_eth0/cpu_rx/u_afifo/rgray_cross_reg[3]} \
-          {thedesign/u_eth0/cputx_afifo/rgray_cross_reg[0]} \
-          {thedesign/u_eth0/cputx_afifo/rgray_cross_reg[1]} \
-          {thedesign/u_eth0/cputx_afifo/rgray_cross_reg[2]} \
-          {thedesign/u_eth0/cputx_afifo/rgray_cross_reg[3]} \
-          {thedesign/u_eth0/data_afifo/rgray_cross_reg[0]} \
-          {thedesign/u_eth0/data_afifo/rgray_cross_reg[1]} \
-          {thedesign/u_eth0/data_afifo/rgray_cross_reg[2]} \
-          {thedesign/u_eth0/data_afifo/rgray_cross_reg[3]} \
-          {thedesign/u_eth0/dbg_afifo/rgray_cross_reg[0]} \
-          {thedesign/u_eth0/dbg_afifo/rgray_cross_reg[1]} \
-          {thedesign/u_eth0/dbg_afifo/rgray_cross_reg[2]} \
-          {thedesign/u_eth0/dbg_afifo/rgray_cross_reg[3]} \
-          {thedesign/u_eth0/dbgtx_afifo/rgray_cross_reg[0]} \
-          {thedesign/u_eth0/dbgtx_afifo/rgray_cross_reg[1]} \
-          {thedesign/u_eth0/dbgtx_afifo/rgray_cross_reg[2]} \
-          {thedesign/u_eth0/dbgtx_afifo/rgray_cross_reg[3]} \
-          {thedesign/u_eth0/icmp_afifo/rgray_cross_reg[0]} \
-          {thedesign/u_eth0/icmp_afifo/rgray_cross_reg[1]} \
-          {thedesign/u_eth0/icmp_afifo/rgray_cross_reg[2]} \
-          {thedesign/u_eth0/icmp_afifo/rgray_cross_reg[3]}]] 8.000
-set_max_delay -datapath_only -from [get_cells [list sdrami/r_sys_reset_reg sdrami/r_sys_reset_reg0]] -to [get_cells [list {thedesign/u_eth0/net_core/preq_tx_reset_reg[0]} {thedesign/u_eth0/net_core/preq_tx_reset_reg[1]}]] 8.000
-set_max_delay -datapath_only -from [get_cells [list thedesign/u_eth0/net_core/tfr_rxipaddr/b_last_reg thedesign/u_eth0/tfr_rxcounters/b_last_reg thedesign/u_eth0/tfr_rxdbgsel/b_last_reg thedesign/u_eth0/tfr_txcounters/b_last_reg thedesign/u_eth0/tfr_txdbgsel/b_last_reg]] -to [get_cells [list {thedesign/u_eth0/net_core/tfr_rxipaddr/a_pipe_reg[0]} {thedesign/u_eth0/tfr_rxcounters/a_pipe_reg[0]} {thedesign/u_eth0/tfr_rxdbgsel/a_pipe_reg[0]} {thedesign/u_eth0/tfr_txcounters/a_pipe_reg[0]} {thedesign/u_eth0/tfr_txdbgsel/a_pipe_reg[0]}]] 8.000
-set_max_delay -datapath_only -from [get_cells [list sdrami/r_sys_reset_reg sdrami/r_sys_reset_reg0]] -to [get_cells [list {thedesign/u_eth0/net_core/preq_rx_reset_reg[0]} {thedesign/u_eth0/net_core/preq_rx_reset_reg[1]}]] 8.000
-set_max_delay -datapath_only -from [get_cells thedesign/u_eth0/net_core/o_net_reset_n_reg] -to [get_cells [list {thedesign/u_eth0/net_core/preq_rx_reset_reg[0]} {thedesign/u_eth0/net_core/preq_rx_reset_reg[1]} {thedesign/u_eth0/net_core/q_rx_reset_reg[0]} {thedesign/u_eth0/net_core/q_rx_reset_reg[1]}]] 8.000
-set_max_delay -datapath_only -from [get_cells [list thedesign/u_eth0/net_core/tfr_rxipaddr/b_last_reg thedesign/u_eth0/tfr_rxcounters/b_last_reg thedesign/u_eth0/tfr_rxdbgsel/b_last_reg thedesign/u_eth0/tfr_txcounters/b_last_reg thedesign/u_eth0/tfr_txdbgsel/b_last_reg]] -to [get_cells [list {thedesign/u_eth0/net_core/tfr_rxipaddr/a_pipe_reg[0]} {thedesign/u_eth0/tfr_rxcounters/a_pipe_reg[0]} {thedesign/u_eth0/tfr_rxdbgsel/a_pipe_reg[0]} {thedesign/u_eth0/tfr_txcounters/a_pipe_reg[0]} {thedesign/u_eth0/tfr_txdbgsel/a_pipe_reg[0]}]] 8.000
-set_max_delay -datapath_only -from [get_cells [list thedesign/u_eth0/tfr_rxcounters/a_req_i_1__4 \
-          thedesign/u_eth0/tfr_rxcounters/a_req_i_2__4 \
-          thedesign/u_eth0/tfr_rxcounters/a_req_reg \
-          thedesign/u_eth0/tfr_rxdbgsel/a_req_i_1__2 \
-          thedesign/u_eth0/tfr_rxdbgsel/a_req_i_2__2 \
-          thedesign/u_eth0/tfr_rxdbgsel/a_req_reg \
-          thedesign/u_eth0/tfr_txcounters/a_req_i_1__5 \
-          thedesign/u_eth0/tfr_txcounters/a_req_i_2__5 \
-          thedesign/u_eth0/tfr_txcounters/a_req_reg \
-          thedesign/u_eth0/tfr_txdbgsel/a_req_i_1__3 \
-          thedesign/u_eth0/tfr_txdbgsel/a_req_i_2__3 \
-          thedesign/u_eth0/tfr_txdbgsel/a_req_reg]] -to [get_cells [list {thedesign/u_eth0/tfr_rxcounters/b_pipe_reg[0]} {thedesign/u_eth0/tfr_rxdbgsel/b_pipe_reg[0]} {thedesign/u_eth0/tfr_txcounters/b_pipe_reg[0]} {thedesign/u_eth0/tfr_txdbgsel/b_pipe_reg[0]}]] 8.000
 ################################################################################
 ################################################################################
 set_property CFGBVS GND [current_design]
@@ -123,13 +8,14 @@ set_property BITSTREAM.CONFIG.UNUSEDPIN PULLNONE [current_design]
 
 # set_property -dict {PACKAGE_PIN AD24  IOSTANDARD LVCMOS18  } [get_ports {CLK_100_CAL}]
 set_property DCI_CASCADE {32} [get_iobanks 34]
-set_property INTERNAL_VREF 0.75 [get_iobanks 33]
+set_property INTERNAL_VREF 0.675 [get_iobanks 33]
+set_property INTERNAL_VREF 0.750 [get_iobanks 33]
 
 ## Clocks
 ## {{{
 # 100MHz single ended input clock
-set_property -dict {PACKAGE_PIN AA4 IOSTANDARD SSTL15} [get_ports i_clk]
-create_clock -period 10.000 -name i_clk [get_ports i_clk]
+set_property -dict {PACKAGE_PIN AA4 IOSTANDARD SSTL15  } [get_ports {i_clk}];
+create_clock -name i_clk -period 10.000 [get_ports i_clk];
 
 ## set_property DIFF_TERM FALSE [get_ports CLK200_N];
 ## set_property DIFF_TERM FALSE [get_ports CLK200_P];
@@ -201,16 +87,16 @@ create_clock -period 10.000 -name i_clk [get_ports i_clk]
 ## set_property SLEW SLOW [get_ports LED1_N];
 ## set_property SLEW SLOW [get_ports LED2_N];
 ## set_property SLEW SLOW [get_ports LED3_N];
-set_property -dict {SLEW SLOW PACKAGE_PIN U9 IOSTANDARD SSTL15} [get_ports {o_led[0]}]
-set_property -dict {SLEW SLOW PACKAGE_PIN V12 IOSTANDARD SSTL15} [get_ports {o_led[1]}]
-set_property -dict {SLEW SLOW PACKAGE_PIN V13 IOSTANDARD SSTL15} [get_ports {o_led[2]}]
-set_property -dict {SLEW SLOW PACKAGE_PIN W13 IOSTANDARD SSTL15} [get_ports {o_led[3]}]
+set_property -dict {SLEW SLOW PACKAGE_PIN U9  IOSTANDARD SSTL15 } [get_ports {o_led[0]}]; # LED0_N
+set_property -dict {SLEW SLOW PACKAGE_PIN V12 IOSTANDARD SSTL15 } [get_ports {o_led[1]}]; # LED1_N
+set_property -dict {SLEW SLOW PACKAGE_PIN V13 IOSTANDARD SSTL15 } [get_ports {o_led[2]}]; # LED2_N
+set_property -dict {SLEW SLOW PACKAGE_PIN W13 IOSTANDARD SSTL15 } [get_ports {o_led[3]}]; # LED3_N
 
 ## Baseboard LEDs
-set_property -dict {SLEW SLOW PACKAGE_PIN F22 IOSTANDARD LVCMOS18} [get_ports {o_led[4]}]
-set_property -dict {SLEW SLOW PACKAGE_PIN E23 IOSTANDARD LVCMOS18} [get_ports {o_led[5]}]
-set_property -dict {SLEW SLOW PACKAGE_PIN K25 IOSTANDARD LVCMOS18} [get_ports {o_led[6]}]
-set_property -dict {SLEW SLOW PACKAGE_PIN K26 IOSTANDARD LVCMOS18} [get_ports {o_led[7]}]
+set_property -dict {SLEW SLOW PACKAGE_PIN F22   IOSTANDARD LVCMOS18  } [get_ports { o_led[4] }]; # GPIO0_LED0_N
+set_property -dict {SLEW SLOW PACKAGE_PIN E23   IOSTANDARD LVCMOS18  } [get_ports { o_led[5] }]; # GPIO1_LED1_N
+set_property -dict {SLEW SLOW PACKAGE_PIN K25   IOSTANDARD LVCMOS18  } [get_ports { o_led[6] }]; # LED2
+set_property -dict {SLEW SLOW PACKAGE_PIN K26   IOSTANDARD LVCMOS18  } [get_ports { o_led[7] }]; # LED3
 
 ## C142 LED2 (ST1)
 ## C144 LED3 (ST1)
@@ -228,18 +114,18 @@ set_property -dict {SLEW SLOW PACKAGE_PIN K26 IOSTANDARD LVCMOS18} [get_ports {o
 
 ## UART
 ## {{{
-set_property -dict {PACKAGE_PIN B20 IOSTANDARD LVCMOS18} [get_ports i_wbu_uart_rx]
-set_property -dict {PACKAGE_PIN A20 IOSTANDARD LVCMOS18} [get_ports o_wbu_uart_tx]
+set_property -dict {PACKAGE_PIN B20   IOSTANDARD LVCMOS18  } [get_ports {i_wbu_uart_rx}]; # UART_RX
+set_property -dict {PACKAGE_PIN A20   IOSTANDARD LVCMOS18  } [get_ports {o_wbu_uart_tx}]; # UART_TX
 ## }}}
 
 ## Buttons
 ## {{{
-set_property -dict {PACKAGE_PIN C22 IOSTANDARD LVCMOS18} [get_ports {i_btn[0]}]
+set_property -dict {PACKAGE_PIN C22   IOSTANDARD LVCMOS18    } [get_ports {i_btn[0]}]; # (Not in TCL)
 ##
 ## Button #1 will affect the user oscillator speed, if the Si5338 is so config'd
 ##	(It affects the speed of CLK_CG, which feeds inputs 1 and 2 of the
 ##	 Si5338)
-set_property -dict {PACKAGE_PIN AD23 IOSTANDARD LVCMOS18} [get_ports {i_btn[1]}]
+set_property -dict {PACKAGE_PIN AD23  IOSTANDARD LVCMOS18    } [get_ports {i_btn[1]}]; # (Not in TCL)
 ## IO B14 L7  C22  N / A100 / BTN0#
 ## IO B12 L16 AD23 P / A58  / BTN1#
 
@@ -472,7 +358,7 @@ set_property SLEW SLOW [get_ports o_ddr3_vsel]
 # set_property -dict {PACKAGE_PIN AB12  IOSTANDARD DIFF_SSTL15} [get_ports {o_ddr3_clk_p}];
 # set_property -dict {PACKAGE_PIN AA13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[0]}];
 # set_property -dict {PACKAGE_PIN AF13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[1]}];
-set_property -dict {PACKAGE_PIN AA3 IOSTANDARD SSTL15} [get_ports o_ddr3_vsel]
+set_property -dict {PACKAGE_PIN AA3   IOSTANDARD SSTL15    } [get_ports {o_ddr3_vsel}];
 # set_property -dict {PACKAGE_PIN Y12   IOSTANDARD SSTL15    } [get_ports {o_ddr3_s_n[0]}];
 # set_property -dict {PACKAGE_PIN Y13   IOSTANDARD SSTL15    } [get_ports {o_ddr3_s_n[1]}];
 # set_property -dict {PACKAGE_PIN AE12  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cas_n}];
@@ -648,24 +534,24 @@ set_property -dict {PACKAGE_PIN AA3 IOSTANDARD SSTL15} [get_ports o_ddr3_vsel]
 ## {{{
 ## Should these be o_eth_mdclk and io_eth_mdio?
 ##
-set_property -dict {PACKAGE_PIN B25 IOSTANDARD LVCMOS18} [get_ports o_eth_mdclk]
-set_property -dict {PACKAGE_PIN B26 IOSTANDARD LVCMOS18} [get_ports io_eth_mdio]
+set_property -dict {PACKAGE_PIN B25   IOSTANDARD LVCMOS18  } [get_ports {o_eth_mdclk}]; # FPGA_MDC_PUDC_N
+set_property -dict {PACKAGE_PIN B26   IOSTANDARD LVCMOS18  } [get_ports {io_eth_mdio}]; # FPGA_MDIO_EMCCLK
 ## }}}
 
 ## Ethernet #0
 ## {{{
-set_property -dict {PACKAGE_PIN H23 IOSTANDARD LVCMOS18} [get_ports {i_eth0_rxd[0]}]
-set_property -dict {PACKAGE_PIN H24 IOSTANDARD LVCMOS18} [get_ports {i_eth0_rxd[1]}]
-set_property -dict {PACKAGE_PIN J21 IOSTANDARD LVCMOS18} [get_ports {i_eth0_rxd[2]}]
-set_property -dict {PACKAGE_PIN H22 IOSTANDARD LVCMOS18} [get_ports {i_eth0_rxd[3]}]
-set_property -dict {PACKAGE_PIN G22 IOSTANDARD LVCMOS18} [get_ports i_eth0_rx_clk]
-set_property -dict {PACKAGE_PIN F23 IOSTANDARD LVCMOS18} [get_ports i_eth0_rx_ctl]
-set_property -dict {SLEW FAST PACKAGE_PIN J24 IOSTANDARD LVCMOS18} [get_ports {o_eth0_txd[0]}]
-set_property -dict {SLEW FAST PACKAGE_PIN J25 IOSTANDARD LVCMOS18} [get_ports {o_eth0_txd[1]}]
-set_property -dict {SLEW FAST PACKAGE_PIN L22 IOSTANDARD LVCMOS18} [get_ports {o_eth0_txd[2]}]
-set_property -dict {SLEW FAST PACKAGE_PIN K22 IOSTANDARD LVCMOS18} [get_ports {o_eth0_txd[3]}]
-set_property -dict {SLEW FAST PACKAGE_PIN K23 IOSTANDARD LVCMOS18} [get_ports o_eth0_tx_clk]
-set_property -dict {SLEW FAST PACKAGE_PIN J23 IOSTANDARD LVCMOS18} [get_ports o_eth0_tx_ctl]
+set_property -dict {PACKAGE_PIN H23   IOSTANDARD LVCMOS18  } [get_ports {i_eth0_rxd[0]}]; # ETH0_RX_D[0]
+set_property -dict {PACKAGE_PIN H24   IOSTANDARD LVCMOS18  } [get_ports {i_eth0_rxd[1]}]; # ETH0_RX_D[1]
+set_property -dict {PACKAGE_PIN J21   IOSTANDARD LVCMOS18  } [get_ports {i_eth0_rxd[2]}]; # ETH0_RX_D[2]
+set_property -dict {PACKAGE_PIN H22   IOSTANDARD LVCMOS18  } [get_ports {i_eth0_rxd[3]}]; # ETH0_RX_D[3]
+set_property -dict {PACKAGE_PIN G22   IOSTANDARD LVCMOS18  } [get_ports {i_eth0_rx_clk}]; # ETH0_RX_CLK
+set_property -dict {PACKAGE_PIN F23   IOSTANDARD LVCMOS18  } [get_ports {i_eth0_rx_ctl}]; # ETH0_RX_CTL
+set_property -dict {SLEW FAST PACKAGE_PIN J24 IOSTANDARD LVCMOS18 } [get_ports { o_eth0_txd[0] }]; # ETH0_TX_D[0]
+set_property -dict {SLEW FAST PACKAGE_PIN J25 IOSTANDARD LVCMOS18 } [get_ports { o_eth0_txd[1] }]; # ETH0_TX_D[1]
+set_property -dict {SLEW FAST PACKAGE_PIN L22 IOSTANDARD LVCMOS18 } [get_ports { o_eth0_txd[2] }]; # ETH0_TX_D[2]
+set_property -dict {SLEW FAST PACKAGE_PIN K22 IOSTANDARD LVCMOS18 } [get_ports { o_eth0_txd[3] }]; # ETH0_TX_D[3]
+set_property -dict {SLEW FAST PACKAGE_PIN K23 IOSTANDARD LVCMOS18 } [get_ports { o_eth0_tx_clk }]; # ETH0_TX_CLK
+set_property -dict {SLEW FAST PACKAGE_PIN J23 IOSTANDARD LVCMOS18 } [get_ports { o_eth0_tx_ctl }]; # ETH0_TX_CTL
 ## }}}
 
 ## Ethernet #1
@@ -688,11 +574,11 @@ set_property -dict {SLEW FAST PACKAGE_PIN J23 IOSTANDARD LVCMOS18} [get_ports o_
 ## Flash
 ## {{{
 # set_property -dict {SLEW SLOW PACKAGE_PIN K21   IOSTANDARD LVCMOS18  } [get_ports {o_qspi_sck}];  # FPGA_CCLK
-set_property -dict {SLEW SLOW PACKAGE_PIN C23 IOSTANDARD LVCMOS18} [get_ports o_qspi_cs_n]
-set_property -dict {SLEW SLOW PACKAGE_PIN B24 IOSTANDARD LVCMOS18} [get_ports {io_qspi_dat[0]}]
-set_property -dict {SLEW SLOW PACKAGE_PIN A25 IOSTANDARD LVCMOS18} [get_ports {io_qspi_dat[1]}]
-set_property -dict {SLEW SLOW PACKAGE_PIN B22 IOSTANDARD LVCMOS18} [get_ports {io_qspi_dat[2]}]
-set_property -dict {SLEW SLOW PACKAGE_PIN A22 IOSTANDARD LVCMOS18} [get_ports {io_qspi_dat[3]}]
+set_property -dict {SLEW SLOW PACKAGE_PIN C23   IOSTANDARD LVCMOS18  } [get_ports {o_qspi_cs_n}]; # FLASH_CS_N
+set_property -dict {SLEW SLOW PACKAGE_PIN B24   IOSTANDARD LVCMOS18  } [get_ports {io_qspi_dat[0]}]; # FLASH_DI
+set_property -dict {SLEW SLOW PACKAGE_PIN A25   IOSTANDARD LVCMOS18  } [get_ports {io_qspi_dat[1]}]; # FLASH_DO
+set_property -dict {SLEW SLOW PACKAGE_PIN B22   IOSTANDARD LVCMOS18  } [get_ports {io_qspi_dat[2]}]; # FLASH_WP_N
+set_property -dict {SLEW SLOW PACKAGE_PIN A22   IOSTANDARD LVCMOS18  } [get_ports {io_qspi_dat[3]}]; # FLASH_HOLD_N
 ## }}}
 
 ## FTDI
@@ -717,14 +603,14 @@ set_property -dict {SLEW SLOW PACKAGE_PIN A22 IOSTANDARD LVCMOS18} [get_ports {i
 
 ## SDCARD
 ## {{{
-set_property -dict {PACKAGE_PIN C21 IOSTANDARD LVCMOS18} [get_ports o_sdcard_clk]
-set_property -dict {PACKAGE_PIN B21 IOSTANDARD LVCMOS18} [get_ports io_sdcard_cmd]
-set_property -dict {PACKAGE_PIN D26 IOSTANDARD LVCMOS18} [get_ports {io_sdcard_dat[0]}]
-set_property -dict {PACKAGE_PIN C26 IOSTANDARD LVCMOS18} [get_ports {io_sdcard_dat[1]}]
-set_property -dict {PACKAGE_PIN A23 IOSTANDARD LVCMOS18} [get_ports {io_sdcard_dat[2]}]
-set_property -dict {PACKAGE_PIN A24 IOSTANDARD LVCMOS18} [get_ports {io_sdcard_dat[3]}]
+set_property -dict {PACKAGE_PIN C21   IOSTANDARD LVCMOS18  } [get_ports {o_sdcard_clk}];  # SDIO_CLK
+set_property -dict {PACKAGE_PIN B21   IOSTANDARD LVCMOS18  } [get_ports {io_sdcard_cmd}]; # SDIO_CLK
+set_property -dict {PACKAGE_PIN D26   IOSTANDARD LVCMOS18  } [get_ports {io_sdcard_dat[0]}];  # SDIO_D0
+set_property -dict {PACKAGE_PIN C26   IOSTANDARD LVCMOS18  } [get_ports {io_sdcard_dat[1]}];  # SDIO_D1
+set_property -dict {PACKAGE_PIN A23   IOSTANDARD LVCMOS18  } [get_ports {io_sdcard_dat[2]}];  # SDIO_D2
+set_property -dict {PACKAGE_PIN A24   IOSTANDARD LVCMOS18  } [get_ports {io_sdcard_dat[3]}];  # SDIO_D3
 
-set_property -dict {PACKAGE_PIN D21 IOSTANDARD LVCMOS18} [get_ports i_sdcard_cd_n]
+set_property -dict {PACKAGE_PIN D21   IOSTANDARD LVCMOS18  } [get_ports {i_sdcard_cd_n}];  # SDCARD_CD#
 
 ## IO B14 L10 C21 P / A91 / SDIO_CLK
 ## IO B14 L10 B21 N / A93 / SDIO_CMD
@@ -737,13 +623,15 @@ set_property -dict {PACKAGE_PIN D21 IOSTANDARD LVCMOS18} [get_ports i_sdcard_cd_
 ## IO B14 L7  D21 P / A98  / SDCARD_CD#
 ## }}}
 
+set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
+
 ## Adding in any XDC_INSERT tags
 
 ## No XDC.INSERT tag in XDC
 ## No XDC.INSERT tag in mem_bkram_only
 ## No XDC.INSERT tag in mem_flash_bkram
 ## From sdio
-set_property PULLUP true [get_ports io_sdcard_cmd]
+set_property -dict { PULLTYPE PULLUP } [get_ports io_sdcard_cmd]
 ## No XDC.INSERT tag in spio
 ## No XDC.INSERT tag in rtccount
 ## No XDC.INSERT tag in pwrcount
@@ -753,69 +641,71 @@ set_property PULLUP true [get_ports io_sdcard_cmd]
 ## No XDC.INSERT tag in wbu
 ## No XDC.INSERT tag in version
 ## From eth0
-create_clock -period 8.000 -name ETH0RX -waveform {0.000 4.000} -add [get_ports i_eth0_rx_clk]
+create_clock -period 8.0 -name ETH0RX -waveform { 0.0 4.0 } -add [get_ports {i_eth0_rx_clk} ];
 
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *afifo*/wgray_r*}] -to [get_cells -hier -filter {NAME =~ *afifo*/wgray_cross*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *afifo*/rgray_r*}] -to [get_cells -hier -filter {NAME =~ *afifo*/rgray_cross*}] 8.000
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *afifo*/wgray_r*}] -to [ get_cells -hier -filter {NAME =~ *afifo*/wgray_cross*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *afifo*/rgray_r*}] -to [ get_cells -hier -filter {NAME =~ *afifo*/rgray_cross*}] 8.0
 
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/o_net_reset_n_reg*}] -to [get_cells -hier -filter {NAME =~*u_eth0/net_core/n_tx_reset_reg*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/o_net_reset_n_reg}] -to [get_cells -hier -filter {NAME =~*net_core/q_tx_reset*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}] -to [get_cells -hier -filter {NAME =~*u_eth0/u_icmpstream/M_AXIN_VALID_reg*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}] -to [get_cells -hier -filter {NAME =~*u_eth0/u_icmpstream/M_AXIN_DATA_reg*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}] -to [get_cells -hier -filter {NAME =~*u_eth0/u_icmpstream/M_AXIN_LAST_reg*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/tfrtxspd/a_req*}] -to [get_cells -hier -filter {NAME =~*u_eth0/net_core/tfrtxspd/b_pipe*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/tfrtxspd/a_data*}] -to [get_cells -hier -filter {NAME =~*u_eth0/net_core/tfrtxspd/o_b_data_reg*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/hw_mac_reg*}] -to [get_cells -hier -filter {NAME =~*txmaci/r_hw*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netclk_stable*}] -to [get_cells -hier -filter {NAME =~*/reset_pipe*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netclk_stable*}] -to [get_cells -hier -filter {NAME =~*/sync_reset*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *tfr_*/b_last**}] -to [get_cells -hier -filter {NAME =~*tfr_*/a_pipe*}] 8.000
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/o_net_reset_n_reg*}]    -to [ get_cells -hier -filter {NAME =~*u_eth0/net_core/n_tx_reset_reg*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]         -to [ get_cells -hier -filter {NAME =~*net_core/preq_tx_reset*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/o_net_reset_n_reg}]  -to [ get_cells -hier -filter {NAME =~*net_core/q_tx_reset*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]         -to [ get_cells -hier -filter {NAME =~*u_eth0/u_icmpstream/M_AXIN_VALID_reg*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]         -to [ get_cells -hier -filter {NAME =~*u_eth0/u_icmpstream/M_AXIN_DATA_reg*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]         -to [ get_cells -hier -filter {NAME =~*u_eth0/u_icmpstream/M_AXIN_LAST_reg*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/tfrtxspd/a_req*}]  -to [ get_cells -hier -filter {NAME =~*u_eth0/net_core/tfrtxspd/b_pipe*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/tfrtxspd/a_data*}] -to [ get_cells -hier -filter {NAME =~*u_eth0/net_core/tfrtxspd/o_b_data_reg*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/hw_mac_reg*}]        -to [ get_cells -hier -filter {NAME =~*txmaci/r_hw*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netclk_stable*}]              -to [ get_cells -hier -filter {NAME =~*/reset_pipe*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netclk_stable*}]              -to [ get_cells -hier -filter {NAME =~*/sync_reset*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *tfr_*/b_last**}]              -to [ get_cells -hier -filter {NAME =~*tfr_*/a_pipe*}] 8.0
 
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/tfrtxspd/b_last*}] -to [get_cells -hier -filter {NAME =~ *tfrtxspd/a_pipe*}] 8.000
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/tfrtxspd/b_last*}] -to [ get_cells -hier -filter {NAME =~ *tfrtxspd/a_pipe*}] 8.0
 
 
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/arp_afifo/mem*}] -to [get_cells -hier -filter {NAME =~*u_eth0/arp_afifo/GEN_REGISTERED_READ.o_rd_data*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/icmp_afifo/mem*}] -to [get_cells -hier -filter {NAME =~*u_eth0/icmp_afifo/GEN_REGISTERED_READ.o_rd_data*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/n_rx_link_spd*}] -to [get_cells -hier -filter {NAME =~*u_eth0/net_core/n_tx_spd*}] 8.000
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/arp_afifo/mem*}]      -to [ get_cells -hier -filter {NAME =~*u_eth0/arp_afifo/GEN_REGISTERED_READ.o_rd_data*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/icmp_afifo/mem*}]      -to [ get_cells -hier -filter {NAME =~*u_eth0/icmp_afifo/GEN_REGISTERED_READ.o_rd_data*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/n_rx_link_spd*}]      -to [ get_cells -hier -filter {NAME =~*u_eth0/net_core/n_tx_spd*}] 8.0
 
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}] -to [get_cells -hier -filter {NAME =~ *tfrrxspd/a_ack*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}] -to [get_cells -hier -filter {NAME =~*tfrrxspd/a_pipe*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}] -to [get_cells -hier -filter {NAME =~ *tfrrxspd/a_req*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/o_net_reset_n_reg*}] -to [get_cells -hier -filter {NAME =~ *n_rx_reset*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/o_net_reset_n_reg*}] -to [get_cells -hier -filter {NAME =~ *q_rx_reset*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/tfrrxspd/b_last*}] -to [get_cells -hier -filter {NAME =~ *tfrrxspd/a_pipe*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/my_ipaddr_reg*}] -to [get_cells -hier -filter {NAME =~*o_no_match_reg*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/my_ipaddr_reg*}] -to [get_cells -hier -filter {NAME =~*o_match_reg*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/my_ipaddr_reg*}] -to [get_cells -hier -filter {NAME =~*rxipci/o_err*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/my_ipaddr_reg*}] -to [get_cells -hier -filter {NAME =~*rxipci/o_err*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/my_ipaddr_reg*}] -to [get_cells -hier -filter {NAME =~*arp/M_AXIN_DATA*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/hw_mac_reg*}] -to [get_cells -hier -filter {NAME =~*arp/M_AXIN_DATA*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/hw_mac_reg*}] -to [get_cells -hier -filter {NAME =~*rxmaci/r_hwmac*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/hw_mac_reg*}] -to [get_cells -hier -filter {NAME =~*u_eth0/u_arp/M_AXIN_DATA*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/my_ipaddr_reg*}] -to [get_cells -hier -filter {NAME =~*u_eth0/u_arp/M_AXIN_DATA*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/n_rx_reset*}] -to [get_cells -hier -filter {NAME =~*u_eth0/net_core/tfr_rxipaddr/b_last*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/n_rx_reset*}] -to [get_cells -hier -filter {NAME =~*u_eth0/net_core/tfr_rxipaddr/b_pipe*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/n_rx_reset*}] -to [get_cells -hier -filter {NAME =~*u_eth0/net_core/tfr_rxipaddr/b_req*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/n_rx_reset*}] -to [get_cells -hier -filter {NAME =~*u_eth0/arp_afifo/rgray_cross*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/n_rx_reset*}] -to [get_cells -hier -filter {NAME =~*u_eth0/arp_afifo/wgray*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *tfr_rxipaddr/a_data*}] -to [get_cells -hier -filter {NAME =~*tfr_rxipaddr/o_b_data*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *tfr_rxipaddr/a_req*}] -to [get_cells -hier -filter {NAME =~*tfr_rxipaddr/o_b_data*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *tfr_rxipaddr/a_req*}] -to [get_cells -hier -filter {NAME =~*tfr_rxipaddr/b_pipe*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *tfr_*/b_last*}] -to [get_cells -hier -filter {NAME =~*tfr_*/a_pipe*}] 8.000
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]       -to [ get_cells -hier -filter {NAME =~ *net_core/preq_rx_reset*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]       -to [ get_cells -hier -filter {NAME =~ *tfrrxspd/a_ack*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]       -to [ get_cells -hier -filter {NAME =~*tfrrxspd/a_pipe*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]       -to [ get_cells -hier -filter {NAME =~ *tfrrxspd/a_req*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/o_net_reset_n_reg*}]   -to [ get_cells -hier -filter {NAME =~ *n_rx_reset*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/o_net_reset_n_reg*}]   -to [ get_cells -hier -filter {NAME =~ *q_rx_reset*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/tfrrxspd/b_last*}] -to [ get_cells -hier -filter {NAME =~ *tfrrxspd/a_pipe*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/my_ipaddr_reg*}]   -to [ get_cells -hier -filter {NAME =~*o_no_match_reg*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/my_ipaddr_reg*}]   -to [ get_cells -hier -filter {NAME =~*o_match_reg*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/my_ipaddr_reg*}]   -to [ get_cells -hier -filter {NAME =~*rxipci/o_err*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/my_ipaddr_reg*}]   -to [ get_cells -hier -filter {NAME =~*rxipci/o_err*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/my_ipaddr_reg*}]   -to [ get_cells -hier -filter {NAME =~*arp/M_AXIN_DATA*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/hw_mac_reg*}]      -to [ get_cells -hier -filter {NAME =~*arp/M_AXIN_DATA*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/hw_mac_reg*}]      -to [ get_cells -hier -filter {NAME =~*rxmaci/r_hwmac*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/hw_mac_reg*}]      -to [ get_cells -hier -filter {NAME =~*u_eth0/u_arp/M_AXIN_DATA*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/my_ipaddr_reg*}]   -to [ get_cells -hier -filter {NAME =~*u_eth0/u_arp/M_AXIN_DATA*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/n_rx_reset*}]      -to [ get_cells -hier -filter {NAME =~*u_eth0/net_core/tfr_rxipaddr/b_last*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/n_rx_reset*}]      -to [ get_cells -hier -filter {NAME =~*u_eth0/net_core/tfr_rxipaddr/b_pipe*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/n_rx_reset*}]      -to [ get_cells -hier -filter {NAME =~*u_eth0/net_core/tfr_rxipaddr/b_req*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/n_rx_reset*}]      -to [ get_cells -hier -filter {NAME =~*u_eth0/arp_afifo/rgray_cross*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/n_rx_reset*}]      -to [ get_cells -hier -filter {NAME =~*u_eth0/arp_afifo/wgray*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *tfr_rxipaddr/a_data*}]      -to [ get_cells -hier -filter {NAME =~*tfr_rxipaddr/o_b_data*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *tfr_rxipaddr/a_req*}]       -to [ get_cells -hier -filter {NAME =~*tfr_rxipaddr/o_b_data*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *tfr_rxipaddr/a_req*}]       -to [ get_cells -hier -filter {NAME =~*tfr_rxipaddr/b_pipe*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *tfr_*/b_last*}]             -to [ get_cells -hier -filter {NAME =~*tfr_*/a_pipe*}] 8.0
 
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/n_rx_err*}] -to [get_cells -hier -filter {NAME =~ *net_core/rx_err_pipe*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/tfrrxspd/a_data*}] -to [get_cells -hier -filter {NAME =~ *net_core/tfrrxspd/o_b_data*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/n_rx_reset*}] -to [get_cells -hier -filter {NAME =~ *net_core/tfrrxspd/b_last*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/n_rx_reset*}] -to [get_cells -hier -filter {NAME =~ *net_core/tfrrxspd/b_pipe*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/n_rx_reset*}] -to [get_cells -hier -filter {NAME =~ *net_core/tfrrxspd/b_req*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/n_rx_crcerr*}] -to [get_cells -hier -filter {NAME =~ *net_core/rx_crc_pipe*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/tfrrxspd/a*}] -to [get_cells -hier -filter {NAME =~ *net_core/tfrrxspd/b*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/n_rx_miss*}] -to [get_cells -hier -filter {NAME =~ *net_core/rx_miss_pipe*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/tfr_*/a_data*}] -to [get_cells -hier -filter {NAME =~ *u_eth0/tfr*/o_b_data*}] 8.000
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/tfr_*/a_req*}] -to [get_cells -hier -filter {NAME =~ *u_eth0/tfr*/b_pipe*}] 8.000
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/n_rx_err*}] -to [ get_cells -hier -filter {NAME =~ *net_core/rx_err_pipe*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/tfrrxspd/a_data*}] -to [ get_cells -hier -filter {NAME =~ *net_core/tfrrxspd/o_b_data*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/n_rx_reset*}]      -to [ get_cells -hier -filter {NAME =~ *net_core/tfrrxspd/b_last*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/n_rx_reset*}]      -to [ get_cells -hier -filter {NAME =~ *net_core/tfrrxspd/b_pipe*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/n_rx_reset*}]      -to [ get_cells -hier -filter {NAME =~ *net_core/tfrrxspd/b_req*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/n_rx_crcerr*}]     -to [ get_cells -hier -filter {NAME =~ *net_core/rx_crc_pipe*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/tfrrxspd/a*}]      -to [ get_cells -hier -filter {NAME =~ *net_core/tfrrxspd/b*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/n_rx_miss*}]       -to [ get_cells -hier -filter {NAME =~ *net_core/rx_miss_pipe*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/tfr_*/a_data*}]             -to [ get_cells -hier -filter {NAME =~ *u_eth0/tfr*/o_b_data*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/tfr_*/a_req*}]              -to [ get_cells -hier -filter {NAME =~ *u_eth0/tfr*/b_pipe*}] 8.0
 
 ## No XDC.INSERT tag in KEYS
 ## From txclk
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *clktxclkctr/avgs*}] -to [get_cells -hier -filter {NAME =~*clktxclkctr/q_v*}] 8.000
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *clktxclkctr/avgs*}]       -to [ get_cells -hier -filter {NAME =~*clktxclkctr/q_v*}]   8.0
 ## No XDC.INSERT tag in RESET_ADDRESS
 ## No XDC.INSERT tag in iclock
 ## No XDC.INSERT tag in zip_alt_uoc
@@ -823,10 +713,10 @@ set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *clktxclkctr
 ## No XDC.INSERT tag in buildtime
 ## No XDC.INSERT tag in mdio
 ## From rxeth0ck
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *clkrxeth0ckctr/avgs*}] -to [get_cells -hier -filter {NAME =~*clkrxeth0ckctr/q_v*}] 8.000
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *clkrxeth0ckctr/avgs*}]       -to [ get_cells -hier -filter {NAME =~*clkrxeth0ckctr/q_v*}]   8.0
 ## No XDC.INSERT tag in REGDEFS
 ## From adcclk
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *clkadcclkctr/avgs*}] -to [get_cells -hier -filter {NAME =~*clkadcclkctr/q_v*}] 8.000
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *clkadcclkctr/avgs*}]       -to [ get_cells -hier -filter {NAME =~*clkadcclkctr/q_v*}]   8.0
 ## No XDC.INSERT tag in zip_alt_mtc
 ## No XDC.INSERT tag in DEFAULT
 ## No XDC.INSERT tag in flash
@@ -861,5 +751,3 @@ set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *clkadcclkct
 ## No XDC.INSERT tag in zip_dmac
 ## No XDC.INSERT tag in zip_jiffies
 ## No XDC.INSERT tag in zip
-
-set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]

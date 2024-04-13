@@ -120,7 +120,7 @@
 @MAIN.PARAM=
 	parameter	[15:0]	UDP_DBGPORT  = @$(UDPDBGPORT);
 
-	localparam	[47:0]	DEF_@$(DEVID)_HWMAC  = 48'h@$[%02x](HWMAC.0)@$[%02x](HWMAC.1)_@$[%02x](HWMAC.2)@$[%02x](HWMAC.2)@$[%02x](HWMAC.4)@$[%02x](HWMAC.5);
+	localparam	[47:0]	DEF_@$(DEVID)_HWMAC  = 48'h@$[%02x](HWMAC.0)@$[%02x](HWMAC.1)_@$[%02x](HWMAC.2)@$[%02x](HWMAC.3)@$[%02x](HWMAC.4)@$[%02x](HWMAC.5);
 	localparam	[31:0]	DEF_@$(DEVID)_IPADDR = 32'h@$[%02x](IPADDR.0)@$[%02x](IPADDR.1)@$[%02x](IPADDR.2)@$[%02x](IPADDR.3);
 @MAIN.IODECL=
         // Ethernet (RGMII) control
@@ -337,7 +337,7 @@ typedef struct ENETSTREAM_S {
 @SIM.INIT=
 		// Network init
 		// {{{
-		m_@$(PREFIX) = new NETSIM(); // @$(UDPDBGPORT), @$(DATAPORT));
+		m_@$(PREFIX) = new NETSIM(); // DBGPORT: @$(UDPDBGPORT), DATAPORT: @$(DATAPORT);
 		m_@$(PREFIX)->external_mac[0] = 0xde;
 		m_@$(PREFIX)->external_mac[1] = 0xad;
 		m_@$(PREFIX)->external_mac[2] = 0xbe;
@@ -348,16 +348,16 @@ typedef struct ENETSTREAM_S {
 		m_@$(PREFIX)->external_ip[1] = 0;
 		m_@$(PREFIX)->external_ip[2] = 0;
 		m_@$(PREFIX)->external_ip[3] = 1;
-		m_@$(PREFIX)->local_mac[0] = 0x@$[%04x](HWMAC.0) & 0x0ff;
-		m_@$(PREFIX)->local_mac[1] = 0x@$[%04x](HWMAC.1) & 0x0ff;
-		m_@$(PREFIX)->local_mac[2] = 0x@$[%08x](HWMAC.2) & 0x0ff;
-		m_@$(PREFIX)->local_mac[3] = 0x@$[%08x](HWMAC.3) & 0x0ff;
-		m_@$(PREFIX)->local_mac[4] = 0x@$[%08x](HWMAC.4) & 0x0ff;
-		m_@$(PREFIX)->local_mac[5] = 0x@$[%08x](HWMAC.5) & 0x0ff;
-		m_@$(PREFIX)->local_ip[0] = 0x@$[%02x](IPADDR.0) & 0x0ff;
-		m_@$(PREFIX)->local_ip[1] = 0x@$[%02x](IPADDR.1) & 0x0ff;
-		m_@$(PREFIX)->local_ip[2] = 0x@$[%02x](IPADDR.2) & 0x0ff;
-		m_@$(PREFIX)->local_ip[3] = 0x@$[%02x](IPADDR.3) & 0x0ff;
+		m_@$(PREFIX)->local_mac[0] = 0x@$[%02x](HWMAC.0) & 0x0ff;
+		m_@$(PREFIX)->local_mac[1] = 0x@$[%02x](HWMAC.1) & 0x0ff;
+		m_@$(PREFIX)->local_mac[2] = 0x@$[%02x](HWMAC.2) & 0x0ff;
+		m_@$(PREFIX)->local_mac[3] = 0x@$[%02x](HWMAC.3) & 0x0ff;
+		m_@$(PREFIX)->local_mac[4] = 0x@$[%02x](HWMAC.4) & 0x0ff;
+		m_@$(PREFIX)->local_mac[5] = 0x@$[%02x](HWMAC.5) & 0x0ff;
+		m_@$(PREFIX)->local_ip[0] = 0x@$[%02x](IPADDR.0) & 0x0ff; // @$[%3d](IPADDR.0)
+		m_@$(PREFIX)->local_ip[1] = 0x@$[%02x](IPADDR.1) & 0x0ff; // @$[%3d](IPADDR.1)
+		m_@$(PREFIX)->local_ip[2] = 0x@$[%02x](IPADDR.2) & 0x0ff; // @$[%3d](IPADDR.2)
+		m_@$(PREFIX)->local_ip[3] = 0x@$[%02x](IPADDR.3) & 0x0ff; // @$[%3d](IPADDR.3)
 		m_@$(PREFIX)->local_ipu = 0x@$[%02x](IPADDR.0)@$[%02x](IPADDR.1)@$[%02x](IPADDR.2)@$[%02x](IPADDR.3);
 		// }}}
 @SIM.TICK=

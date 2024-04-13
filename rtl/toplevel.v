@@ -104,7 +104,7 @@ i_sdcard_cd_n,
 	// }}}
 	parameter	[15:0]	UDP_DBGPORT  = 5929;
 
-	localparam	[47:0]	DEF_ETH0_HWMAC  = 48'h8233_4848e1d0;
+	localparam	[47:0]	DEF_ETH0_HWMAC  = 48'h8233_4802e1d0;
 	localparam	[31:0]	DEF_ETH0_IPADDR = 32'hc0a80118;
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -117,7 +117,7 @@ i_sdcard_cd_n,
 	localparam	RESET_ADDRESS = @$(/bkrom.BASE);
 `else
 `ifdef	FLASH_ACCESS
-	localparam	RESET_ADDRESS = 73400320;
+	localparam	RESET_ADDRESS = 79691776;
 `else
 	localparam	RESET_ADDRESS = 167772160;
 `endif	// FLASH_ACCESS

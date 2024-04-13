@@ -96,7 +96,7 @@ additional peripherals may also be implemented as time and necessity allow.
    Includes [automatic ARP](rtl/proto/arp.v) handling.
    Can be done with only the ability to load the FPGA.
 
-8. [Remote/network DMA](rtl/proto/netdebug.v)
+8. [Network debugging protocol](rtl/proto/netdebug.v)
 
    This will test whether or not memory can be read and/or written from an
    external host, via [specially crafted UDP/IP
@@ -123,5 +123,6 @@ project will be to place it onto the board itself, to see if it still works.
 
 (At present, the design is configured to use Xilinx's MIG controller.  Using
 this controller, the design synthesizes, but fails to load ...  If I remove the
-SDRAM component--controller and all, then the design loads and the DONE LED
-goes high.  Like I said, this project is a work in progress.)
+[SDRAM component--controller and all](autodata/sdram.txt), then the design
+loads fine and the DONE LED goes high.  Like I said, this project is a work in
+progress.)
