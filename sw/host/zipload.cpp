@@ -199,7 +199,7 @@ int main(int argc, char **argv) {
 			printf("AltBitFile: No alternate bit-file given\n");
 
 		if (execfile)
-			printf("Executable: %s\n", altbitfile);
+			printf("Executable: %s\n", execfile);
 		else
 			printf("Executable: No ZipCPU executable (ELF) file given\n");
 	}
@@ -232,6 +232,7 @@ int main(int argc, char **argv) {
 #ifdef	FLASH_ACCESS
 	flash = new FLASHDRVR(m_fpga);
 	char	*fbuf = new char[FLASHLEN];
+	unsigned	bitend = fbuf+sz;
 
 	// Set the flash buffer to all ones
 	memset(fbuf, -1, FLASHLEN);
@@ -258,18 +259,21 @@ int main(int argc, char **argv) {
 				fprintf(stderr, "Writing bitfile to flash ...\n");
 			}
 			flash->write(FLASHBASE, (unsigned)sz, fbuf, true);
+			bitend = sz;
 		} catch(BUSERR b) {
 			fprintf(stderr, "BUS-ERR @0x%08x\n", b.addr);
 			exit(EXIT_FAILURE);
 		}
 	}
 	// }}}
-		
+
 	if (altbitfile) {
 		// {{{
 		FILE	*fp;
 		const unsigned	OFFSET=SECTOROF((RESET_ADDRESS-FLASHBASE)/2);
 		uint64_t	sz = 0;
+
+		assert(OFFSET >= bitend);
 
 		fp = fopen(altbitfile, "rb");
 		if (NULL == fp) {

@@ -622,3 +622,5 @@ set_property -dict {PACKAGE_PIN AA3   IOSTANDARD SSTL15    } [get_ports {o_ddr3_
 
 ## IO B14 L7  D21 P / A98  / SDCARD_CD#
 ## }}}
+
+set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]

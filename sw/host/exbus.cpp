@@ -69,7 +69,7 @@ const	unsigned EXBUS::MAXWRLEN = 32;
 // Debug DBGPRINTF infrastructure
 // {{{
 // #define	DBGPRINTF	printf
-#define	DBGPRINTF	filedump
+// #define	DBGPRINTF	filedump
 #ifndef	DBGPRINTF
 #define	DBGPRINTF	null
 #else
