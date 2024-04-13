@@ -45,29 +45,35 @@ int main(int argc, char **argv) {
 	unsigned	nreg, iface;
 
 	for(iface=0; iface < 32; iface++) {
-		if (0x3 != (iface & 0x3))
-			continue;
-
-		printf("----------------------------------------\n");
-		printf("--  PHY ADDR 0x%02x\n", iface);
-		printf("----------------------------------------\n");
 		nreg = _mdio->e_v[iface][MDIO_CONTROL] & 0x0ffff;
-		printf("%20s: 0x%04x\n", "MDIO Status", nreg);
+		if (0x0ffff == (nreg & 0x0ffff)) {
+			printf("%-12s[0x%2x]  : 0x%04x --> NO PHY\n", "MDIO Status", iface, nreg);
+			// if (0x3 != (iface & 0x1b))
+			continue;
+		}
+
+		printf("------------------------------------------------\n");
+		printf("--  PHY ADDR 0x%02x, starting at 0x%08x\n", iface,
+			(unsigned)&_mdio->e_v[iface][MDIO_CONTROL]);
+		printf("------------------------------------------------\n");
+		nreg = _mdio->e_v[iface][MDIO_CONTROL] & 0x0ffff;
+		printf("%-12s[0x%2x]  : 0x%04x\n", "MDIO Control", iface, nreg);
 		if (nreg & 0x8000)
 			printf("\tSoftware PHY reset\n");
 		if (nreg & 0x4000)
 			printf("\tLoopback\n");
-		if (0 == (nreg & 0x1000))
+		if (0 == (nreg & 0x1000)) {
 			printf("\tAutonegotiation disabled\n");
-		else if (0 == (nreg & 0x2040))
-			printf("\t10Mb/s\n");
-		else if (0x0040 == (nreg & 0x2040))
-			printf("\t100Mb/s\n");
-		else if (0x2000 == (nreg & 0x2040))
-			printf("\t1Gb/s\n");
-		else if (0x2040 == (nreg & 0x2040))
-			printf("\t(Reserved??)\n");
-		if (0 == (nreg & 0x0800))
+			if (0 == (nreg & 0x2040))
+				printf("\t10Mb/s\n");
+			else if (0x0040 == (nreg & 0x2040))
+				printf("\t100Mb/s\n");
+			else if (0x2000 == (nreg & 0x2040))
+				printf("\t1Gb/s\n");
+			else if (0x2040 == (nreg & 0x2040))
+				printf("\t(Reserved?\?)\n");
+		}
+		if (0 != (nreg & 0x0800))
 			printf("\tPowered down\n");
 		if (0 != (nreg & 0x0400))
 			printf("\tIsolated PHY\n");
@@ -77,7 +83,13 @@ int main(int argc, char **argv) {
 			printf("\tHalf duplex mode\n");
 
 		nreg = _mdio->e_v[iface][MDIO_STATUS] & 0x0ffff;
-		printf("%20s: 0x%04x\n", "MDIO Control", nreg);
+		printf("%-20s: 0x%04x\n", "MDIO Status", nreg);
+#ifdef	_BOARD_HAS_MDIOSCOPE
+		// Reset the scope once, before the next read, but do it early
+		// enough that the scope can complete its reset.
+		if (iface == 3)
+			_mdioscope->s_ctrl = 0x0fe;
+#endif
 		if (nreg & 0x8000)
 			printf("\tT4 capable\n");
 		if (0 == (nreg & 0x4000))
@@ -100,12 +112,12 @@ int main(int argc, char **argv) {
 			printf("\tLink is down\n");
 
 		nreg = _mdio->e_v[iface][MDIO_PHYIDR1] & 0x0ffff;
-		printf("%20s: 0x%04x\n", "PHY ID #1(0022h)", nreg);
+		printf("%-20s: 0x%04x.  Should be either 0x0022, or 0x0214\n", "PHY ID #1(0022h)", nreg); 
 		nreg = _mdio->e_v[iface][MDIO_PHYIDR2] & 0x0ffff;
-		printf("%20s: 0x%04x\n", "PHY ID #2", nreg);
+		printf("%-20s: 0x%04x\n", "PHY ID #2", nreg);
 
 		nreg = _mdio->e_v[iface][MDIO_ANAR] & 0x0ffff;
-		printf("%20s: 0x%04x\n", "Auto Advertisement", nreg);
+		printf("%-20s: 0x%04x\n", "Auto Advertisement", nreg);
 		if (0 == (nreg & 0x2000))
 			printf("\tNo remote fault support\n");
 		if (0 == (nreg & 0x0400))
@@ -120,8 +132,8 @@ int main(int argc, char **argv) {
 			printf("\tNo  10MBps half-duplex capability\n");
 
 		nreg = _mdio->e_v[iface][MDIO_ANER] & 0x0ffff;
-		printf("%20s: 0x%04x\n", "Link partner ability", nreg);
-		if (nreg & 0x4000)
+		printf("%-20s: 0x%04x\n", "Link partner ability", nreg);
+		if (nreg & 0x2000)
 			printf("\tRemote fault detected\n");
 		if (0 == (nreg & 0x0400))
 			printf("\tNo T4 capability\n");
@@ -135,31 +147,32 @@ int main(int argc, char **argv) {
 			printf("\tNo  10MBps half-duplex capability\n");
 
 		nreg = _mdio->e_v[iface][MDIO_ANNPTR] & 0x0ffff;
-		printf("%20s: 0x%04x\n", "Auto-neg expansion", nreg);
+		printf("%-20s: 0x%04x\n", "Auto-neg expansion", nreg);
 		nreg = _mdio->e_v[iface][MDIO_ANNPRR] & 0x0ffff;
-		printf("%20s: 0x%04x\n", "Auto-neg next-page", nreg);
+		printf("%-20s: 0x%04x\n", "Auto-neg next-page", nreg);
 		nreg = _mdio->e_v[iface][MDIO_GBCR] & 0x0ffff;
-		printf("%20s: 0x%04x\n", "GBase-T Control", nreg);
+		printf("%-20s: 0x%04x\n", "GBase-T Control", nreg);
 		if (0 != (nreg & 0xe000))
 			printf("\tAbnormal test mode setting: %s\n", (nreg>>13)&7);
-		if (0 != (nreg & 0x1000))
+		if (0 != (nreg & 0x1000)) {
 			printf("\tManual master-slave configuration enabled\n");
-		else if (0 != (nreg & 0x0800))
-			printf("\tPHY confgiured as master\n");
-		else if (0 == (nreg & 0x0800))
-			printf("\tPHY confgiured as slave\n");
+			if (0 != (nreg & 0x0800))
+				printf("\tPHY confgiured as master\n");
+			if (0 == (nreg & 0x0800))
+				printf("\tPHY confgiured as slave\n");
+		}
 		if (0 == (nreg & 0x0200))
 			printf("\tAdvertising as incapable of Gbase-T full-duplex\n");
 		if (0 == (nreg & 0x0100))
 			printf("\tAdvertising as incapable of Gbase-T half-duplex\n");
 
 		nreg = _mdio->e_v[iface][MDIO_GBSR] & 0x0ffff;
-		printf("%20s: 0x%04x\n", "GBase-T Status", nreg);
+		printf("%-20s: 0x%04x\n", "GBase-T Status", nreg);
 		if (0 != (nreg & 0x8000))
 			printf("\tConfiguration fault detected\n");
-		if (0 != (nreg & 0x2000))
+		if (0 == (nreg & 0x2000))
 			printf("\tLocal receiver not okay\n");
-		if (0 != (nreg & 0x1000))
+		if (0 == (nreg & 0x1000))
 			printf("\tRemote receiver not okay\n");
 		if (0 == (nreg & 0x0800))
 			printf("\tLink partner has NO Gbase-T full-duplex capability\n");

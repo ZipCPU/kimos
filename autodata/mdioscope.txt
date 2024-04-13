@@ -1,0 +1,71 @@
+################################################################################
+##
+## Filename: 	autodata/mdioscope.txt
+## {{{
+## Project:	KIMOS, a Mercury KX2 demonstration project
+##
+## Purpose:	Describes how to connect a wishbone scope to the MDIO interface
+##		associated with the ethernet port for debugging purposes.
+##
+## Creator:	Dan Gisselquist, Ph.D.
+##		Gisselquist Technology, LLC
+##
+################################################################################
+## }}}
+## Copyright (C) 2017-2024, Gisselquist Technology, LLC
+## {{{
+## This file is part of the KIMOS project.
+##
+## The KIMOS project is free software and gateware: you can redistribute it
+## and/or modify it under the terms of the GNU General Public License as
+## published by the Free Software Foundation, either version 3 of the License,
+## or (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+## target there if the PDF file isn't present.)  If not, see
+## <http://www.gnu.org/licenses/> for a copy.
+## }}}
+## License:	GPL, v3, as defined and found on www.gnu.org,
+## {{{
+##		http://www.gnu.org/licenses/gpl.html
+##
+################################################################################
+##
+## }}}
+@PREFIX=mdioscope
+@NADDR=2
+@DEVID=MDIOSCOPE
+@DEPENDS=NETCTRL_ACCESS
+@TARGET=mdio
+@$LOG_CAPTURE_SIZE=13
+@MAIN.DEFNS=
+	wire	mdio_dbg_trigger;
+@MAIN.INSERT=
+	@$(CORE) #(
+		// {{{
+		.LGMEM(@$(LOG_CAPTURE_SIZE)),
+		.SYNCHRONOUS(@$(SYNCHRONOUS)),
+		.DEFAULT_HOLDOFF(@$(DEFHOLDOFF))
+		// }}}
+	) @$(PREFIX)i(
+		// {{{
+		.i_data_clk(@$(DATA_CLOCK)), .i_ce(@$(CAPTURECE)),
+		.i_trigger(@$(TRIGGER)), .i_data(@$(DEBUG)),
+		.i_wb_clk(@$(SLAVE.BUS.CLOCK.WIRE)),
+		@$(SLAVE.ANSIPORTLIST),
+		.o_interrupt(@$(PREFIX)_int)
+		// }}}
+	);
+
+	assign	mdio_dbg_trigger = mdio_debug[31];
+@INT.MDIOSCOPE.WIRE=@$(PREFIX)_int
+@INT.MDIOSCOPE.PIC=buspic
+@DATA_CLOCK=i_clk
+@SYNCHRONOUS=1
+@INCLUDEFILE=wbscope.txt

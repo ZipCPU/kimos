@@ -70,7 +70,7 @@
 	wire[31:0]	mdio_debug;
 	// Verilator lint_on  UNUSED
 	enetctrl #(
-		.CLKBITS(2)
+		.CLKBITS(6)
 	) u_@$(PREFIX) (
 		.i_clk(i_clk), .i_reset(i_reset),
 		@$(SLAVE.ANSIPORTLIST),

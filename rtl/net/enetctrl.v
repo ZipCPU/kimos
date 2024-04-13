@@ -255,7 +255,7 @@ module	enetctrl #(
 		ECTRL_IDLE: begin
 			// {{{
 			o_mdwe <= 1'b1; // Write
-			write_reg <= { 4'he, PHYADDR, r_addr, 2'b11 };
+			write_reg <= { 4'he, 10'h0, 2'b11 };
 			write_reg[11:7] <= r_addr[9:5] ^ PHYADDR;
 			write_reg[ 6:2] <= r_addr[4:0];
 			write_reg[ 1:0] <= 2'b11;
@@ -329,7 +329,7 @@ module	enetctrl #(
 
 
 	assign	o_debug = {
-			o_wb_stall,i_wb_stb,i_wb_we, i_wb_addr,	// 8 bits
+			o_wb_stall,i_wb_stb,i_wb_we, i_wb_addr[4:0], // 8 bits
 			o_wb_ack, rclk, o_wb_data[5:0],		// 8 bits
 			zreg_pos, zclk, reg_pos,		// 8 bits
 			read_pending, ctrl_state,		// 4 bits

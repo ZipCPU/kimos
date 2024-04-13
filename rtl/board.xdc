@@ -627,11 +627,9 @@ set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
 
 ## Adding in any XDC_INSERT tags
 
+## No XDC.INSERT tag in noddr
 ## No XDC.INSERT tag in XDC
 ## No XDC.INSERT tag in mem_bkram_only
-## No XDC.INSERT tag in mem_flash_bkram
-## From sdio
-set_property -dict { PULLTYPE PULLUP } [get_ports io_sdcard_cmd]
 ## No XDC.INSERT tag in spio
 ## No XDC.INSERT tag in rtccount
 ## No XDC.INSERT tag in pwrcount
@@ -724,20 +722,16 @@ set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *clkadcclkct
 ## No XDC.INSERT tag in wbwide
 ## No XDC.INSERT tag in wb32
 ## No XDC.INSERT tag in SIM
-## No XDC.INSERT tag in flashdbg
-## No XDC.INSERT tag in uart
-## No XDC.INSERT tag in altpic
 ## No XDC.INSERT tag in wbu_arbiter
 ## No XDC.INSERT tag in zip_alt_uic
 ## No XDC.INSERT tag in TMA
 ## No XDC.INSERT tag in bkram
 ## No XDC.INSERT tag in crossflash
 ## No XDC.INSERT tag in flashcfg
-## No XDC.INSERT tag in sdram
-## No XDC.INSERT tag in syspic
-## No XDC.INSERT tag in mem_flash_sdram
 ## No XDC.INSERT tag in masterclk
 ## No XDC.INSERT tag in zip_alt_mic
+## From sdio
+set_property -dict { PULLTYPE PULLUP } [get_ports io_sdcard_cmd]
 ## No XDC.INSERT tag in zip_alt_moc
 ## No XDC.INSERT tag in netdirs
 ## No XDC.INSERT tag in zip_alt_utc
@@ -747,7 +741,11 @@ set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *clkadcclkct
 ## No XDC.INSERT tag in crossbus
 ## No XDC.INSERT tag in zip_tmc
 ## No XDC.INSERT tag in REGISTER
-## No XDC.INSERT tag in mem_sdram_only
 ## No XDC.INSERT tag in zip_dmac
 ## No XDC.INSERT tag in zip_jiffies
 ## No XDC.INSERT tag in zip
+## No XDC.INSERT tag in syspic
+## No XDC.INSERT tag in uart
+## No XDC.INSERT tag in altpic
+## No XDC.INSERT tag in flashdbg
+## No XDC.INSERT tag in mem_flash_bkram

@@ -15,7 +15,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 // }}}
-// Copyright (C) 2022-2024, Symbiotic EDA, Gmbh
+// Copyright (C) 2022-2024, Gisselquist Technology, LLC
 // {{{
 // This file is part of the KIMOS project.
 //
@@ -40,7 +40,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
-// }}}
+//
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -54,6 +54,7 @@
 #include "regdefs.h"
 #include "devbus.h"
 #include "scopecls.h"
+// }}}
 
 #define	WBSCOPE		R_FLASHSCOPE
 #define	WBSCOPEDATA	R_FLASHSCOPED

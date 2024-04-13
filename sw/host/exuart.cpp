@@ -76,31 +76,44 @@
 #define	FOREVER		-1
 
 void	sigstop(int v) {
+	// {{{
 	fprintf(stderr, "SIGSTOP!!\n");
 	exit(0);
 }
+// }}}
 void	sighup(int v) {
+	// {{{
 	fprintf(stderr, "SIGHUP!!\n");
 	exit(0);
 }
+// }}}
 void	sigint(int v) {
+	// {{{
 	fprintf(stderr, "SIGINT!!\n");
 	exit(0);
 }
+// }}}
 void	sigsegv(int v) {
+	// {{{
 	fprintf(stderr, "SIGSEGV!!\n");
 	exit(0);
 }
+// }}}
 void	sigbus(int v) {
+	// {{{
 	fprintf(stderr, "SIGBUS!!\n");
 	exit(0);
 }
+// }}}
 void	sigpipe(int v) {
+	// {{{
 	fprintf(stderr, "SIGPIPE!!\n");
 	exit(0);
 }
+// }}}
 
 int	setup_listener(const int port) {
+	// {{{
 	int	skt;
 	struct  sockaddr_in     my_addr;
 
@@ -139,6 +152,7 @@ int	setup_listener(const int port) {
 
 	return skt;
 }
+// }}}
 
 class	LINBUFS {
 public:
@@ -153,6 +167,7 @@ public:
 	}
 
 	void	close(void) {
+		// {{{
 		if (!m_connected) {
 			m_fd = -1;
 			return;
@@ -164,18 +179,23 @@ public:
 		m_fd = -1;
 		m_connected = false;
 	}
+	// }}}
 
 	int	read(void) {
+		// {{{
 		return ::read(m_fd, m_buf, sizeof(m_buf));
 	}
+	// }}}
 
 	void	accept(const int skt) {
+		// {{{
 		m_fd = ::accept(skt, 0, 0);
 		if (m_fd < 0) {
 			perror("CMD Accept failed!  O/S Err:");
 			exit(EXIT_FAILURE);
 		} m_connected = (m_fd >= 0);
 	}
+	// }}}
 
 	int	write(int fd, int ln, int mask = 0) {
 		int	pos = 0, nw;
@@ -212,6 +232,7 @@ public:
 	}
 
 	void	print_in(FILE *fp, int ln, const char *prefix = NULL) {
+		// {{{
 		// lbcmd.print_in(ncmd, (lbcmd.m_fd>=0)?"> ":"# ");
 		assert(ln > 0);
 		for(int i=0; i<ln; i++) {
@@ -234,8 +255,10 @@ public:
 			}
 		}
 	}
+	// }}}
 
 	void	print_out(FILE *fp, int ln, const char *prefix = NULL) {
+		// {{{
 		for(int i=0; i<ln; i++) {
 			m_oline[m_olen++] = m_buf[i] & 0x07f;
 			assert(m_buf[i] != '\0');
@@ -254,14 +277,17 @@ public:
 			}
 		}
 	}
+	// }}}
 
 	void	flush_out(FILE *fp, const char *prefix = NULL) {
+		// {{{
 		if(m_olen > 0) {
 			m_oline[m_olen] = '\0';
 			fprintf(fp, "%s%s\n", (prefix)?prefix:"", m_oline);
 			m_olen = 0;
 		}
 	}
+	// }}}
 };
 
 int	main(int argc, char **argv) {
@@ -454,7 +480,8 @@ int	main(int argc, char **argv) {
 				exit(EXIT_FAILURE);
 			} else while(nr > 0) {
 				int	ncmd = 0, ncon = 0;
-				for(int i=0; i<nr; i++) {
+				for(int i=0; i<nr; i++) { // Buffer up data
+					// {{{
 					if (rawbuf[i] & 0x80) {
 						lbcmd.m_buf[ncmd++] = rawbuf[i] & 0x07f;
 						if (0xe4 == (rawbuf[i] & 0xe4)){
@@ -472,7 +499,10 @@ int	main(int argc, char **argv) {
 						lbcon.m_buf[ncon++] = rawbuf[i];
 					}
 				}
-				if ((lbcmd.m_fd >= 0)&&(ncmd>0)) {
+				// }}}
+
+				if ((lbcmd.m_fd >= 0)&&(ncmd>0)) { // DBG Port
+					// {{{
 					int	nw;
 					nw = lbcmd.write(lbcmd.m_fd, ncmd);
 					if(nw != ncmd) {
@@ -483,8 +513,10 @@ int	main(int argc, char **argv) {
 					lbcmd.close();
 					}
 				}
+				// }}}
 
 				if ((lbcon.m_fd >= 0)&&(ncon>0)) {
+					// {{{
 					int	nw;
 					nw = lbcon.write(lbcon.m_fd, ncon);
 					if(nw != ncon) {
@@ -495,6 +527,7 @@ int	main(int argc, char **argv) {
 					lbcon.close();
 					}
 				}
+				// }}}
 
 				// if (ncmd > 0)
 				//	lbcmd.print_in(stdout, ncmd, (lbcmd.m_fd>=0)?"> ":"# ");

@@ -56,8 +56,8 @@
 @$HWMAC.5=0xd0
 @$IPADDR.0=192
 @$IPADDR.1=168
-@$IPADDR.2=1
-@$IPADDR.3=24
+@$IPADDR.2=15
+@$IPADDR.3=26
 @TOP.PORTLIST=
 		// Ethernet control (packets) lines
 		i_@$(PREFIX)_rx_clk, i_@$(PREFIX)_rx_ctl, i_@$(PREFIX)_rxd,
