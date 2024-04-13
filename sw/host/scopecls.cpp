@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename: 	scopecls.cpp
+// Filename:	sw/host/scopecls.cpp
 // {{{
 // Project:	KIMOS, a Mercury KX2 demonstration project
 //
@@ -14,7 +14,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 // }}}
-// Copyright (C) 2022-2024, Symbiotic EDA, Gmbh
+// Copyright (C) 2022-2024, Gisselquist Technology, LLC
 // {{{
 // This file is part of the KIMOS project.
 //

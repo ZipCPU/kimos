@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename:	flashid.cpp
+// Filename:	sw/host/flashid.cpp
 // {{{
 // Project:	KIMOS, a Mercury KX2 demonstration project
 //

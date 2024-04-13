@@ -28,7 +28,7 @@
 ## for more details.
 ##
 ## You should have received a copy of the GNU General Public License along
-## with this program.  (It's in the $(ROOT)/doc directory, run make with no
+## with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
 ## target there if the PDF file isn't present.)  If not, see
 ## <http://www.gnu.org/licenses/> for a copy.
 ## }}}
@@ -50,7 +50,7 @@ $doc = "\$(ROOT)/doc";
 print <<"EOM";
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename: 	builddate.v
+// Filename: 	rtl/builddate.v
 // {{{
 // Project:	KIMOS, a Mercury KX2 demonstration project
 //

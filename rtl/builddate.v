@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename: 	builddate.v
+// Filename: 	rtl/builddate.v
 // {{{
 // Project:	KIMOS, a Mercury KX2 demonstration project
 //
@@ -41,7 +41,7 @@
 //
 // }}}
 `ifndef	DATESTAMP
-`define DATESTAMP 32'h20240411
-`define BUILDTIME 32'h00083414
+`define DATESTAMP 32'h20240413
+`define BUILDTIME 32'h00093238
 `endif
 //
