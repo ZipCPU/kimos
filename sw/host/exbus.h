@@ -69,7 +69,7 @@ private:
 	unsigned int	m_txaddr, m_rxaddr;
 
 	int	m_buflen, m_rdfirst, m_rdlast;
-	char	*m_buf, *m_rdbuf;
+	char	*m_buf;
 
 	bool	m_wrloaded;
 	int	m_rdaddr, m_wraddr, m_qkaddr;
@@ -87,7 +87,6 @@ private:
 		m_wrloaded = false;
 
 		m_rdfirst = m_rdlast = 0;
-		m_rdbuf = new char[RDBUFLN];
 
 		m_qkaddr = m_rdaddr = m_wraddr = 0;
 
@@ -103,7 +102,7 @@ private:
 
 	int	lclread(char *buf, int len);
 	int	lclreadcode(char *buf, int len);
-	char	*encode_address(const BUSW a);
+	char	*encode_address(const BUSW a, const bool inc=true);
 	char	*readcmd(const int len, char *buf);
 	void	sync(void);
 public:
@@ -111,7 +110,6 @@ public:
 	virtual	~EXBUS(void) {
 		m_dev->close();
 		if (m_buf) { delete[] m_buf; m_buf = NULL; }
-		delete m_rdbuf; m_rdbuf = NULL;
 		delete	m_dev;
 	}
 

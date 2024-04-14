@@ -69,7 +69,7 @@ const	unsigned EXBUS::MAXWRLEN = 32;
 // Debug DBGPRINTF infrastructure
 // {{{
 // #define	DBGPRINTF	printf
-// #define	DBGPRINTF	filedump
+#define	DBGPRINTF	filedump
 #ifndef	DBGPRINTF
 #define	DBGPRINTF	null
 #else
@@ -192,10 +192,8 @@ void	EXBUS::writev(const BUSW a, const int p, const int len, const BUSW *buf) {
 
 	// Encode the address
 	// {{{
-	ptr = encode_address(a);
-	if (p)
-		ptr[-1] |= 1;	// Increment addressing
-	m_txaddr = a; m_txaddr_set = true;
+	ptr = encode_address(a, p);
+	m_txaddr = a | (p ? 1:0); m_txaddr_set = true;
 	// }}}
 
 	while(nw < len) {
@@ -267,7 +265,9 @@ void	EXBUS::writev(const BUSW a, const int p, const int len, const BUSW *buf) {
 			if (p == 1) m_txaddr += 4;
 		}
 
+		// *ptr = '\0';	// Not needed, since we don't use strlen()
 		m_dev->write(m_buf, ptr-m_buf);
+assert(ptr-m_buf <= m_buflen);
 		DBGPRINTF(">> ");
 		for(char *tp=m_buf; tp<ptr; tp++)
 			DBGPRINTF("0x%02x ", (*tp)&0x0ff);
@@ -360,39 +360,55 @@ EXBUS::BUSW	EXBUS::readio(const EXBUS::BUSW a) {
 // Creates a message to be sent across the bus with a new address value
 // in it.
 //
-char	*EXBUS::encode_address(const EXBUS::BUSW a) {
+char	*EXBUS::encode_address(const EXBUS::BUSW a, const bool inc) {
 	EXBUS::BUSW	addr = a;
 	char	*ptr = m_buf;
+	int	diffaddr = (a - m_txaddr)>>2;
+
+	// Sign extend the difference address
+	diffaddr <<= 2; diffaddr >>= 2;
 
 	// Double check that we are aligned
 	if ((a&3)!=0) {
+		DBGPRINTF("ERROR: Address is unaligned\n");
 		throw BUSERR(a);
-	}
+	} if (inc)
+		addr |= 1;
 
-	if ((m_txaddr_set)&&(a == m_txaddr))
+	if ((m_txaddr_set)&&(addr == m_txaddr))
 		return ptr;
 
-	if (m_txaddr_set) { // Encode a difference address
+	if (m_txaddr_set && (0 == ((addr ^ m_txaddr)&1))) { // Encode a difference address
 		// {{{
-		int	diffaddr = (a - m_txaddr)>>2;
+		// int	diffaddr = (a - m_txaddr)>>2;
 		ptr = m_buf;
 
 		if ((diffaddr >= -2)&&(diffaddr < 2)) {
 			if (diffaddr == 1)		// 0100
-				*ptr++ = 0x12;
+				*ptr = 0x12;
 			else if (diffaddr == -1)	// 1100
-				*ptr++ = 0x16;
+				*ptr = 0x16;
 			else if (diffaddr == -2)	// 1000
-				*ptr++ = 0x14;
+				*ptr = 0x14;
 			else // if (diffaddr ==  0)	// 0000
-				*ptr++ =  0x10;
+				*ptr =  0x10;
+
+			if (inc)
+				*ptr |= 1;
+			ptr++;
 		} else if ((diffaddr >= -(1<<7))&&(diffaddr < (1<<7))) {
 			*ptr++ = 0x1a | ((diffaddr < 0) ? 1:0);
-			*ptr++ = (diffaddr << 1) & 0x07e;
+			*ptr   = (diffaddr << 1) & 0x07e;
+			if (inc)
+				*ptr |= 1;
+			ptr++;
 		} else if ((diffaddr >= -(1<<14))&&(diffaddr < (1<<14))) {
 			*ptr++ = 0x1e | ((diffaddr < 0) ? 1:0);
 			*ptr++ = (diffaddr >> 6) & 0x07f;
-			*ptr++ = (diffaddr << 1) & 0x07e;
+			*ptr   = (diffaddr << 1) & 0x07e;
+			if (inc)
+				*ptr |= 1;
+			ptr++;
 		}
 		*ptr = '\0';
 
@@ -421,14 +437,20 @@ char	*EXBUS::encode_address(const EXBUS::BUSW a) {
 			DBGPRINTF("Setting ADDR.1 to %08x\n", addr);
 			ptr = m_buf;
 			*ptr++ = 0x18 | ((waddr  < 0) ? 1:0);
-			*ptr++ = ( waddr << 1) & 0x07e;
+			*ptr   = ( waddr << 1) & 0x07e;
+			if (inc)
+				*ptr |= 1;
+			ptr++;
 		} else if (((waddr >= -1<<13)&&(waddr < 1<<13))
 				&&((ptr == m_buf)||(ptr >= &m_buf[3]))) {
 			DBGPRINTF("Setting ADDR.2 to %08x\n", addr);
 			ptr = m_buf;
 			*ptr++ = 0x1c | ((waddr  < 0) ? 1:0);
 			*ptr++ = ( waddr >> 6) & 0x07f;
-			*ptr++ = ( waddr << 1) & 0x07e;
+			*ptr   = ( waddr << 1) & 0x07e;
+			if (inc)
+				*ptr |= 1;
+			ptr++;
 		} else if (ptr == m_buf) { // Send our full/raw/complete address
 			DBGPRINTF("Setting ADDR.F to %08x\n", addr);
 			ptr = m_buf;
@@ -436,16 +458,21 @@ char	*EXBUS::encode_address(const EXBUS::BUSW a) {
 			*ptr++ = ( addr>>21) & 0x07f;
 			*ptr++ = ( addr>>14) & 0x07f;
 			*ptr++ = ( addr>> 7) & 0x07f;
-			*ptr++ = ( addr    ) & 0x07c;
+			*ptr   = ( addr    ) & 0x07c;
+			if (inc)
+				*ptr |= 1;
+			ptr++;
 		}
 	}
 	// }}}
 
 	*ptr = '\0';
 #ifdef	EXDEBUG
-	DBGPRINTF("ADDR-CMD: (%ld) ", ptr-m_buf);
+	DBGPRINTF("ADDR-CMD%2s%2s: (%ld) ", (m_txaddr_set) ? "/S":"", (inc) ? "/I":"", ptr-m_buf);
 	for(int k=0; k<ptr-m_buf; k++)
 		DBGPRINTF("%02x%s", m_buf[k] & 0x0ff, (k+1 < ptr-m_buf)?":":"");
+	if (m_txaddr_set)
+		DBGPRINTF("\tDIF=0x%08x", diffaddr);
 	DBGPRINTF("\n");
 #endif
 	// m_rdaddr = 0;
@@ -501,10 +528,8 @@ void	EXBUS::readv(const EXBUS::BUSW a, const int inc, const int len, EXBUS::BUSW
 		return;
 	DBGPRINTF("READV(%08x,%d,#%4d)\n", a, inc, len);
 
-	ptr = encode_address(a);
-	m_txaddr_set = true; m_txaddr = a;
-	if (inc)
-		ptr[-1] |= 1;
+	ptr = encode_address(a, inc);
+	m_txaddr_set = true; m_txaddr = a | (inc ? 1:0);
 	try {
 		while(cmdrd < len) {
 			// ptr = m_buf;
@@ -630,7 +655,7 @@ EXBUS::BUSW	EXBUS::readrest(void) {
 	nr = 1;
 DBGPRINTF("Read-rest from %02x\n", sbyte & 0x0ff);
 
-	if ((sbyte & 0x060) == 0x60) {
+	if (0 && (sbyte & 0x060) == 0x60) {
 		// Specials
 		// {{{
 		m_gpio = (sbyte >> 3) & 0x03;
@@ -754,16 +779,17 @@ DBGPRINTF("Read-rest from %02x\n", sbyte & 0x0ff);
 			// }}}
 		}
 
-		if (m_rxaddr & 1)
+		if (m_rxaddr_set && (m_rxaddr & 1))
 			m_rxaddr += 4;
 
 		return val;
 	} else if ((sbyte & 0x060) == 0x40) {
 		// Write acknowledgment -- ignore it here
-		if (m_rxaddr & 1) m_rxaddr += (1+(sbyte & 0x1f)) * 4;
+		if (m_rxaddr_set && (m_rxaddr & 1))
+			m_rxaddr += (1+(sbyte & 0x1f)) * 4;
 	} else if ((sbyte & 0x060) == 0x00) {
 		// Address acknowledgment
-DBGPRINTF("Address ACK: RxAddr = %08x\n", m_rxaddr);
+DBGPRINTF("Address ACK: RxAddr = %08x%s\n", m_rxaddr, m_rxaddr_set ? "":"\t(Unknown)");
 		// {{{
 		if ((sbyte & 0x070) == 0x00) {
 			// {{{
@@ -780,7 +806,7 @@ DBGPRINTF("Address ACK: RxAddr = %08x\n", m_rxaddr);
 			m_rxaddr_set = true;
 			m_rxaddr = val;
 
-			DBGPRINTF("RCVD ADDR: 0x%08x\n", val);
+			DBGPRINTF("RCVD ADDR/5: 0x%08x\n", val);
 			// }}}
 		} else if ((sbyte & 0x01c) == 0x18) {
 			// {{{
@@ -804,7 +830,9 @@ DBGPRINTF("Address ACK: RxAddr = %08x\n", m_rxaddr);
 			}
 
 			if (m_rxaddr_set)
-				DBGPRINTF("RCVD ADDR: 0x%08x\n", m_rxaddr);
+				DBGPRINTF("RCVD ADDR/2: %s0x%08x (val = %08x)\n",
+					(m_buf[0] & 0x02) ? "+":" ",
+					m_rxaddr, val);
 			// }}}
 		} else if ((sbyte & 0x01c) == 0x1c) {
 			// {{{
@@ -834,7 +862,9 @@ DBGPRINTF("ADDR-DISPLACEMENT: %08x\n", val);
 			}
 
 			if (m_rxaddr_set)
-				DBGPRINTF("RCVD ADDR: 0x%08x\n", m_rxaddr);
+				DBGPRINTF("RCVD ADDR/3: %s0x%08x\n",
+					(m_buf[0] & 0x02) ? "+":" ",
+					m_rxaddr);
 			// }}}
 		} else {
 			// {{{
@@ -846,7 +876,7 @@ DBGPRINTF("ADDR-DISPLACEMENT: %08x\n", val);
 			m_rxaddr += val;
 
 			if (m_rxaddr_set)
-				DBGPRINTF("RCVD ADDR: 0x%08x\n", m_rxaddr);
+				DBGPRINTF("RCVD ADDR/1: 0x%08x\n", m_rxaddr);
 			// }}}
 		}
 		// }}}
