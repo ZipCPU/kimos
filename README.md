@@ -167,14 +167,15 @@ additional peripherals may also be implemented as time and necessity allow.
 
 # Current project status
 
+This project is a work in progress.
+
 The current project status is maintained pictorially [here, in the doc/
 directory](doc/kimos-busblocks.png).  The project has been assembled, and
-several of the key tests already pass--in simulation only.  The project can
-also be synthesized/implemented, and timing passes.  The next step in this
-project will be to place it onto the board itself, to see if it still works.
+several of the initial component tests already pass--as noted above and [in
+the diagram](doc/kimos-busblocks.png).
 
-(At present, the design is configured to use Xilinx's MIG controller.  Using
+At present, the design is configured to use Xilinx's MIG controller.  Using
 this controller, the design synthesizes, but fails to load ...  If I remove the
 [SDRAM component--controller and all](autodata/sdram.txt), then the design
-loads fine and the DONE LED goes high.  Like I said, this project is a work in
-progress.)
+loads fine and the DONE LED goes high.
+
