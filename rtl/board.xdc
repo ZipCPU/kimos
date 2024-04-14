@@ -8,7 +8,11 @@ set_property BITSTREAM.CONFIG.UNUSEDPIN PULLNONE [current_design]
 
 # set_property -dict {PACKAGE_PIN AD24  IOSTANDARD LVCMOS18  } [get_ports {CLK_100_CAL}]
 set_property DCI_CASCADE {32} [get_iobanks 34]
-set_property INTERNAL_VREF 0.675 [get_iobanks 33]
+## For a 1.5V memory, the appropriate VREF voltage is half of 1.5, or 0.75 Volts
+##  Only bank 33 needs the INTERNAL_VREF.  Other banks are explicitly connected
+##  to an external VREF signal.  However, bank 33s IOs are overloaded--there was
+##  no room for the VREF.  Hence, to spare two pins, bank 33 uses an internal
+##  voltage reference.
 set_property INTERNAL_VREF 0.750 [get_iobanks 33]
 
 ## Clocks
@@ -627,9 +631,11 @@ set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
 
 ## Adding in any XDC_INSERT tags
 
-## No XDC.INSERT tag in noddr
 ## No XDC.INSERT tag in XDC
 ## No XDC.INSERT tag in mem_bkram_only
+## No XDC.INSERT tag in mem_flash_bkram
+## From sdio
+set_property -dict { PULLTYPE PULLUP } [get_ports io_sdcard_cmd]
 ## No XDC.INSERT tag in spio
 ## No XDC.INSERT tag in rtccount
 ## No XDC.INSERT tag in pwrcount
@@ -722,16 +728,20 @@ set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *clkadcclkct
 ## No XDC.INSERT tag in wbwide
 ## No XDC.INSERT tag in wb32
 ## No XDC.INSERT tag in SIM
+## No XDC.INSERT tag in flashdbg
+## No XDC.INSERT tag in uart
+## No XDC.INSERT tag in altpic
 ## No XDC.INSERT tag in wbu_arbiter
 ## No XDC.INSERT tag in zip_alt_uic
 ## No XDC.INSERT tag in TMA
 ## No XDC.INSERT tag in bkram
 ## No XDC.INSERT tag in crossflash
 ## No XDC.INSERT tag in flashcfg
+## No XDC.INSERT tag in sdram
+## No XDC.INSERT tag in syspic
+## No XDC.INSERT tag in mem_flash_sdram
 ## No XDC.INSERT tag in masterclk
 ## No XDC.INSERT tag in zip_alt_mic
-## From sdio
-set_property -dict { PULLTYPE PULLUP } [get_ports io_sdcard_cmd]
 ## No XDC.INSERT tag in zip_alt_moc
 ## No XDC.INSERT tag in netdirs
 ## No XDC.INSERT tag in zip_alt_utc
@@ -741,11 +751,7 @@ set_property -dict { PULLTYPE PULLUP } [get_ports io_sdcard_cmd]
 ## No XDC.INSERT tag in crossbus
 ## No XDC.INSERT tag in zip_tmc
 ## No XDC.INSERT tag in REGISTER
+## No XDC.INSERT tag in mem_sdram_only
 ## No XDC.INSERT tag in zip_dmac
 ## No XDC.INSERT tag in zip_jiffies
 ## No XDC.INSERT tag in zip
-## No XDC.INSERT tag in syspic
-## No XDC.INSERT tag in uart
-## No XDC.INSERT tag in altpic
-## No XDC.INSERT tag in flashdbg
-## No XDC.INSERT tag in mem_flash_bkram

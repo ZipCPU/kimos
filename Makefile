@@ -213,7 +213,7 @@ sw: sw-host sw-zlib sw-board # sw-boot
 ##
 ## Build the host support software
 ##
-sw-host: check-gpp
+sw-host: check-gpp rtl
 	+@$(SUBMAKE) sw/host
 ## }}}
 
@@ -222,13 +222,13 @@ sw-host: check-gpp
 ##
 ## Build the hardware specific newlib library
 ##
-sw-zlib: check-zip-gcc
+sw-zlib: check-zip-gcc rtl
 	+@$(SUBMAKE) sw/zlib
 ## }}}
 
 .PHONY: sw-fatfs
 ## {{{
-sw-fatfs: check-zip-gcc
+sw-fatfs: check-zip-gcc rtl
 	+@$(SUBMAKE) sw/fatfs
 ## }}}
 
@@ -236,17 +236,18 @@ sw-fatfs: check-zip-gcc
 ## {{{
 ## Build the board software.  This may (or may not) use the software library
 ##
-sw-board: sw-zlib sw-fatfs check-zip-gcc
+sw-board: sw-zlib sw-fatfs check-zip-gcc rtl
 	+@$(SUBMAKE) sw/board
 ## }}}
 
 .PHONY: sw-boot
 ## {{{
 ##
-## Build the boot software.
+## Build the boot software.  This would allow us to boot from an SD card,
+## however ... this project doesn't currently use it.
 ##
-sw-boot: check-zip-gcc sw-zlib
-	+@$(SUBMAKE) sw/boot
+## sw-boot: check-zip-gcc sw-zlib
+##	+@$(SUBMAKE) sw/boot
 ## }}}
 ## }}}
 ################################################################################

@@ -8,7 +8,11 @@ set_property BITSTREAM.CONFIG.UNUSEDPIN PULLNONE [current_design]
 
 # set_property -dict {PACKAGE_PIN AD24  IOSTANDARD LVCMOS18  } [get_ports {CLK_100_CAL}]
 set_property DCI_CASCADE {32} [get_iobanks 34]
-set_property INTERNAL_VREF 0.675 [get_iobanks 33]
+## For a 1.5V memory, the appropriate VREF voltage is half of 1.5, or 0.75 Volts
+##  Only bank 33 needs the INTERNAL_VREF.  Other banks are explicitly connected
+##  to an external VREF signal.  However, bank 33s IOs are overloaded--there was
+##  no room for the VREF.  Hence, to spare two pins, bank 33 uses an internal
+##  voltage reference.
 set_property INTERNAL_VREF 0.750 [get_iobanks 33]
 
 ## Clocks

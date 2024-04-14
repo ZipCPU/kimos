@@ -484,7 +484,7 @@ int main(int argc, char **argv) {
 			printf("\n");
 		}
 	} catch(BUSERR a) {
-		fprintf(stderr, "ZBASIC-BUS error: %08x\n", a.addr);
+		fprintf(stderr, "KIMOS-BUS error: %08x\n", a.addr);
 		exit(-2);
 	}
 
