@@ -30,6 +30,7 @@ core
 *.vrb
 *.yslog
 *.smt2
+/refs/
 vzip
 thruhull
 legal.txt

@@ -65,53 +65,105 @@ additional peripherals may also be implemented as time and necessity allow.
 
    Required to load programs for the CPU
 
+   STATUS: Sort of working.  There remain some latent bugs in the interface
+   that still need to be chased down.
+
 2. [LED/Switch](rtl/spio.v)
 
    Used as a test of the EXBUS
 
+   STATUS: PASS
+
 3. [Flash](rtl/qflexpress.v)
 
    Load a design, configure design from flash.
-
    First CPU loads come from flash.
 
-4. [CPU](https://github.com/ZipCPU/zipcpu)
+   STATUS: PASS.  However, loading a 6MB design into the flash is horribly
+   slow.
 
-   CPU check will be the first program
+4. [ICAPE Controller](https://github.com/ZipCPU/wbicapetwo)
 
-5. DDR3 SDRAM memory
+   Status: Mostly working
 
-   Memory test (requires memory, duh!)
+   I've demonstrated the ability to read and write configuration registers.
+   I haven't (yet) demonstrated the ability to restart the FPGA from a flash
+   image.  This may have more to do with a broken image, however, than with
+   the [ICAPE controller](rtl/wbicapetwo.v).
 
-   This test will first run with Xilinx's DDR3 memory controller.  If and when
-   that test passes, we'll move on to testing the [open source DDR3 memory
-   controller]().
+5. [CPU](https://github.com/ZipCPU/zipcpu)
 
-6. [SDIO](rtl/sdspi/sdio.v)
+   [CPU check](sw/board/cputest.c) will be the first program.  Other
+   programs have included [Hello World](sw/board/hello.c), and an
+   [MDIO register check](sw/board/mdio.c).
 
-   Requires both the CPU and memory
+   Status: PASS
+
+6. [MDIO Dump](sw/board/mdio.c)
+
+   Can the management registers be read from the Ethernet PHY?  Do these
+   registers make sense?
+
+   STATUS: PASS.
+
+   Given that there are two Ethernet ports on this board, and further that
+   the design only connects one of these ports to logic, accessing the MDIO
+   registers is an important part of knowing whether or not the ethernet
+   cable is plugged into the correct port.
 
 7. [Ping](rtl/proto/icmpecho.v)
 
-   Includes [automatic ARP](rtl/proto/arp.v) handling.
-   Can be done with only the ability to load the FPGA.
+   Can the board be "pinged"?  This includes a test of the [automatic
+   ARP](rtl/proto/arp.v) handling.  The test depends upon the ability to
+   load an FPGA design, but does not depend on the CPU.
 
-8. [Network debugging protocol](rtl/proto/netdebug.v)
+   STATUS: PASS
 
-   This will test whether or not memory can be read and/or written from an
-   external host, via [specially crafted UDP/IP
-   packets](https://zipcpu.com/blog/2022/08/24/protocol-design.html).
-   This network packet protocol blows the doors off of the UART alternative,
-   although it is a bit harder to setup and get working initially.  For
-   example, both [ARP](rtl/proto/arp.v) and [ICMP](rtl/proto/icmpecho.v)
-   handling have to work automatically and without CPU involvement first.
+8. DDR3 SDRAM memory
 
-   This will also require updating the [(new) exbus](rtl/exbus) protocol so
-   that it can work over the net.  This will primarily involve adding
-   ready/busy handshaking signals throughout--signals that aren't really
-   needed with UART.  (The UART version only checks valid on incoming bytes.)
-   It'll also need signals to know when a packet is complete, and so can be
-   sent out.
+   This test will first verify that the onboard memory works with Xilinx's
+   DDR3 memory controller, commonly known as "the MIG".
+
+   Once hooked up, the MIG will be subjected to a memory test.  [Portions
+   of the test have been drafted already](sw/board/memtest.c).
+
+   Status: FAIL.  Any attempt (at present) to load the design with the
+   SDRAM controller enabled within it will fail to configure the FPGA.
+
+9. OpenSource DDR3 SDRAM memory
+
+   If and when the MIG DDR3 SDRAM test passes, we'll move on to testing
+   the [open source DDR3 memory controller](https://github.com/AngeloJacobo/DDR3_Controller).
+
+   STATUS: Pending MIG controller success.
+
+10. Open source place and route
+
+    Can the design be built using all open-source tools, instead of via Vivado?
+
+11. [SDIO](rtl/sdspi/sdio.v) _(Optional test)_
+
+    Requires both the CPU and memory
+
+    STATUS: Not yet tested.  (Waiting on memory.)
+
+12. [Network debugging protocol](rtl/proto/netdebug.v) _(Optional test)_
+
+    This will test whether or not memory can be read and/or written from an
+    external host, via [specially crafted UDP/IP
+    packets](https://zipcpu.com/blog/2022/08/24/protocol-design.html).
+    This network packet protocol blows the doors off of the UART alternative,
+    although it is a bit harder to setup and get working initially.  For
+    example, both [ARP](rtl/proto/arp.v) and [ICMP](rtl/proto/icmpecho.v)
+    handling have to work automatically and without CPU involvement first.
+
+    STATUS: Not yet tested.  Pending on a software driver.
+
+13. Network CPU Access _(Optional test)_
+
+    Can the CPU send and receive packets?
+
+    STATUS: Not yet tested.  Pending on a software driver.
 
 # Current project status
 
