@@ -129,6 +129,4 @@ public:
 	void	clear(void) { m_interrupt_flag = false; }
 };
 
-typedef	EXBUS	FPGA;
-
 #endif

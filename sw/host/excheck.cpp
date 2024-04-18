@@ -58,9 +58,7 @@
 #include "port.h"
 #include "devbus.h"
 
-typedef	DEVBUS FPGA;
-
-FPGA	*m_fpga;
+DEVBUS	*m_fpga;
 void	closeup(int v) {
 	m_fpga->kill();
 	exit(0);
