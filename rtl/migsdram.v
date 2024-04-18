@@ -68,7 +68,7 @@ module	migsdram #(
 		// {{{
 		input	wire		i_clk, i_clk_200mhz,
 		output	wire		o_sys_clk,
-		input	wire		i_rst,
+		input	wire		i_reset,
 		output	wire		o_sys_reset,
 		// Wishbone bus slave port
 		// {{{
@@ -211,7 +211,7 @@ module	migsdram #(
 		.s_axi_rdata(s_axi_rdata),	.s_axi_rresp(s_axi_rresp),
 		.s_axi_rlast(s_axi_rlast),	.s_axi_rvalid(s_axi_rvalid),
 		.init_calib_complete(init_calib_complete),
-		.sys_rst(i_rst),
+		.sys_rst(i_reset ^ ACTIVE_LOW_MIG_RESET),
 		.device_temp_i(12'h0),
 		.device_temp(w_device_temp)
 		// }}}

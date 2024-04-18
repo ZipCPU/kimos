@@ -276,10 +276,8 @@ i_sdcard_cd_n,
 		netclk_locked, netclk_feedback, netclk_feedback_buffered;
 	wire	i_clk_buffered;
 	wire	clocks_locked;
-	reg	[3:0]	sysclk_stable, netclk_stable,
-			upper_plls_stable;
-	reg	[4:0]	pre_reset_counter;
-	reg		pre_reset, pll_reset;
+	reg	[4:0]	pll_reset_sreg;
+	reg		pll_reset;
 	// }}}
 	// Verilator lint_off UNUSED
 	wire		ign_cpu_stall, ign_cpu_ack;
@@ -543,8 +541,8 @@ i_sdcard_cd_n,
 		.i_clk(i_clk_buffered),
 		.i_clk_200mhz(s_clk_200mhz),
 		.o_sys_clk(s_clk),
-		// .i_rst(!i_cpu_resetn),
-		.i_rst(pll_reset),
+		// .i_reset(!i_cpu_resetn),
+		.i_reset(pll_reset),
 		.o_sys_reset(s_reset),
 		//
 		.i_wb_cyc(sdram_cyc), .i_wb_stb(sdram_stb),
@@ -570,9 +568,9 @@ i_sdcard_cd_n,
 	BUFG masterclkclkbufi(.I(i_clk), .O(i_clk_buffered));
 
 	// pll_reset
-	initial	pll_reset = 1'b1;
+	initial	{ pll_reset, pll_reset_sreg } = -1;
 	always @(posedge i_clk_buffered)
-		pll_reset <= 1'b0;
+		{ pll_reset, pll_reset_sreg } <= { pll_reset_sreg, 1'b0 };
 
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -613,16 +611,6 @@ i_sdcard_cd_n,
 	BUFG	clksync_buf(.I(s_clksync_unbuffered),   .O(s_clksync));
 	BUFG	clk4x_buf(  .I(s_clk_400mhz_unbuffered),.O(s_clk_400mhz));
 	BUFG	sys_feedback(.I(sysclk_feedback),.O(sysclk_feedback_buffered));
-
-	// sysclk_stable
-	// {{{
-	initial	sysclk_stable = 0;
-	always @(posedge i_clk_buffered, negedge sysclk_locked)
-	if (!sysclk_locked)
-		sysclk_stable <= 4'h0;
-	else
-		sysclk_stable <= { sysclk_stable[2:0], 1'b1 };
-	// }}}
 
 	// }}}
 	////////////////////////////////////////////////////////////////////////
@@ -673,35 +661,6 @@ i_sdcard_cd_n,
 		netclk_stable <= 4'h0;
 	else
 		netclk_stable <= { netclk_stable[2:0], 1'b1 };
-	// }}}
-
-	// upper_plls_stable
-	// {{{
-	initial	upper_plls_stable = 4'h0;
-	always @(posedge i_clk_buffered)
-		upper_plls_stable <= { upper_plls_stable[2:0],
-			(netclk_stable[3] && sysclk_stable[3]) };
-	// }}}
-
-	// pre_reset_counter
-	// {{{
-	initial pre_reset_counter = -1;
-	always @(posedge i_clk_buffered)
-	if (upper_plls_stable[3:2] != 2'b11)
-		pre_reset_counter <= -1;
-	else if (pre_reset_counter > 0)
-		pre_reset_counter <= pre_reset_counter - 1;
-	// }}}
-
-	// pre_reset
-	// {{{
-	initial	pre_reset = 1;
-	always @(posedge i_clk_buffered)
-	if ((upper_plls_stable[3:2] != 2'b11)
-			||(!netclk_stable[3])||(!sysclk_stable[3]))
-		pre_reset <= 1'b1;
-	else if (pre_reset_counter == 0)
-		pre_reset <= 1'b0;
 	// }}}
 
 	// }}}

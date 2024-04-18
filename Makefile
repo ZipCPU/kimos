@@ -280,7 +280,7 @@ $(BITFILE): ../xilinx/kimos.runs/impl_1/toplevel.bit
 
 .PHONY: load
 load: $(BITFILE)
-	$(LOADER) --ftdi-serial FTENC $(BITFILE)
+	$(LOADER) --freq 3750000 --ftdi-serial FTENC $(BITFILE)
 ## }}}
 ################################################################################
 ##

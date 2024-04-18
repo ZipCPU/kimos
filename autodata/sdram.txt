@@ -139,8 +139,8 @@
 		.i_clk(i_clk_buffered),
 		.i_clk_200mhz(s_clk_200mhz),
 		.o_sys_clk(s_clk),
-		// .i_rst(!i_cpu_resetn),
-		.i_rst(pll_reset),
+		// .i_reset(!i_cpu_resetn),
+		.i_reset(pll_reset),
 		.o_sys_reset(s_reset),
 		//
 		.i_wb_cyc(@$(PREFIX)_cyc), .i_wb_stb(@$(PREFIX)_stb),
