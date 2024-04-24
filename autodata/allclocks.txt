@@ -51,6 +51,7 @@
 @TOP.DEFNS=
 	// Clock/reset definitions
 	// {{{
+	wire	i_clk200, i_clk200_buffered;
 	wire	s_clk_200mhz,  s_clk_200mhz_unbuffered,
 		sysclk_locked, sysclk_feedback, sysclk_feedback_buffered,
 		s_clk_125mhz,  s_clk_125_unbuffered,
@@ -66,13 +67,17 @@
 	reg		pll_reset;
 	// }}}
 @TOP.PORTLIST=
+		i_clk200_p, i_clk200_n
 @TOP.IODECL=
+	input	wire	i_clk200_p, i_clk200_n;
 @TOP.MAIN=
 		// PLL generated clocks
 		s_clk_200mhz, s_clk_125mhz
 @TOP.INSERT=
 	// Buffer the incoming clock
 	BUFG @$(PREFIX)clkbufi(.I(i_clk), .O(i_clk_buffered));
+	IBUFDS @$(PREFIX)io2clk (.I(i_clk200_p), .IB(i_clk200_n), .O(i_clk200));
+	BUFG @$(PREFIX)clk2bufi(.I(i_clk200), .O(i_clk200_buffered));
 
 	// pll_reset
 	initial	{ pll_reset, pll_reset_sreg } = -1;
@@ -92,9 +97,9 @@
 	// synchronized to it
 	PLLE2_BASE #(
 		// {{{
-		.CLKFBOUT_MULT(8),
+		.CLKFBOUT_MULT(4),	// Multiply up to 800MHz
 		.CLKFBOUT_PHASE(0.0),
-		.CLKIN1_PERIOD(10),
+		.CLKIN1_PERIOD(5),
 		.CLKOUT0_DIVIDE(4),	// 200 MHz
 		.CLKOUT1_DIVIDE(2),	// 400 MHz
 		.CLKOUT2_DIVIDE(8),	// 100 MHz
@@ -102,11 +107,13 @@
 		// }}}
 	) gen_sysclk(
 		// {{{
-		.CLKIN1(i_clk_buffered),
+		.CLKIN1(i_clk200_buffered),
 		.CLKOUT0(s_clk_200mhz_unbuffered),
 		.CLKOUT1(s_clk_400mhz_unbuffered),
 		.CLKOUT2(s_clksync_unbuffered),
 		.CLKOUT3(s_clk_40mhz_unbuffered),
+		// .CLKOUT4(),
+		// .CLKOUT5(),
 		.PWRDWN(1'b0), .RST(pll_reset),
 		.CLKFBOUT(sysclk_feedback),
 		.CLKFBIN(sysclk_feedback_buffered),
@@ -115,7 +122,7 @@
 	);
 
 	BUFG	sysbuf(     .I(s_clk_200mhz_unbuffered),.O(s_clk_200mhz));
-	BUFG	clksync_buf(.I(s_clksync_unbuffered),   .O(s_clksync));
+	// BUFG	clksync_buf(.I(s_clksync_unbuffered),   .O(s_clksync));
 	BUFG	clk4x_buf(  .I(s_clk_400mhz_unbuffered),.O(s_clk_400mhz));
 	BUFG	sys_feedback(.I(sysclk_feedback),.O(sysclk_feedback_buffered));
 
@@ -134,9 +141,9 @@
 	//   
 	PLLE2_BASE #(
 		// {{{
-		.CLKFBOUT_MULT(10),
+		.CLKFBOUT_MULT(5),
 		.CLKFBOUT_PHASE(0.0),
-		.CLKIN1_PERIOD(10),
+		.CLKIN1_PERIOD(5),
 		.CLKOUT0_DIVIDE(8),	// 125 MHz
 		.CLKOUT0_PHASE(0),
 		.CLKOUT1_DIVIDE(4),	// 250 MHz
@@ -144,9 +151,13 @@
 		// }}}
 	) gen_netclk(
 		// {{{
-		.CLKIN1(i_clk_buffered),
+		.CLKIN1(i_clk200_buffered),
 		.CLKOUT0(s_clk_125_unbuffered),
 		.CLKOUT1(s_clk_250_unbuffered),
+		// .CLKOUT2(),
+		// .CLKOUT3(),
+		// .CLKOUT4(),
+		// .CLKOUT5(),
 		.PWRDWN(1'b0), .RST(pll_reset),
 		.CLKFBOUT(netclk_feedback),
 		.CLKFBIN(netclk_feedback_buffered),
@@ -159,16 +170,6 @@
 	BUFG	netfb(.I(netclk_feedback), .O(netclk_feedback_buffered));
 
 	assign	clocks_locked = (netclk_locked && sysclk_locked);
-
-	// netclk_stable
-	// {{{
-	initial	netclk_stable = 0;
-	always @(posedge i_clk_buffered, negedge netclk_locked)
-	if (!netclk_locked)
-		netclk_stable <= 4'h0;
-	else
-		netclk_stable <= { netclk_stable[2:0], 1'b1 };
-	// }}}
 
 	// }}}
 @MAIN.PORTLIST=

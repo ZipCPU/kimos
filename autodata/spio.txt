@@ -60,11 +60,13 @@
 	wire	[@$(NLED)-1:0]	w_led;
 	wire	[@$(NBTN)-1:0]	w_btn;
 @TOP.INSERT=
-	// LEDs are inverted.  A '1' is off, a '0' is on
-	assign	o_led = { w_led[@$(NLED)-1:2], (w_led[1] || !clocks_locked),
-			w_led[0] || s_reset };
+	// LEDs 5:0 are inverted.  For these LEDs, a '1' is off, and a '0' is on
+	assign	o_led = { (w_led[7] || s_reset),	// Baseboard inner LED
+			(w_led[6] || !clocks_locked),	// Baseboard LED
+			w_led[5:4],		// Last two baseboard LEDs
+			w_led[3:0] };		// Daughter board LEDs
 
-	assign	w_btn = { !i_btn };
+	assign	w_btn = { ~i_btn };
 @TOP.MAIN=
 		w_btn, w_led
 @MAIN.PORTLIST=
@@ -92,7 +94,9 @@
 		.o_int(@$(PREFIX)_int)
 	);
 
-	assign	o_led = ~w_led;
+	// LEDs 5:0 are inverted.  For these LEDs, a '1' is off, and a '0' is
+	//  on.  LEDs 7:6 are normal, so that a '1' is on and a '0' is off.
+	assign	o_led = { w_led[7:6], ~w_led[5:0] };
 
 @MAIN.ALT=
 	assign	o_led = -1;

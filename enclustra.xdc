@@ -23,8 +23,9 @@ create_clock -name i_clk -period 10.000 [get_ports i_clk];
 
 ## set_property DIFF_TERM FALSE [get_ports CLK200_N];
 ## set_property DIFF_TERM FALSE [get_ports CLK200_P];
-## set_property -dict {PACKAGE_PIN AC11  IOSTANDARD DIFF_SSTL15} [get_ports {CLK200_N}];
-## set_property -dict {PACKAGE_PIN AB11  IOSTANDARD DIFF_SSTL15} [get_ports {CLK200_P}];
+# set_property -dict {PACKAGE_PIN AB11  IOSTANDARD DIFF_SSTL15} [get_ports {i_clk200_p}];
+# set_property -dict {PACKAGE_PIN AC11  IOSTANDARD DIFF_SSTL15} [get_ports {i_clk200_n}];
+create_clock -name CK200 -period 5.000 [get_ports i_clk200_p];
 
 ## AD24: IO_B12_L16_AD24_N	A60	CLK_100_CAL	i_clk100_cal
 ## D5/D6: Used for SATA reference clock, 150MHz

@@ -200,36 +200,39 @@ int main(int argc, char **argv) {
 	// Check first for our environment value -- use it to set defaults
 	// {{{
 	if (NULL != (kimos_env = getenv("KIMOSDEV")) && kimos_env[0]) {
+		char	*portstr, *host = NULL;
+
 		kimos_env = strdup(kimos_env);
 		if (0 == strncasecmp(kimos_env, "UART://", 7)) {
-			gbl_fpgahost = kimos_env+7;
+			host = kimos_env+7;
 			gbl_uart = true;
-		else if (0 == strncasecmp(kimos_env, "EXBUS://", 8)) {
-			gbl_fpgahost = kimos_env+8;
+		} else if (0 == strncasecmp(kimos_env, "EXBUS://", 8)) {
+			host = kimos_env+8;
 			gbl_uart = true;
-		else if (0 == strncasecmp(kimos_env, "SIM://", 6)) {
-			gbl_fpgahost = kimos_env+6;
+		} else if (0 == strncasecmp(kimos_env, "SIM://", 6)) {
+			host = kimos_env+6;
 			gbl_uart = true;
 		} else if (0 == strncasecmp(kimos_env, "NEXBUS://", 9)) {
-			gbl_fpgahost = kimos_env+6;
+			host = kimos_env+6;
 			gbl_uart = false;
 		} else if (0 == strncasecmp(kimos_env, "NET://", 6)) {
-			gbl_fpgahost = kimos_env+6;
+			host = kimos_env+6;
 			gbl_uart = false;
 		} else if (0 == strncasecmp(kimos_env, "UDP://", 6)) {
-			gbl_fpgahost = kimos_env+6;
+			host = kimos_env+6;
 			gbl_uart = false;
 		} else {
 			fprintf(stderr, "ERR: Unrecognized environment string\n");
 			exit(EXIT_FAILURE);
 		}
 
-		portstr = strchr(gbl_fpgahost, ':');
-		if (portstr)
+		portstr = strchr(host, ':');
+		if (portstr) {
 			*portstr++ = '\0';
 			if (*portstr && isdigit(*portstr))
 				gbl_fpgaport = atoi(portstr);
-		}
+		} if (host)
+			gbl_fpgahost = host;
 	}
 	// }}}
 
@@ -301,7 +304,7 @@ int main(int argc, char **argv) {
 
 	if (argc -optind < 2) { // Read from the device
 		// {{{
-		FPGA::BUSW	v;
+		DEVBUS::BUSW	v;
 		try {
 			unsigned char a, b, c, d;
 			v = m_fpga->readio(address);

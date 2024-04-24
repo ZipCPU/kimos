@@ -54,6 +54,7 @@
 #define	FPGAPORT	5927
 #endif
 
-#define FPGAOPEN(V) V= new FPGA(new NETCOMMS(FPGAHOST, FPGAPORT))
+// #define FPGAOPEN(V) V= new DEVBUS(new NETCOMMS(FPGAHOST, FPGAPORT))
+#define FPGAOPEN(V) V= connect_devbus(NULL)
 
 #endif

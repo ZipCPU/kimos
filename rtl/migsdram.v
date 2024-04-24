@@ -105,9 +105,6 @@ module	migsdram #(
 `ifdef	SDRAM_ACCESS
 	// Local declarations
 	// {{{
-	wire	aresetn;
-	assign	aresetn = 1'b1; // Never reset
-
 	// Write address channel
 	wire	[(AXIDWIDTH-1):0]	s_axi_awid;
 	wire	[(RAMABITS-1):0]	s_axi_awaddr;
@@ -176,7 +173,9 @@ module	migsdram #(
 		.ui_clk(o_sys_clk),
 		.ui_clk_sync_rst(w_sys_reset),
 		.mmcm_locked(mmcm_locked),
-		.aresetn(aresetn),
+		// aresetn is an AXI signal.  This could be i_reset, but i_reset
+		// isn't in the UI clock domain.
+		.aresetn(1'b1),
 		.app_sr_req(1'b0),
 		.app_ref_req(1'b0),
 		.app_zq_req(1'b0),

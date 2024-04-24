@@ -47,5 +47,5 @@
 	wire	s_clk, s_reset;
 @TOP.INSERT=
 	assign	s_clk = i_clk_buffered;
-	assign	s_reset = pre_reset;
+	assign	s_reset = pll_reset;
 	assign	o_ddr3_vsel = 1'bz;

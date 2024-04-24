@@ -97,18 +97,18 @@
 	//
 	// All of the below is about delaying the clock 90 degrees from the data
 	//
-	xoserdes	@$(PREFIX)tx0(s_clk_125mhz, !netclk_stable[3], s_clk_250mhz, { {(2){w_@$(PREFIX)_txd[0]}}, {(2){w_@$(PREFIX)_txd[4]}} }, o_@$(PREFIX)_txd[0]);
-	xoserdes	@$(PREFIX)tx1(s_clk_125mhz, !netclk_stable[3], s_clk_250mhz, { {(2){w_@$(PREFIX)_txd[1]}}, {(2){w_@$(PREFIX)_txd[5]}} }, o_@$(PREFIX)_txd[1]);
-	xoserdes	@$(PREFIX)tx2(s_clk_125mhz, !netclk_stable[3], s_clk_250mhz, { {(2){w_@$(PREFIX)_txd[2]}}, {(2){w_@$(PREFIX)_txd[6]}} }, o_@$(PREFIX)_txd[2]);
-	xoserdes	@$(PREFIX)tx3(s_clk_125mhz, !netclk_stable[3], s_clk_250mhz, { {(2){w_@$(PREFIX)_txd[3]}}, {(2){w_@$(PREFIX)_txd[7]}} }, o_@$(PREFIX)_txd[3]);
+	xoserdes	@$(PREFIX)tx0(s_clk_125mhz, pll_reset, s_clk_250mhz, { {(2){w_@$(PREFIX)_txd[0]}}, {(2){w_@$(PREFIX)_txd[4]}} }, o_@$(PREFIX)_txd[0]);
+	xoserdes	@$(PREFIX)tx1(s_clk_125mhz, pll_reset, s_clk_250mhz, { {(2){w_@$(PREFIX)_txd[1]}}, {(2){w_@$(PREFIX)_txd[5]}} }, o_@$(PREFIX)_txd[1]);
+	xoserdes	@$(PREFIX)tx2(s_clk_125mhz, pll_reset, s_clk_250mhz, { {(2){w_@$(PREFIX)_txd[2]}}, {(2){w_@$(PREFIX)_txd[6]}} }, o_@$(PREFIX)_txd[2]);
+	xoserdes	@$(PREFIX)tx3(s_clk_125mhz, pll_reset, s_clk_250mhz, { {(2){w_@$(PREFIX)_txd[3]}}, {(2){w_@$(PREFIX)_txd[7]}} }, o_@$(PREFIX)_txd[3]);
 
 	always @(posedge s_clk_125mhz)
 		@$(PREFIX)_last_tck <= w_@$(PREFIX)_tx_clk[0];
 
-	xoserdes	@$(PREFIX)txc(s_clk_125mhz, !netclk_stable[3], s_clk_250mhz, {(4){w_@$(PREFIX)_txctl}}, o_@$(PREFIX)_tx_ctl );
+	xoserdes	@$(PREFIX)txc(s_clk_125mhz, pll_reset, s_clk_250mhz, {(4){w_@$(PREFIX)_txctl}}, o_@$(PREFIX)_tx_ctl );
 
-	xoserdes	@$(PREFIX)txck(s_clk_125mhz, !netclk_stable[3], s_clk_250mhz, {@$(PREFIX)_last_tck, {(2){w_@$(PREFIX)_tx_clk[1]}},w_@$(PREFIX)_tx_clk[0]},o_@$(PREFIX)_tx_clk);
-	// xoserdes	@$(PREFIX)txck(s_clk_125mhz, !netclk_stable[3], s_clk_250mhz, { {(2){w_@$(PREFIX)_tx_clk[1]}},{(2){w_@$(PREFIX)_tx_clk[0]}} }, o_@$(PREFIX)_tx_clk);
+	xoserdes	@$(PREFIX)txck(s_clk_125mhz, pll_reset, s_clk_250mhz, {@$(PREFIX)_last_tck, {(2){w_@$(PREFIX)_tx_clk[1]}},w_@$(PREFIX)_tx_clk[0]},o_@$(PREFIX)_tx_clk);
+	// xoserdes	@$(PREFIX)txck(s_clk_125mhz, pll_reset, s_clk_250mhz, { {(2){w_@$(PREFIX)_tx_clk[1]}},{(2){w_@$(PREFIX)_tx_clk[0]}} }, o_@$(PREFIX)_tx_clk);
 	// }}}
 @MAIN.PORTLIST=
                 // Ethernet control (packets) lines
@@ -400,8 +400,8 @@ set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sy
 set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/net_core/tfrtxspd/a_req*}]  -to [ get_cells -hier -filter {NAME =~*u_@$(PREFIX)/net_core/tfrtxspd/b_pipe*}] 8.0
 set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_@$(PREFIX)/net_core/tfrtxspd/a_data*}] -to [ get_cells -hier -filter {NAME =~*u_@$(PREFIX)/net_core/tfrtxspd/o_b_data_reg*}] 8.0
 set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/hw_mac_reg*}]        -to [ get_cells -hier -filter {NAME =~*txmaci/r_hw*}] 8.0
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netclk_stable*}]              -to [ get_cells -hier -filter {NAME =~*/reset_pipe*}] 8.0
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *netclk_stable*}]              -to [ get_cells -hier -filter {NAME =~*/sync_reset*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *pll_reset*}]              -to [ get_cells -hier -filter {NAME =~*/reset_pipe*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *pll_reset*}]              -to [ get_cells -hier -filter {NAME =~*/sync_reset*}] 8.0
 set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *tfr_*/b_last**}]              -to [ get_cells -hier -filter {NAME =~*tfr_*/a_pipe*}] 8.0
 
 ## NETTX -> CLK

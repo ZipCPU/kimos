@@ -329,8 +329,8 @@ module	main(i_clk, i_reset,
 	output	wire	[(512-1):0]	o_sdram_data;
 	output	wire	[(512/8)-1:0]	o_sdram_sel;
 	//
-	input	wire			i_sdram_ack;
 	input	wire			i_sdram_stall;
+	input	wire			i_sdram_ack;
 	input	wire	[(512-1):0]	i_sdram_data;
 	// Verilator lint_off UNUSED
 	input	wire			i_sdram_err;
@@ -1637,7 +1637,9 @@ module	main(i_clk, i_reset,
 		.o_int(spio_int)
 	);
 
-	assign	o_led = ~w_led;
+	// LEDs 5:0 are inverted.  For these LEDs, a '1' is off, and a '0' is
+	//  on.  LEDs 7:6 are normal, so that a '1' is on and a '0' is off.
+	assign	o_led = { w_led[7:6], ~w_led[5:0] };
 
 	// }}}
 `else	// SPIO_ACCESS

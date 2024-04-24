@@ -136,10 +136,13 @@
 		// }}}
 	) @$(PREFIX)i(
 		// {{{
-		.i_clk(i_clk_buffered),
+		.i_clk(i_clk200_buffered),
 		.i_clk_200mhz(s_clk_200mhz),
 		.o_sys_clk(s_clk),
 		// .i_reset(!i_cpu_resetn),
+		// pll_reset is an asynchronous incoming reset.  It does not
+		// require any synchronization, as the MIG synchronizes it
+		// internally
 		.i_reset(pll_reset),
 		.o_sys_reset(s_reset),
 		//
@@ -176,8 +179,8 @@
 	output	wire	[(@$(BUS.WIDTH)-1):0]	o_@$(PREFIX)_data;
 	output	wire	[(@$(BUS.WIDTH)/8)-1:0]	o_@$(PREFIX)_sel;
 	//
-	input	wire			i_@$(PREFIX)_ack;
 	input	wire			i_@$(PREFIX)_stall;
+	input	wire			i_@$(PREFIX)_ack;
 	input	wire	[(@$(BUS.WIDTH)-1):0]	i_@$(PREFIX)_data;
 	// Verilator lint_off UNUSED
 	input	wire			i_@$(PREFIX)_err;

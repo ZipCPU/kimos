@@ -375,12 +375,11 @@ char	*EXBUS::encode_address(const EXBUS::BUSW a, const bool inc) {
 	} if (inc)
 		addr |= 1;
 
-	if ((m_txaddr_set)&&(addr == m_txaddr))
+	if ((m_txaddr_set)&&((addr | (inc ? 1:0)) == m_txaddr))
 		return ptr;
 
-	if (m_txaddr_set && (0 == ((addr ^ m_txaddr)&1))) { // Encode a difference address
+	if (m_txaddr_set) { // Diff. address
 		// {{{
-		// int	diffaddr = (a - m_txaddr)>>2;
 		ptr = m_buf;
 
 		if ((diffaddr >= -2)&&(diffaddr < 2)) {

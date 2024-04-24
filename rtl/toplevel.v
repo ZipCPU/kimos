@@ -80,7 +80,8 @@ i_sdcard_cd_n,
 		ddr3_dqs_p, ddr3_dqs_n,
 		ddr3_addr, ddr3_ba,
 		o_ddr3_vsel,
-		ddr3_dq, ddr3_dm, ddr3_odt);
+		ddr3_dq, ddr3_dm, ddr3_odt,
+		i_clk200_p, i_clk200_n);
 	//
 	// Declaring any top level parameters.
 	//
@@ -196,6 +197,7 @@ i_sdcard_cd_n,
 	inout	wire	[64/8-1:0]	ddr3_dqs_p, ddr3_dqs_n;
 	inout	wire	[64-1:0]	ddr3_dq;
 	// }}}
+	input	wire	i_clk200_p, i_clk200_n;
 
 
 	//
@@ -265,6 +267,7 @@ i_sdcard_cd_n,
 	wire	s_clk, s_reset;
 	// Clock/reset definitions
 	// {{{
+	wire	i_clk200, i_clk200_buffered;
 	wire	s_clk_200mhz,  s_clk_200mhz_unbuffered,
 		sysclk_locked, sysclk_feedback, sysclk_feedback_buffered,
 		s_clk_125mhz,  s_clk_125_unbuffered,
@@ -410,11 +413,13 @@ i_sdcard_cd_n,
 	assign	w_sdio_ds    = 1'b0;
 
 
-	// LEDs are inverted.  A '1' is off, a '0' is on
-	assign	o_led = { w_led[8-1:2], (w_led[1] || !clocks_locked),
-			w_led[0] || s_reset };
+	// LEDs 5:0 are inverted.  For these LEDs, a '1' is off, and a '0' is on
+	assign	o_led = { (w_led[7] || s_reset),	// Baseboard inner LED
+			(w_led[6] || !clocks_locked),	// Baseboard LED
+			w_led[5:4],		// Last two baseboard LEDs
+			w_led[3:0] };		// Daughter board LEDs
 
-	assign	w_btn = { !i_btn };
+	assign	w_btn = { ~i_btn };
 
 	// RGMII control
 	// {{{
@@ -427,18 +432,18 @@ i_sdcard_cd_n,
 	//
 	// All of the below is about delaying the clock 90 degrees from the data
 	//
-	xoserdes	eth0tx0(s_clk_125mhz, !netclk_stable[3], s_clk_250mhz, { {(2){w_eth0_txd[0]}}, {(2){w_eth0_txd[4]}} }, o_eth0_txd[0]);
-	xoserdes	eth0tx1(s_clk_125mhz, !netclk_stable[3], s_clk_250mhz, { {(2){w_eth0_txd[1]}}, {(2){w_eth0_txd[5]}} }, o_eth0_txd[1]);
-	xoserdes	eth0tx2(s_clk_125mhz, !netclk_stable[3], s_clk_250mhz, { {(2){w_eth0_txd[2]}}, {(2){w_eth0_txd[6]}} }, o_eth0_txd[2]);
-	xoserdes	eth0tx3(s_clk_125mhz, !netclk_stable[3], s_clk_250mhz, { {(2){w_eth0_txd[3]}}, {(2){w_eth0_txd[7]}} }, o_eth0_txd[3]);
+	xoserdes	eth0tx0(s_clk_125mhz, pll_reset, s_clk_250mhz, { {(2){w_eth0_txd[0]}}, {(2){w_eth0_txd[4]}} }, o_eth0_txd[0]);
+	xoserdes	eth0tx1(s_clk_125mhz, pll_reset, s_clk_250mhz, { {(2){w_eth0_txd[1]}}, {(2){w_eth0_txd[5]}} }, o_eth0_txd[1]);
+	xoserdes	eth0tx2(s_clk_125mhz, pll_reset, s_clk_250mhz, { {(2){w_eth0_txd[2]}}, {(2){w_eth0_txd[6]}} }, o_eth0_txd[2]);
+	xoserdes	eth0tx3(s_clk_125mhz, pll_reset, s_clk_250mhz, { {(2){w_eth0_txd[3]}}, {(2){w_eth0_txd[7]}} }, o_eth0_txd[3]);
 
 	always @(posedge s_clk_125mhz)
 		eth0_last_tck <= w_eth0_tx_clk[0];
 
-	xoserdes	eth0txc(s_clk_125mhz, !netclk_stable[3], s_clk_250mhz, {(4){w_eth0_txctl}}, o_eth0_tx_ctl );
+	xoserdes	eth0txc(s_clk_125mhz, pll_reset, s_clk_250mhz, {(4){w_eth0_txctl}}, o_eth0_tx_ctl );
 
-	xoserdes	eth0txck(s_clk_125mhz, !netclk_stable[3], s_clk_250mhz, {eth0_last_tck, {(2){w_eth0_tx_clk[1]}},w_eth0_tx_clk[0]},o_eth0_tx_clk);
-	// xoserdes	eth0txck(s_clk_125mhz, !netclk_stable[3], s_clk_250mhz, { {(2){w_eth0_tx_clk[1]}},{(2){w_eth0_tx_clk[0]}} }, o_eth0_tx_clk);
+	xoserdes	eth0txck(s_clk_125mhz, pll_reset, s_clk_250mhz, {eth0_last_tck, {(2){w_eth0_tx_clk[1]}},w_eth0_tx_clk[0]},o_eth0_tx_clk);
+	// xoserdes	eth0txck(s_clk_125mhz, pll_reset, s_clk_250mhz, { {(2){w_eth0_tx_clk[1]}},{(2){w_eth0_tx_clk[0]}} }, o_eth0_tx_clk);
 	// }}}
 
 	assign	io_eth_mdio = (w_mdwe)?w_mdio : 1'bz;
@@ -538,10 +543,13 @@ i_sdcard_cd_n,
 		// }}}
 	) sdrami(
 		// {{{
-		.i_clk(i_clk_buffered),
+		.i_clk(i_clk200_buffered),
 		.i_clk_200mhz(s_clk_200mhz),
 		.o_sys_clk(s_clk),
 		// .i_reset(!i_cpu_resetn),
+		// pll_reset is an asynchronous incoming reset.  It does not
+		// require any synchronization, as the MIG synchronizes it
+		// internally
 		.i_reset(pll_reset),
 		.o_sys_reset(s_reset),
 		//
@@ -566,6 +574,8 @@ i_sdcard_cd_n,
 
 	// Buffer the incoming clock
 	BUFG masterclkclkbufi(.I(i_clk), .O(i_clk_buffered));
+	IBUFDS masterclkio2clk (.I(i_clk200_p), .IB(i_clk200_n), .O(i_clk200));
+	BUFG masterclkclk2bufi(.I(i_clk200), .O(i_clk200_buffered));
 
 	// pll_reset
 	initial	{ pll_reset, pll_reset_sreg } = -1;
@@ -585,9 +595,9 @@ i_sdcard_cd_n,
 	// synchronized to it
 	PLLE2_BASE #(
 		// {{{
-		.CLKFBOUT_MULT(8),
+		.CLKFBOUT_MULT(4),	// Multiply up to 800MHz
 		.CLKFBOUT_PHASE(0.0),
-		.CLKIN1_PERIOD(10),
+		.CLKIN1_PERIOD(5),
 		.CLKOUT0_DIVIDE(4),	// 200 MHz
 		.CLKOUT1_DIVIDE(2),	// 400 MHz
 		.CLKOUT2_DIVIDE(8),	// 100 MHz
@@ -595,7 +605,7 @@ i_sdcard_cd_n,
 		// }}}
 	) gen_sysclk(
 		// {{{
-		.CLKIN1(i_clk_buffered),
+		.CLKIN1(i_clk200_buffered),
 		.CLKOUT0(s_clk_200mhz_unbuffered),
 		.CLKOUT1(s_clk_400mhz_unbuffered),
 		.CLKOUT2(s_clksync_unbuffered),
@@ -608,7 +618,7 @@ i_sdcard_cd_n,
 	);
 
 	BUFG	sysbuf(     .I(s_clk_200mhz_unbuffered),.O(s_clk_200mhz));
-	BUFG	clksync_buf(.I(s_clksync_unbuffered),   .O(s_clksync));
+	// BUFG	clksync_buf(.I(s_clksync_unbuffered),   .O(s_clksync));
 	BUFG	clk4x_buf(  .I(s_clk_400mhz_unbuffered),.O(s_clk_400mhz));
 	BUFG	sys_feedback(.I(sysclk_feedback),.O(sysclk_feedback_buffered));
 
@@ -627,9 +637,9 @@ i_sdcard_cd_n,
 	//   
 	PLLE2_BASE #(
 		// {{{
-		.CLKFBOUT_MULT(10),
+		.CLKFBOUT_MULT(5),
 		.CLKFBOUT_PHASE(0.0),
-		.CLKIN1_PERIOD(10),
+		.CLKIN1_PERIOD(5),
 		.CLKOUT0_DIVIDE(8),	// 125 MHz
 		.CLKOUT0_PHASE(0),
 		.CLKOUT1_DIVIDE(4),	// 250 MHz
@@ -637,7 +647,7 @@ i_sdcard_cd_n,
 		// }}}
 	) gen_netclk(
 		// {{{
-		.CLKIN1(i_clk_buffered),
+		.CLKIN1(i_clk200_buffered),
 		.CLKOUT0(s_clk_125_unbuffered),
 		.CLKOUT1(s_clk_250_unbuffered),
 		.PWRDWN(1'b0), .RST(pll_reset),
@@ -652,16 +662,6 @@ i_sdcard_cd_n,
 	BUFG	netfb(.I(netclk_feedback), .O(netclk_feedback_buffered));
 
 	assign	clocks_locked = (netclk_locked && sysclk_locked);
-
-	// netclk_stable
-	// {{{
-	initial	netclk_stable = 0;
-	always @(posedge i_clk_buffered, negedge netclk_locked)
-	if (!netclk_locked)
-		netclk_stable <= 4'h0;
-	else
-		netclk_stable <= { netclk_stable[2:0], 1'b1 };
-	// }}}
 
 	// }}}
 

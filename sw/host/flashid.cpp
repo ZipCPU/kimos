@@ -53,7 +53,7 @@
 #include "exbus.h"
 #include "flashdrvr.h"
 
-FPGA	*m_fpga;
+DEVBUS	*m_fpga;
 void	closeup(int v) {
 	m_fpga->kill();
 	exit(0);
