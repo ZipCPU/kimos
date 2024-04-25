@@ -80,17 +80,13 @@ DEVBUS	*connect_devbus(const char *ustr) {
 		tty_flag = true; start = &str[9];
 	} else if (0==strncasecmp(str, "SIM://", 6)) {
 		tty_flag = true; start = &str[6];
-	}
-/*
-	else if (0==strncasecmp(str, "NET://", 6)) {
+	} else if (0==strncasecmp(str, "NET://", 6)) {
 		tty_flag = false; start = &str[6];
 	} else if (0==strncasecmp(str, "UDP://", 6)) {
 		tty_flag = false; start = &str[6];
 	} else if (0==strncasecmp(str, "NETBUS://", 9)) {
 		tty_flag = false; start = &str[9];
-	}
-*/
-	else {
+	} else {
 		tty_flag = true; start = str;
 	}
 
@@ -113,7 +109,7 @@ DEVBUS	*connect_devbus(const char *ustr) {
 		// }}}
 	} else {
 		// {{{
-		// devbus = new NETBUS(host, udp_port);
+		// devbus = new NEXBUS(host, udp_port);
 		assert(tty_flag);
 		exit(EXIT_FAILURE);
 		// }}}
