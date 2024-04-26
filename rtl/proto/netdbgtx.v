@@ -384,4 +384,91 @@ module	netdbgtx #(
 	wire	unused;
 	assign	unused = &{ 1'b0, mem_len[1:0] };
 	// }}}
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//
+// Formal properties
+// {{{
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+`ifdef	FORMAL
+	reg	f_past_valid;
+
+	initial	f_past_valid = 1'b0;
+	always @(posedge S_AXI_ACLK)
+		f_past_valid <= 1'b1;
+
+	always @(*)
+	if (!f_past_valid)
+		assume(!S_AXI_ARESETN);
+
+	////////////////////////////////////////////////////////////////////////
+	//
+	// Stream properties
+	// {{{
+	always @(posedge S_AXI_ACLK)
+	if (!f_past_valid || !$past(S_AXI_ARESETN))
+		assume(!S_AXI_TVALID);
+	else if ($past(S_AXI_TVALID && !S_AXI_TREADY))
+	begin
+		assume(S_AXI_TVALID);
+		assume($stable(S_AXI_TDATA));
+		assume($stable(S_AXI_TLAST));
+	end
+
+	always @(posedge S_AXI_ACLK)
+	if (!S_AXI_ARESETN)
+		fs_word <= 0;
+	else if (S_AXI_TVALID && S_AXI_TREADY)
+		fs_word <= fs_word + 1;
+
+	always @(posedge S_AXI_ACLK)
+	if (!f_past_valid || !$past(S_AXI_ARESETN))
+		assume(!M_AXIN_VALID);
+	else if ($past(M_AXIN_VALID && !M_AXIN_READY))
+	begin
+		assert(M_AXIN_VALID);
+		assert($stable(M_AXIN_DATA));
+		assert($stable(M_AXIN_LAST));
+		assert(!$fell(M_AXIN_ABORT));
+	end
+
+	always @(posedge S_AXI_ACLK)
+	if (!S_AXI_ARESETN)
+		fm_word <= 0;
+	else if (M_AXIN_VALID && M_AXIN_READY)
+	begin
+		fm_word <= fm_word + 1;
+		if (M_AXIN_LAST || M_AXIN_ABORT)
+			fm_word <= 0;
+	end else if (M_AXIN_ABORT)
+		fm_word <= 0;
+
+	// }}}
+	////////////////////////////////////////////////////////////////////////
+	//
+	// Contract properties
+	// {{{
+
+	// 1. i_sync -> sync packet
+	// 2. i_repeat_stb -> repeat the last packet
+	// 3. Packet data coming in should be forwarded out
+	//	Outgoing data should match incoming data
+	//	Outgoing length should match incoming length
+
+	// }}}
+	////////////////////////////////////////////////////////////////////////
+	//
+	// Cover properties
+	// {{{
+	// }}}
+	////////////////////////////////////////////////////////////////////////
+	//
+	// "Careless" assumptions
+	// {{{
+	// }}}
+`endif
+// }}}
 endmodule

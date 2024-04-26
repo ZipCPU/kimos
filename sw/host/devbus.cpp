@@ -107,7 +107,6 @@ DEVBUS	*connect_devbus(const char *ustr) {
 	if (tty_flag) {
 		devbus = new EXBUS(new NETCOMMS(host, udp_port));
 	} else {
-		printf("Opening connection to %s:%d\n", host, udp_port);
 		devbus = new NEXBUS(host, udp_port);
 	}
 

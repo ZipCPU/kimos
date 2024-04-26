@@ -360,7 +360,6 @@ unsigned	NETSIM::load_udp(unsigned ln, unsigned char *buf,
 
 void	NETSIM::forward_udp(unsigned ln, unsigned char *buf) {
 	// {{{
-printf("FORWARD-UDP:\n");
 	unsigned	IP = 8+6+6+2,
 			UDP = IP + 20;
 	unsigned char *udpptr = buf+UDP;
@@ -379,7 +378,6 @@ printf("FORWARD-UDP:\n");
 	d.sin_port = (buf[UDP+2] << 8) | buf[UDP+3];
 	d.sin_addr.s_addr = (buf[IP+16]<<24)
 		| (buf[IP+17] << 16) | (buf[IP+18] << 8) | buf[IP+19];
-printf("\tFORWARD-PORT:\t%d\n", d.sin_port);
 
 	d.sin_port = htons(d.sin_port);
 	d.sin_addr.s_addr = htonl(d.sin_addr.s_addr);

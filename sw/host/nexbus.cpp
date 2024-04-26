@@ -307,7 +307,7 @@ void	NEXBUS::writev(const BUSW a, const int p, const int len, const BUSW *buf) {
 		// *ptr = '\0';	// Not needed, since we don't use strlen()
 		for(int k=0; k<ptr-m_buf; k++)
 			m_buf[k] |= 0x80;
-		DBGPRINTF(">> ");
+		DBGPRINTF("TX/W PKT: ");
 		for(char *tp=m_buf; tp<ptr; tp++)
 			DBGPRINTF("0x%02x ", (*tp)&0x0ff);
 		DBGPRINTF("\n");
@@ -412,7 +412,7 @@ NEXBUS::BUSW	NEXBUS::readio(const NEXBUS::BUSW a) {
 //
 char	*NEXBUS::encode_address(const NEXBUS::BUSW a, const bool inc) {
 	NEXBUS::BUSW	addr = a;
-	char	*ptr = m_buf;
+	char	*sbuf = m_buf+4, *ptr = m_buf + 4;
 	int	diffaddr = (a - m_txaddr)>>2;
 
 	// Sign extend the difference address
@@ -430,7 +430,6 @@ char	*NEXBUS::encode_address(const NEXBUS::BUSW a, const bool inc) {
 
 	if (m_txaddr_set) { // Diff. address
 		// {{{
-		ptr = m_buf;
 
 		if ((diffaddr >= -2)&&(diffaddr < 2)) {
 			if (diffaddr == 1)		// 0100
@@ -463,10 +462,10 @@ char	*NEXBUS::encode_address(const NEXBUS::BUSW a, const bool inc) {
 
 #ifdef	NEXDEBUG
 		DBGPRINTF("DIF-ADDR: (%ld) encodes last_addr(0x%08x) %c %d(0x%08x):",
-			ptr-m_buf,
+			ptr-sbuf,
 			m_txaddr, (diffaddr<0)?'-':'+',
 			diffaddr, diffaddr&0x0ffffffff);
-		for(char *sptr = m_buf; sptr < ptr; sptr++)
+		for(char *sptr = sbuf; sptr < ptr; sptr++)
 			DBGPRINTF("%02x ", (uint32_t)*sptr);
 		DBGPRINTF("\n");
 #endif
@@ -482,27 +481,27 @@ char	*NEXBUS::encode_address(const NEXBUS::BUSW a, const bool inc) {
 		int	waddr = ((int)addr) >> 2;
 
 		if ((waddr >= -(1<<7))&&(waddr < 1<<7)
-				&&((ptr == m_buf)||(ptr >= &m_buf[2]))) {
+				&&((ptr == sbuf)||(ptr >= &sbuf[2]))) {
 			DBGPRINTF("Setting ADDR.1 to %08x\n", addr);
-			ptr = m_buf;
+			ptr = sbuf;
 			*ptr++ = 0x18 | ((waddr  < 0) ? 1:0);
 			*ptr   = ( waddr << 1) & 0x07e;
 			if (inc)
 				*ptr |= 1;
 			ptr++;
 		} else if (((waddr >= -1<<13)&&(waddr < 1<<13))
-				&&((ptr == m_buf)||(ptr >= &m_buf[3]))) {
+				&&((ptr == sbuf)||(ptr >= &sbuf[3]))) {
 			DBGPRINTF("Setting ADDR.2 to %08x\n", addr);
-			ptr = m_buf;
+			ptr = sbuf;
 			*ptr++ = 0x1c | ((waddr  < 0) ? 1:0);
 			*ptr++ = ( waddr >> 6) & 0x07f;
 			*ptr   = ( waddr << 1) & 0x07e;
 			if (inc)
 				*ptr |= 1;
 			ptr++;
-		} else if (ptr == m_buf) { // Send our full/raw/complete address
+		} else if (ptr == sbuf) { // Send our full/raw/complete address
 			DBGPRINTF("Setting ADDR.F to %08x\n", addr);
-			ptr = m_buf;
+			ptr = sbuf;
 			*ptr++ = ((addr>>28) & 0x00f) | 0;
 			*ptr++ = ( addr>>21) & 0x07f;
 			*ptr++ = ( addr>>14) & 0x07f;
@@ -517,9 +516,9 @@ char	*NEXBUS::encode_address(const NEXBUS::BUSW a, const bool inc) {
 
 	*ptr = '\0';
 #ifdef	NEXDEBUG
-	DBGPRINTF("ADDR-CMD%2s%2s: (%ld) ", (m_txaddr_set) ? "/S":"", (inc) ? "/I":"", ptr-m_buf);
-	for(int k=0; k<ptr-m_buf; k++)
-		DBGPRINTF("%02x%s", m_buf[k] & 0x0ff, (k+1 < ptr-m_buf)?":":"");
+	DBGPRINTF("ADDR-CMD%2s%2s: (%ld) ", (m_txaddr_set) ? "/S":"", (inc) ? "/I":"", ptr-sbuf);
+	for(int k=0; k<ptr-sbuf; k++)
+		DBGPRINTF("%02x%s", sbuf[k] & 0x0ff, (k+1 < ptr-sbuf)?":":"");
 	if (m_txaddr_set)
 		DBGPRINTF("\tDIF=0x%08x", diffaddr);
 	DBGPRINTF("\n");
@@ -584,7 +583,7 @@ void	NEXBUS::readv(const NEXBUS::BUSW a, const int inc, const int len, NEXBUS::B
 	try {
 		while(cmdrd < len) {
 			int	nrd;
-			begin_packet(a + (inc ? (cmdrd<<2) : 0), inc); 
+			ptr = begin_packet(a + (inc ? (cmdrd<<2) : 0), inc); 
 
 			nrd = len-cmdrd;
 			if (nrd > READBLOCK)
@@ -592,7 +591,12 @@ void	NEXBUS::readv(const NEXBUS::BUSW a, const int inc, const int len, NEXBUS::B
 			ptr = readcmd(nrd, ptr);
 			cmdrd += nrd;
 
-			for(int k=0; k<ptr-m_buf; k++)
+			DBGPRINTF("TX/R PKT: ");
+			for(char *tp=m_buf; tp<ptr; tp++)
+				DBGPRINTF("0x%02x ", (*tp)&0x0ff);
+			DBGPRINTF("\n");
+
+			for(int k=4; k<ptr-m_buf; k++)
 				m_buf[k] |= 0x80;
 
 			// Request, and then wait for the return data packet
@@ -1198,7 +1202,7 @@ unsigned	NEXBUS::readpkt(unsigned timeout_ms) {
 	if (m_rxlen >= 8) {
 		rxframe = ((m_rdbuf[0] && 0x0ff) << 8) | (m_rdbuf[1] & 0x0ff);
 		if ((rxframe == m_frameid)&&(m_frameid != 0)) {
-			DBGPRINTF("NOT DONE: Frame IDs %04x %04x match!\n", rxframe, m_frameid);
+			DBGPRINTF("NOT DONE: Frame IDs %04x %04x match! RxLen = %d\n", rxframe, m_frameid, m_rxlen);
 			// We already have the packet we need.  Don't waste our
 			// time with an extra system call
 			return m_rxlen;
@@ -1308,8 +1312,6 @@ void	NEXBUS::wait(void) {
 // {{{
 void	NEXBUS::sync(void) {
 	unsigned	nrd = 0;
-
-printf("Attempting to SYNC\n");
 
 	m_rxaddr_set = false;
 	m_txaddr_set = false;

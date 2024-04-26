@@ -298,7 +298,7 @@ module	netdebug #(
 	) mkword(
 		// {{{
 		.i_clk(i_clk), .i_reset(i_reset),
-		.i_sync(!r_active && pl_valid),
+		.i_sync(!r_active && !pl_valid),
 		.i_stb(pl_valid && pl_data[7]), .o_busy(pl_busy),
 			.i_data(pl_data[6:0]),
 		.o_reset_bridge(cmd_reset),
