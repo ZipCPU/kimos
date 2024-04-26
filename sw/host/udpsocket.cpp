@@ -75,6 +75,7 @@ const char	MY_IP_ADDRESS[] = "192.168.13.1",
 UDPSOCKET::UDPSOCKET(const char *fpga_ipaddr, bool verbose) {
 	// {{{
 	char	*ptr;
+printf("Connecting to %s\n", fpga_ipaddr);
 
 	m_connected = false;
 	if (NULL == fpga_ipaddr)
@@ -149,6 +150,7 @@ UDPSOCKET::UDPSOCKET(const char *fpga_ipaddr, bool verbose) {
 
 UDPSOCKET::UDPSOCKET(const char *fpga_ipaddr, unsigned port, bool verbose) {
 	// {{{
+printf("Connecting to %s:%d\n", fpga_ipaddr, port);
 	m_connected = false;
 	if (NULL == fpga_ipaddr)
 		m_skt = -1;
@@ -320,7 +322,7 @@ ssize_t	UDPSOCKET::read(size_t len, void *buf, int timeout_ms) {
 
 	nr = recvfrom(m_skt, buf, len, flags, (sockaddr *)&m_source, &addrlen);
 	if (nr < 0) {
-		perror("O/S Err:");
+		perror("RX O/S Err:");
 		exit(-1);
 	}
 	return nr;

@@ -50,9 +50,6 @@
 // with the test-bench.  Across the network, no one will know any better that
 // anything had changed.
 #define	FPGAHOST	"localhost"
-#ifndef	FPGAPORT
-#define	FPGAPORT	5927
-#endif
 
 // #define FPGAOPEN(V) V= new DEVBUS(new NETCOMMS(FPGAHOST, FPGAPORT))
 #define FPGAOPEN(V) V= connect_devbus(NULL)

@@ -55,6 +55,7 @@
 #include <signal.h>
 
 #include "port.h"
+#include "regdefs.h"
 
 #define	TXIDLE	0
 #define	TXDATA	1

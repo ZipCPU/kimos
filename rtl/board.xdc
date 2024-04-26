@@ -632,9 +632,9 @@ set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
 
 ## Adding in any XDC_INSERT tags
 
-## No XDC.INSERT tag in noddr
 ## No XDC.INSERT tag in XDC
 ## No XDC.INSERT tag in mem_bkram_only
+## No XDC.INSERT tag in mem_flash_bkram
 ## No XDC.INSERT tag in spio
 ## No XDC.INSERT tag in rtccount
 ## No XDC.INSERT tag in pwrcount
@@ -750,7 +750,8 @@ set_property -dict { PULLTYPE PULLUP } [get_ports io_sdcard_cmd]
 ## No XDC.INSERT tag in zip_jiffies
 ## No XDC.INSERT tag in zip
 ## No XDC.INSERT tag in syspic
+## No XDC.INSERT tag in noddr
+## No XDC.INSERT tag in eth0bus
 ## No XDC.INSERT tag in uart
 ## No XDC.INSERT tag in altpic
 ## No XDC.INSERT tag in flashdbg
-## No XDC.INSERT tag in mem_flash_bkram

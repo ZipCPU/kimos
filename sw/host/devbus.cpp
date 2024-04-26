@@ -53,10 +53,11 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+
 #include "port.h"
 #include "regdefs.h"
 #include "devbus.h"
-// #include "netbus.h"
+#include "nexbus.h"
 #include "exbus.h"
 
 DEVBUS	*connect_devbus(const char *ustr) {
@@ -97,22 +98,17 @@ DEVBUS	*connect_devbus(const char *ustr) {
 	ptr = strchr(host, ':');
 
 	if (NULL == ptr)
-		udp_port = FPGAPORT; // (tty_flag) ? UARTDBGPORT : UDP_DBGPORT;
+		udp_port = (tty_flag) ? UARTDBGPORT : UDP_DBGPORT;
 	else {
 		udp_port = atoi(ptr + 1);
 		*ptr = '\0';
 	}
 
 	if (tty_flag) {
-		// {{{
 		devbus = new EXBUS(new NETCOMMS(host, udp_port));
-		// }}}
 	} else {
-		// {{{
-		// devbus = new NEXBUS(host, udp_port);
-		assert(tty_flag);
-		exit(EXIT_FAILURE);
-		// }}}
+		printf("Opening connection to %s:%d\n", host, udp_port);
+		devbus = new NEXBUS(host, udp_port);
 	}
 
 	free(host);
