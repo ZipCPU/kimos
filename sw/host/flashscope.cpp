@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename: 	flashscope.cpp
+// Filename:	sw/host/flashscope.cpp
 // {{{
 // Project:	KIMOS, a Mercury KX2 demonstration project
 //

@@ -1,6 +1,6 @@
 ################################################################################
 ##
-## Filename: 	autodata/mdioscope.txt
+## Filename:	autodata/mdioscope.txt
 ## {{{
 ## Project:	KIMOS, a Mercury KX2 demonstration project
 ##

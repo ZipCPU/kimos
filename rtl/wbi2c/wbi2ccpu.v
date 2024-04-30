@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Filename:	wbi2ccpu.v
+// Filename:	rtl/wbi2c/wbi2ccpu.v
 // {{{
 // Project:	KIMOS, a Mercury KX2 demonstration project
 //
