@@ -57,8 +57,14 @@
 #include "port.h"
 #include "regdefs.h"
 #include "devbus.h"
+#ifdef	UDP_DBGPORT
 #include "nexbus.h"
+#endif
 #include "exbus.h"
+
+#ifndef	UARTDBGPORT
+#define	UARTDBGPORT	5927
+#endif
 
 DEVBUS	*connect_devbus(const char *ustr) {
 	const char *str, *start = NULL;
@@ -98,7 +104,11 @@ DEVBUS	*connect_devbus(const char *ustr) {
 	ptr = strchr(host, ':');
 
 	if (NULL == ptr)
+#ifdef	UDP_DBGPORT
 		udp_port = (tty_flag) ? UARTDBGPORT : UDP_DBGPORT;
+#else
+		udp_port = UARTDBGPORT;
+#endif
 	else {
 		udp_port = atoi(ptr + 1);
 		*ptr = '\0';
@@ -107,7 +117,12 @@ DEVBUS	*connect_devbus(const char *ustr) {
 	if (tty_flag) {
 		devbus = new EXBUS(new NETCOMMS(host, udp_port));
 	} else {
+#ifdef	UDP_DBGPORT
 		devbus = new NEXBUS(host, udp_port);
+#else
+		fprintf(stderr, "ERR: No network bus defined\n");
+		exit(EXIT_FAILURE);
+#endif
 	}
 
 	free(host);

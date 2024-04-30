@@ -50,7 +50,10 @@
 ## bus can't (yet) handle.  So, for the time being, let's call it 30 bits
 ## until we can fix AutoFPGA.
 @$LGMEMSZ=30
+@$DDRWIDTH=64
+## @$DDRWIDTH=8
 @LGMEMSZ.FORMAT=%d
+## @$UNUSED should equal $clog2(SLAVE.BUS.WIDTH/8)
 @$UNUSED=6
 @$NADDR=(1<<(LGMEMSZ-(@$(UNUSED))))
 @$NBYTES=(1<<(@$LGMEMSZ))
@@ -65,7 +68,7 @@
 @RAMW=64
 @SLAVE.ORDER=2
 @BUS.NAME=wbwide
-@BUS.WIDTH=512
+@$BUS.WIDTH=@$(DDRWIDTH)*8
 @BUS.CLOCK=clk
 @BUS.TYPE=wb
 @BUS.RESET=i_reset
@@ -73,7 +76,6 @@
 # 8-bit byte accesses
 @$ABITS=@$(LGMEMSZ)-@$(UNUSED)
 @LD.PERM=wx
-@$DDRWIDTH=64
 @$DDRAWID=15
 @TOP.PORTLIST=
 		// SDRAM I/O port wires
@@ -83,7 +85,8 @@
 		ddr3_dqs_p, ddr3_dqs_n,
 		ddr3_addr, ddr3_ba,
 		o_ddr3_vsel,
-		ddr3_dq, ddr3_dm, ddr3_odt
+		ddr3_dq, ddr3_dm, ddr3_odt,
+		o_zero
 @TOP.IODECL=
 	// I/O declarations for the DDR3 SDRAM
 	// {{{
@@ -100,6 +103,7 @@
 	output	wire	[@$(DDRWIDTH)/8-1:0]	ddr3_dm;
 	inout	wire	[@$(DDRWIDTH)/8-1:0]	ddr3_dqs_p, ddr3_dqs_n;
 	inout	wire	[@$(DDRWIDTH)-1:0]	ddr3_dq;
+	output	wire	[1:0]			o_zero;
 	// }}}
 @TOP.DEFNS=
 	// Wires necessary to run the SDRAM
@@ -127,12 +131,15 @@
 	// Force VSEL to 1'bz, to make the DDR3 SDRAM operate at 1.5V.
 	assign	o_ddr3_vsel = 1'bz;
 
+	assign	o_zero = 2'b00;
+
 	migsdram #(
 		// {{{
-		.AXIDWIDTH(1), .WBDATAWIDTH(@$(BUS.WIDTH)),
+		.AXIDWIDTH(1),
 		.DDRWIDTH(@$(DDRWIDTH)),
+		// .WBDATAWIDTH(@$(BUS.WIDTH)),	// BUS.WIDTH must == 8*DDRWIDTH
 		.DDRAWID(@$(DDRAWID)),
-		.RAMABITS(@$(LGMEMSZ))
+		.RAMABITS(@$(LGMEMSZ)+1)
 		// }}}
 	) @$(PREFIX)i(
 		// {{{
@@ -147,7 +154,7 @@
 		.o_sys_reset(s_reset),
 		//
 		.i_wb_cyc(@$(PREFIX)_cyc), .i_wb_stb(@$(PREFIX)_stb),
-		.i_wb_we(@$(PREFIX)_we), .i_wb_addr(@$(PREFIX)_addr),
+		.i_wb_we(@$(PREFIX)_we), .i_wb_addr({ 1'b0, @$(PREFIX)_addr }),
 			.i_wb_data(@$(PREFIX)_wdata), .i_wb_sel(@$(PREFIX)_sel),
 		.o_wb_stall(@$(PREFIX)_stall),    .o_wb_ack(@$(PREFIX)_ack),
 			.o_wb_data(@$(PREFIX)_rdata), .o_wb_err(@$(PREFIX)_err),

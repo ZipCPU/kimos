@@ -428,27 +428,30 @@ module	netdebug #(
 	// {{{
 	always @(posedge i_clk)
 	if (i_reset || cmd_reset)
-		{ r_active, null_valid, compress_last } <= 3'b000;
+		{ r_active, null_valid } <= 2'b00;
 	else if (pl_valid
 		|| iword_stb || iword_active
 		|| in_stb || in_active
 		|| bus_busy || exec_stb
 		|| ofifo_valid)
 	begin
-		{ r_active, null_valid, compress_last } <= 3'b100;
+		{ r_active, null_valid } <= 2'b10;
 	end else if (r_active)
 	begin
 		if ((compress_valid || null_valid) && idle_busy)
 		begin
 			// No changes
-		end else if (compress_valid && compress_last)
-			{ r_active, null_valid, compress_last } <= 3'b000;
+		end else if (compress_valid && !compress_active)
+			{ r_active, null_valid } <= 2'b00;
 		else if (!compress_active && !compress_valid)
-			{ r_active, null_valid, compress_last } <= 3'b010;
+			{ r_active, null_valid } <= 2'b01;
 		else
-			{ r_active, null_valid, compress_last } <= 3'b101;
+			{ r_active, null_valid } <= 2'b10;
 	end else if (!idle_busy)
-		{ r_active, null_valid, compress_last } <= 3'b000;
+		{ r_active, null_valid } <= 2'b00;
+
+	always @(*)
+		compress_last = !r_active && compress_valid && !compress_active;
 	// }}}
 
 	// exidle: ofifo* -> idle_valid, idle_data
@@ -460,8 +463,7 @@ module	netdebug #(
 		.i_stb(compress_valid || null_valid),
 			.i_word(null_valid ? { idle_null, compress_data[27:0] }
 					: compress_data),
-			.i_last(null_valid
-				|| (compress_valid && compress_last && !compress_active)),
+			.i_last(null_valid || compress_last),
 			.o_busy(idle_busy),
 		.i_aux(i_gpio[9:8]), .i_cts(1'b1), .i_int(i_interrupt),
 			.i_fifo_err(ofifo_err),

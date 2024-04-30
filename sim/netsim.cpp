@@ -63,6 +63,7 @@
 // #define	UDP_DBGPORT
 // #define	UDP_DATAPORT
 
+#ifdef	UDP_DBGPORT
 
 NETSIM::NETSIM(void) {
 	// {{{
@@ -506,8 +507,11 @@ void	NETSIM::checkrx(unsigned length, const unsigned char *buf) const {
 }
 // }}}
 
+#endif	// UDP_DBGPORT
+
 unsigned	NETSIM::rxtick(const int resetn) {
 	// {{{
+#ifdef	UDP_DBGPORT
 	unsigned	rv = 0;
 
 	if (resetn == 0) {
@@ -564,12 +568,15 @@ printf("NETSIM::PKT received\n");
 
 
 	return rv;
+#endif
+	return 0;
 }
 // }}}
 
 void	NETSIM::txtick(const int resetn,
 				const unsigned ctl, const unsigned txd) {
 	// {{{
+#ifdef	UDP_DBGPORT
 	if (!resetn) {
 		// Reset all states
 		m_txstate = TX_IDLE;
@@ -620,6 +627,8 @@ void	NETSIM::txtick(const int resetn,
 			m_txdata[m_txaddr++] = txd;
 		}
 	}
+#endif
 }
 // }}}
+
 

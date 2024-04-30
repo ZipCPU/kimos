@@ -214,7 +214,7 @@ module	exwb #(
 		always @(*)
 		if (!o_wb_cyc)
 			r_cmd_busy = 1'b0;
-		else if (!o_wb_stb || !o_wb_we)
+		else if (!o_wb_stb)
 			r_cmd_busy = 1'b1;
 		else if (read_count > 0)
 			r_cmd_busy = 1'b1;

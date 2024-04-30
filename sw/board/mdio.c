@@ -42,6 +42,7 @@
 #include "board.h"
 
 int main(int argc, char **argv) {
+#ifdef	_BOARD_HAS_NETMDIO
 	unsigned	nreg, iface;
 
 	for(iface=0; iface < 32; iface++) {
@@ -184,4 +185,7 @@ int main(int argc, char **argv) {
 		// nreg = _mdio->e_v[iface][MDIO_GBESR] & 0x0ffff;
 		// nreg = _mdio->e_v[iface][MDIO_LOOPBACK];
 	}
+#else
+	printf("ERR: No MDIO peripheral\n");
+#endif
 }

@@ -233,6 +233,8 @@ int main(int argc, char **argv) {
 				gbl_fpgaport = atoi(portstr);
 		} if (host)
 			gbl_fpgahost = host;
+fprintf(stderr, "Connecting to %s://%s:%d\n", gbl_uart ? "UART":"NET",
+gbl_fpgahost, gbl_fpgaport);
 	}
 	// }}}
 

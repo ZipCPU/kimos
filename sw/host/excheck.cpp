@@ -85,21 +85,65 @@ bool	isvalue(const char *v) {
 }
 // }}}
 
+const	char	*gbl_fpgahost = FPGAHOST;
+int		gbl_fpgaport = FPGAPORT;
+bool		gbl_uart = true;
+
 int main(int argc, char **argv) {
 	const	unsigned NLEN = 768;
-	const char *host = FPGAHOST;
-	int	port=FPGAPORT;
+	char	*kimos_env;
 	int	opt;
 	uint32_t	*testbuf, *checkbuf, *ovbuf;
 	bool	passed = true;
+
+	// Check first for our environment value -- use it to set defaults
+	// {{{
+	if (NULL != (kimos_env = getenv("KIMOSDEV")) && kimos_env[0]) {
+		char	*portstr, *host = NULL;
+
+		kimos_env = strdup(kimos_env);
+		if (0 == strncasecmp(kimos_env, "UART://", 7)) {
+			host = kimos_env+7;
+			gbl_uart = true;
+		} else if (0 == strncasecmp(kimos_env, "EXBUS://", 8)) {
+			host = kimos_env+8;
+			gbl_uart = true;
+		} else if (0 == strncasecmp(kimos_env, "SIM://", 6)) {
+			host = kimos_env+6;
+			gbl_uart = true;
+		} else if (0 == strncasecmp(kimos_env, "NEXBUS://", 9)) {
+			host = kimos_env+6;
+			gbl_uart = false;
+		} else if (0 == strncasecmp(kimos_env, "NET://", 6)) {
+			host = kimos_env+6;
+			gbl_uart = false;
+		} else if (0 == strncasecmp(kimos_env, "UDP://", 6)) {
+			host = kimos_env+6;
+			gbl_uart = false;
+		} else {
+			fprintf(stderr, "ERR: Unrecognized environment string\n");
+			exit(EXIT_FAILURE);
+		}
+
+		portstr = strchr(host, ':');
+		if (portstr) {
+			*portstr++ = '\0';
+			if (*portstr && isdigit(*portstr))
+				gbl_fpgaport = atoi(portstr);
+		} if (host)
+			gbl_fpgahost = host;
+fprintf(stderr, "Connecting to %s://%s:%d\n", gbl_uart ? "UART":"NET",
+gbl_fpgahost, gbl_fpgaport);
+	}
+	// }}}
 
 	// Process all arguments, save the address and optional value
 	// {{{
 	while(-1 != (opt=getopt(argc, argv, "dn:p:m:"))) {
 		switch(opt) {
 		// case 'h': usage(); exit(EXIT_SUCCESS); break;
-		case 'n': host = strdup(optarg); break;
-		case 'p': port = strtoul(optarg, NULL, 0); break;
+		case 'n': gbl_fpgahost = strdup(optarg); break;
+		case 'p': gbl_fpgaport = strtoul(optarg, NULL, 0); break;
 		default: // usage();
 			exit(EXIT_FAILURE);
 			break;
@@ -109,7 +153,7 @@ int main(int argc, char **argv) {
 
 	{
 		char	comstr[256];
-		sprintf(comstr, "UART://%s:%d", host, port);
+		sprintf(comstr, "%s://%s:%d", gbl_uart ? "UART":"NET",gbl_fpgahost, gbl_fpgaport);
 		m_fpga = connect_devbus(comstr);
 	}
 

@@ -221,12 +221,6 @@ void	NEXBUS::writev(const BUSW a, const int p, const int len, const BUSW *buf) {
 
 	DBGPRINTF("WRITEV(%08x,%d,#%d,0x%08x ...)\n", a, p, len, buf[0]);
 
-	// Encode the address
-	// {{{
-	ptr = encode_address(a, p);
-	m_txaddr = a | (p ? 1:0); m_txaddr_set = true;
-	// }}}
-
 	while(nw < len) {
 		int	ln = len-nw;
 		if ((unsigned)ln > MAXWRLEN)
@@ -413,7 +407,7 @@ NEXBUS::BUSW	NEXBUS::readio(const NEXBUS::BUSW a) {
 char	*NEXBUS::encode_address(const NEXBUS::BUSW a, const bool inc) {
 	NEXBUS::BUSW	addr = a;
 	char	*sbuf = m_buf+4, *ptr = m_buf + 4;
-	int	diffaddr = (a - m_txaddr)>>2;
+	int	diffaddr = ((a&-2) - (m_txaddr & -2))>>2;
 
 	// Sign extend the difference address
 	diffaddr <<= 2; diffaddr >>= 2;
@@ -461,9 +455,9 @@ char	*NEXBUS::encode_address(const NEXBUS::BUSW a, const bool inc) {
 		*ptr = '\0';
 
 #ifdef	NEXDEBUG
-		DBGPRINTF("DIF-ADDR: (%ld) encodes last_addr(0x%08x) %c %d(0x%08x):",
+		DBGPRINTF("DIF-ADDR: (%ld) encodes last_addr(0x%08x) %d(0x%08x):",
 			ptr-sbuf,
-			m_txaddr, (diffaddr<0)?'-':'+',
+			m_txaddr,
 			diffaddr, diffaddr&0x0ffffffff);
 		for(char *sptr = sbuf; sptr < ptr; sptr++)
 			DBGPRINTF("%02x ", (uint32_t)*sptr);

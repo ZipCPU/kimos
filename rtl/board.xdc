@@ -7,13 +7,22 @@ set_property BITSTREAM.CONFIG.OVERTEMPPOWERDOWN ENABLE [current_design]
 set_property BITSTREAM.CONFIG.UNUSEDPIN PULLNONE [current_design]
 
 # set_property -dict {PACKAGE_PIN AD24  IOSTANDARD LVCMOS18  } [get_ports {CLK_100_CAL}]
+## set_property DCI_CASCADE {32 33} [get_iobanks 34]
 set_property DCI_CASCADE {32} [get_iobanks 34]
 ## For a 1.5V memory, the appropriate VREF voltage is half of 1.5, or 0.75 Volts
-##  Only bank 33 needs the INTERNAL_VREF.  Other banks are explicitly connected
-##  to an external VREF signal.  However, bank 33s IOs are overloaded--there was
-##  no room for the VREF.  Hence, to spare two pins, bank 33 uses an internal
-##  voltage reference.
+##  Of the DDR3 bank(s), only bank 33 needs the INTERNAL_VREF.  The other DDR3
+##  banks are explicitly connected to an external VREF signal.  However, bank
+##  33s IOs are overloaded--there was no room for the VREF.  Hence, to spare
+##  two pins, bank 33 uses an internal voltage reference.  Sadly, the same
+##  problem plays out in banks 12-16 as well.
+## set_property INTERNAL_VREF 0.750 [get_iobanks 32]
 set_property INTERNAL_VREF 0.750 [get_iobanks 33]
+## set_property INTERNAL_VREF 0.750 [get_iobanks 34]
+set_property INTERNAL_VREF 0.90 [get_iobanks 12]
+set_property INTERNAL_VREF 0.60 [get_iobanks 13]
+set_property INTERNAL_VREF 0.90 [get_iobanks 14]
+set_property INTERNAL_VREF 0.90 [get_iobanks 15]
+set_property INTERNAL_VREF 0.90 [get_iobanks 16]
 
 ## Clocks
 ## {{{
@@ -21,10 +30,8 @@ set_property INTERNAL_VREF 0.750 [get_iobanks 33]
 set_property -dict {PACKAGE_PIN AA4 IOSTANDARD SSTL15  } [get_ports {i_clk}];
 create_clock -name i_clk -period 10.000 [get_ports i_clk];
 
-## set_property DIFF_TERM FALSE [get_ports CLK200_N];
-## set_property DIFF_TERM FALSE [get_ports CLK200_P];
-set_property -dict {PACKAGE_PIN AB11  IOSTANDARD DIFF_SSTL15} [get_ports {i_clk200_p}];
-set_property -dict {PACKAGE_PIN AC11  IOSTANDARD DIFF_SSTL15} [get_ports {i_clk200_n}];
+set_property -dict {PACKAGE_PIN AB11  DIFF_TERM FALSE IOSTANDARD LVDS} [get_ports {i_clk200_p}];
+set_property -dict {PACKAGE_PIN AC11  DIFF_TERM FALSE IOSTANDARD LVDS} [get_ports {i_clk200_n}];
 create_clock -name CK200 -period 5.000 [get_ports i_clk200_p];
 
 ## AD24: IO_B12_L16_AD24_N	A60	CLK_100_CAL	i_clk100_cal
@@ -88,20 +95,16 @@ create_clock -name CK200 -period 5.000 [get_ports i_clk200_p];
 
 ## LEDs
 ## {{{
-## set_property SLEW SLOW [get_ports LED0_N];
-## set_property SLEW SLOW [get_ports LED1_N];
-## set_property SLEW SLOW [get_ports LED2_N];
-## set_property SLEW SLOW [get_ports LED3_N];
-set_property -dict {SLEW SLOW PACKAGE_PIN U9  IOSTANDARD SSTL15 } [get_ports {o_led[0]}]; # LED0_N
-set_property -dict {SLEW SLOW PACKAGE_PIN V12 IOSTANDARD SSTL15 } [get_ports {o_led[1]}]; # LED1_N
-set_property -dict {SLEW SLOW PACKAGE_PIN V13 IOSTANDARD SSTL15 } [get_ports {o_led[2]}]; # LED2_N
-set_property -dict {SLEW SLOW PACKAGE_PIN W13 IOSTANDARD SSTL15 } [get_ports {o_led[3]}]; # LED3_N
+set_property -dict {SLEW SLOW PACKAGE_PIN U9  IOSTANDARD LVCMOS15 } [get_ports {o_led[0]}]; # LED0_N
+set_property -dict {SLEW SLOW PACKAGE_PIN V12 IOSTANDARD LVCMOS15 } [get_ports {o_led[1]}]; # LED1_N
+set_property -dict {SLEW SLOW PACKAGE_PIN V13 IOSTANDARD LVCMOS15 } [get_ports {o_led[2]}]; # LED2_N
+set_property -dict {SLEW SLOW PACKAGE_PIN W13 IOSTANDARD LVCMOS15 } [get_ports {o_led[3]}]; # LED3_N
 
 ## Baseboard LEDs
 set_property -dict {SLEW SLOW PACKAGE_PIN F22   IOSTANDARD LVCMOS18  } [get_ports { o_led[4] }]; # GPIO0_LED0_N
 set_property -dict {SLEW SLOW PACKAGE_PIN E23   IOSTANDARD LVCMOS18  } [get_ports { o_led[5] }]; # GPIO1_LED1_N
-set_property -dict {SLEW SLOW PACKAGE_PIN K25   IOSTANDARD LVCMOS18  } [get_ports { o_led[6] }]; # LED2
-set_property -dict {SLEW SLOW PACKAGE_PIN K26   IOSTANDARD LVCMOS18  } [get_ports { o_led[7] }]; # LED3
+set_property -dict {SLEW SLOW PACKAGE_PIN K25   IOSTANDARD LVCMOS12  } [get_ports { o_led[6] }]; # LED2
+set_property -dict {SLEW SLOW PACKAGE_PIN K26   IOSTANDARD LVCMOS12  } [get_ports { o_led[7] }]; # LED3
 
 ## C142 LED2 (ST1)
 ## C144 LED3 (ST1)
@@ -144,11 +147,11 @@ set_property -dict {PACKAGE_PIN AD23  IOSTANDARD LVCMOS18    } [get_ports {i_btn
 ## {{{
 ## Connects to FTDI, Si53388B, AniosIO #1, HDMI Redriver
 # set_property SLEW SLOW [get_ports i_i2c_int_n];
-# set_property SLEW SLOW [get_ports io_sda];
-# set_property SLEW SLOW [get_ports io_scl];
+set_property SLEW SLOW [get_ports io_sda];
+set_property SLEW SLOW [get_ports io_scl];
 # set_property -dict {PACKAGE_PIN AC18  IOSTANDARD SSTL15    } [get_ports {i_i2c_int_n}];
-# set_property -dict {PACKAGE_PIN L23   IOSTANDARD LVCMOS18  } [get_ports {io_scl}];
-# set_property -dict {PACKAGE_PIN C24   IOSTANDARD LVCMOS18  } [get_ports {io_sda}];
+set_property -dict {PACKAGE_PIN L23   IOSTANDARD LVCMOS18  } [get_ports {io_scl}];
+set_property -dict {PACKAGE_PIN C24   IOSTANDARD LVCMOS18  } [get_ports {io_sda}];
 ## }}}
 ## I2C #2: I2C_SCL_FPGA and I2C_SDA_FPGA
 ## {{{
@@ -312,6 +315,9 @@ set_property -dict {PACKAGE_PIN AD23  IOSTANDARD LVCMOS18    } [get_ports {i_btn
 # set_property -dict {PACKAGE_PIN F18   IOSTANDARD LVCMOS18  } [get_ports {FMC_LA01_CC_N}];
 # set_property -dict {PACKAGE_PIN H18   IOSTANDARD LVCMOS18  } [get_ports {FMC_CLK0_M2C_N}];
 # set_property -dict {PACKAGE_PIN H17   IOSTANDARD LVCMOS18  } [get_ports {FMC_CLK0_M2C_P}];
+
+set_property -dict {PACKAGE_PIN M16   IOSTANDARD LVCMOS18  } [get_ports {o_zero[0]}];
+set_property -dict {PACKAGE_PIN J8    IOSTANDARD LVCMOS18  } [get_ports {o_zero[1]}];
 ## }}}
 
 ## KX2 IO Bank #3
@@ -357,21 +363,21 @@ set_property -dict {PACKAGE_PIN AD23  IOSTANDARD LVCMOS18    } [get_ports {i_btn
 ## Controls wires
 ## {{{
 # set_property -dict {PACKAGE_PIN AB7   IOSTANDARD SSTL15    } [get_ports {o_ddr3_reset_n}];
-set_property SLEW SLOW [get_ports o_ddr3_vsel]
 
 # set_property -dict {PACKAGE_PIN AC12  IOSTANDARD DIFF_SSTL15} [get_ports {o_ddr3_clk_n}];
 # set_property -dict {PACKAGE_PIN AB12  IOSTANDARD DIFF_SSTL15} [get_ports {o_ddr3_clk_p}];
-# set_property -dict {PACKAGE_PIN AA13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[0]}];
-# set_property -dict {PACKAGE_PIN AF13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[1]}];
-set_property -dict {PACKAGE_PIN AA3   IOSTANDARD SSTL15    } [get_ports {o_ddr3_vsel}];
-# set_property -dict {PACKAGE_PIN Y12   IOSTANDARD SSTL15    } [get_ports {o_ddr3_s_n[0]}];
-# set_property -dict {PACKAGE_PIN Y13   IOSTANDARD SSTL15    } [get_ports {o_ddr3_s_n[1]}];
+# set_property -dict {PACKAGE_PIN AA13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[0]}];	## CKE	!!!
+## # set_property -dict {PACKAGE_PIN AF13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[1]}];	## (WRONG)
+## set_property -dict {SLEW SLOW PACKAGE_PIN AA3   IOSTANDARD SSTL15    } [get_ports {o_ddr3_vsel}];
+set_property -dict {SLEW SLOW PACKAGE_PIN AA3   IOSTANDARD LVCMOS15    } [get_ports {o_ddr3_vsel}];
+# set_property -dict {PACKAGE_PIN Y12   IOSTANDARD SSTL15    } [get_ports {o_ddr3_cs_n[0]}];
+## # set_property -dict {PACKAGE_PIN Y13   IOSTANDARD SSTL15    } [get_ports {o_ddr3_cs_n[1]}];	## ?? Unused?
 # set_property -dict {PACKAGE_PIN AE12  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cas_n}];
 # set_property -dict {PACKAGE_PIN AE13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_ras_n}]
 # set_property -dict {PACKAGE_PIN AA12  IOSTANDARD SSTL15    } [get_ports {o_ddr3_we_n}];
 
 # set_property -dict {PACKAGE_PIN AD13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_odt[0]}];
-# set_property -dict {PACKAGE_PIN AC12  IOSTANDARD SSTL15    } [get_ports {o_ddr3_odt[1]}];
+# set_property -dict {PACKAGE_PIN AC13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_odt[1]}];	## Unused
 ## }}}
 
 ## Address lines
@@ -632,9 +638,16 @@ set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
 
 ## Adding in any XDC_INSERT tags
 
+## No XDC.INSERT tag in i2c
+## No XDC.INSERT tag in i2cdma
 ## No XDC.INSERT tag in XDC
 ## No XDC.INSERT tag in mem_bkram_only
 ## No XDC.INSERT tag in mem_flash_bkram
+## From sdio
+set_property -dict { PULLTYPE PULLUP } [get_ports io_sdcard_cmd]
+## From eth0bus
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ thedesign/u_eth0/dbgtx_afifo/mem*}] -to [get_cells -hier -filter {NAME=~ thedesign/u_eth0/dbgtx_afifo/GEN_REGISTERED_READ.o_rd_data*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ thedesign/u_eth0/dbg_afifo/mem*}] -to [get_cells -hier -filter {NAME=~ thedesign/u_eth0/dbg_afifo/GEN_REGISTERED_READ.o_rd_data*}] 8.0
 ## No XDC.INSERT tag in spio
 ## No XDC.INSERT tag in rtccount
 ## No XDC.INSERT tag in pwrcount
@@ -727,16 +740,20 @@ set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *clkadcclkct
 ## No XDC.INSERT tag in wbwide
 ## No XDC.INSERT tag in wb32
 ## No XDC.INSERT tag in SIM
+## No XDC.INSERT tag in flashdbg
+## No XDC.INSERT tag in uart
+## No XDC.INSERT tag in altpic
 ## No XDC.INSERT tag in wbu_arbiter
 ## No XDC.INSERT tag in zip_alt_uic
 ## No XDC.INSERT tag in TMA
 ## No XDC.INSERT tag in bkram
 ## No XDC.INSERT tag in crossflash
 ## No XDC.INSERT tag in flashcfg
+## No XDC.INSERT tag in sdram
+## No XDC.INSERT tag in syspic
+## No XDC.INSERT tag in mem_flash_sdram
 ## No XDC.INSERT tag in masterclk
 ## No XDC.INSERT tag in zip_alt_mic
-## From sdio
-set_property -dict { PULLTYPE PULLUP } [get_ports io_sdcard_cmd]
 ## No XDC.INSERT tag in zip_alt_moc
 ## No XDC.INSERT tag in netdirs
 ## No XDC.INSERT tag in zip_alt_utc
@@ -746,12 +763,7 @@ set_property -dict { PULLTYPE PULLUP } [get_ports io_sdcard_cmd]
 ## No XDC.INSERT tag in crossbus
 ## No XDC.INSERT tag in zip_tmc
 ## No XDC.INSERT tag in REGISTER
+## No XDC.INSERT tag in mem_sdram_only
 ## No XDC.INSERT tag in zip_dmac
 ## No XDC.INSERT tag in zip_jiffies
 ## No XDC.INSERT tag in zip
-## No XDC.INSERT tag in syspic
-## No XDC.INSERT tag in noddr
-## No XDC.INSERT tag in eth0bus
-## No XDC.INSERT tag in uart
-## No XDC.INSERT tag in altpic
-## No XDC.INSERT tag in flashdbg

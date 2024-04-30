@@ -275,7 +275,7 @@ sw-board: sw-zlib sw-fatfs check-zip-gcc rtl
 ## {{{
 ## BITFILE := blinky.bit
 BITFILE := kimos.bit
-$(BITFILE): ../xilinx/kimos.runs/impl_1/toplevel.bit
+$(BITFILE): ../xilinx/xkimos.runs/impl_1/toplevel.bit
 	@cp $< $@
 
 .PHONY: load

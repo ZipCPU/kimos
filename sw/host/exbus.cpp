@@ -363,7 +363,7 @@ EXBUS::BUSW	EXBUS::readio(const EXBUS::BUSW a) {
 char	*EXBUS::encode_address(const EXBUS::BUSW a, const bool inc) {
 	EXBUS::BUSW	addr = a;
 	char	*ptr = m_buf;
-	int	diffaddr = (a - m_txaddr)>>2;
+	int	diffaddr = ((a&-2) - (m_txaddr & -2))>>2;
 
 	// Sign extend the difference address
 	diffaddr <<= 2; diffaddr >>= 2;
@@ -380,7 +380,6 @@ char	*EXBUS::encode_address(const EXBUS::BUSW a, const bool inc) {
 
 	if (m_txaddr_set) { // Diff. address
 		// {{{
-		ptr = m_buf;
 
 		if ((diffaddr >= -2)&&(diffaddr < 2)) {
 			if (diffaddr == 1)		// 0100
@@ -412,9 +411,9 @@ char	*EXBUS::encode_address(const EXBUS::BUSW a, const bool inc) {
 		*ptr = '\0';
 
 #ifdef	EXDEBUG
-		DBGPRINTF("DIF-ADDR: (%ld) encodes last_addr(0x%08x) %c %d(0x%08x):",
+		DBGPRINTF("DIF-ADDR: (%ld) encodes last_addr(0x%08x) %d(0x%08x):",
 			ptr-m_buf,
-			m_txaddr, (diffaddr<0)?'-':'+',
+			m_txaddr,
 			diffaddr, diffaddr&0x0ffffffff);
 		for(char *sptr = m_buf; sptr < ptr; sptr++)
 			DBGPRINTF("%02x ", (uint32_t)*sptr);

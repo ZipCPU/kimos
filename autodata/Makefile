@@ -60,10 +60,10 @@ NETWORK := mdio.txt meganet.txt protocols.txt eth0bus.txt # netbus.txt # cpunet.
 SDCARD  := sdio.txt
 SCOPES  := flashscope.txt # mdioscope.txt netscope.txt i2cscope.txt sdscope.txt cpuscope.txt
 CLOCKS  := allclocks.txt clkcheck.txt # sclk.txt
-OTHER   := xdc.txt
+OTHER   := xdc.txt i2ccpu.txt
 LDSCRIPT:= mem_flash_bkram.txt mem_bkram_only.txt
 # LDSCRIPT:= mem_bkram_only.txt mem_bootrom_bkram.txt
-# GFX     := # The KX2 base board has no video resources
+# GFX     := # The KX2 base board has only display port resources
 # AUDIO   := # The KX2 base board has no audio resources
 DATA := $(CLOCKS) $(BASE) $(AUX) $(IO) $(RTC) $(SONAR)		\
 	$(DBGBUS) $(MEMORY) $(SDRAM) $(CPU) $(NETWORK)		\

@@ -136,12 +136,14 @@
 		// }}}
 	);
 
-	assign	@$(MASTER.PREFIX)_sel = 4'hf;
 	assign	@$(MASTER.PREFIX)_addr = @$(MASTER.PREFIX)_tmp_addr[(@$BUS_ADDRESS_WIDTH-1):0];
 	// }}}
 @MAIN.ALT=
 	assign	@$(PREFIX)_tvalid = 1'b0;
 	assign	@$(PREFIX)_tdata  = 32'h0;
+@XDC.INSERT=
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ thedesign/u_eth0/dbgtx_afifo/mem*}] -to [get_cells -hier -filter {NAME=~ thedesign/u_eth0/dbgtx_afifo/GEN_REGISTERED_READ.o_rd_data*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ thedesign/u_eth0/dbg_afifo/mem*}] -to [get_cells -hier -filter {NAME=~ thedesign/u_eth0/dbg_afifo/GEN_REGISTERED_READ.o_rd_data*}] 8.0
 @RTL.MAKE.GROUP= NETBUS
 @RTL.MAKE.SUBD=proto
 @RTL.MAKE.FILES= netdebug.v netdbgrx.v netdbgtx.v
