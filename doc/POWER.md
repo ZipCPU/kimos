@@ -67,3 +67,76 @@ From here, we can select the following jumper settings
 <!-- - 12-14 will connect `VCC_IO_C` to `VCC_FMC_VIOB`	(Unused) -->
 <!-- 12-10 will set `VCC_IO_B` to `VCC_IO_C`, and thus to 1.2V (Unacceptable)-->
 
+
+## Cross-board voltages
+
+### A
+
+- `VCC_IO_B12` (A38, A41) = `VCC_IO_A`
+- `VCC_CFG_B14` (A74, A77) = `VCC_IO_A`: QSPI Flash, Eth IO, `I2C_LS` (not 3.3V), JTAG
+
+Has B12, B14, and CFG pins
+- All `IO_B14` pins connect here
+
+### B
+
+- `VCC_IO_B15` (B64, B88, B140, B143) = `VCC_IO_B`
+- `VCC_IO_B16` (B67, B95) = `VCC_IO_B`
+
+Has MGT, B16, B15, and `VMON_DDR3` (B8)
+
+- `IO_B15` pins connect here and in C (where they are NC on the FMC daughter board)
+- `IO_B16` pins connect here and in C (where they are NC on the FMC daughter board)
+
+(`VMON_1V2`?)
+### C
+
+Has pins from banks B13, B14, B15, and B16
+
+- `VCC_IO_B13` (C76, C116, C158) = `VCC_IO_C`
+  - LED2 (`VCC_LED`)
+  - LED3 (`VCC_LED`)
+- `VCC_OUT_C` = `VCC_2V5`
+
+- All `IO_B13` pins connect here
+
+- Why are the B15 pins associated with either 3.3V or the B13 power supply?
+  - These should all be on B's voltage, or 1.8V as we've chosen above
+  - `IO_B15_K15`, C72, `FMC_HA12_P`, NC
+  - `IO_B15_M16`, C74, `FMC_HA12_N`, NC
+  - `IO_B15_L8_AD3_G15_P`, C78, `FM_HA10_P`, NC
+  - `IO_B15_L8_AD3_F15_N`, C80, `FM_HA10_N`, NC
+  - `IO_B15_L9_AD11_J15_P`, C82, `FMC_HA08_P`, NC
+  - `IO_B15_L9_AD11_J16_N`, C84, `FMC_HA08_N`, NC
+  - `IO_B15_L12_MRCC_AD5_F17_P`, C88, `FMC_HA00_CC_P`, NC
+  - `IO_B15_L12_MRCC_AD5_E17_N`, C90, `FMC_HA00_CC_N`, NC
+  - `IO_B15_L10_AD4_E15_P`, C92, `FMC_HA06_P`, NC
+  - `IO_B15_L10_AD4_E16_N`, C94, `FMC_HA06_N`, NC
+  - `IO_B15_L7_AD10_H16_P`, C98, `FMC_HA05_P`, NC
+  - `IO_B15_L7_AD10_G16_N`, C100, `FMC_HA05_N`, NC
+  - `IO_B15_L6_D15_P`, C102, `FMC_HA03_P`, NC
+  - `IO_B15_L6_VREF_D16_N`, C104, `FMC_HA03_N`, NC
+
+- Why are the B16 pins associated with either 3.3V or 2.5V power supply?
+  - These should all be on B's voltage, or 1.8V as we've chosen above
+  - `IO_B16_J8`, C69, `FMC_HA13_P`, NC
+  - `IO_B16_J14`, C71, `FMC_HA13_N`, NC
+  - `IO_B16_L9_A9_P`, C75, `FMC_HA11_P`, NC
+  - `IO_B16_L9_A8_N`, C77, `FMC_HA11_N`, NC
+  - `IO_B16_L10_C9_P`, C79, `FMC_HA09_P`, NC
+  - `IO_B16_L10_B9_N`, C81, `FMC_HA09_N`, NC
+  - `IO_B16_L8_D9_P`, C85, `FMC_HA07_P`, NC
+  - `IO_B16_L8_D8_N`, C87, `FMC_HA07_N`, NC
+  - `IO_B16_L12_MRCC_E10_P`, C87, `FMC_HA01_CC_P`, NC
+  - `IO_B16_L12_MRCC_D10_N`, C91, `FMC_HA01_CC_N`, NC
+  - `IO_B16_L7_F9_P`, C95, `FMC_HA04_P`, NC
+  - `IO_B16_L7_F8_N`, C97, `FMC_HA04_N`, NC
+  - `IO_B16_L1_H9_P`, C99, `FMC_HA02_P`, NC
+  - `IO_B16_L1_H8_N`, C101, `FMC_HA02_N`, NC
+
+# Differences
+
+- Should clk200 be LVDS?
+- Serial at 1.5V?
+- CKE
+- CS

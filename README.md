@@ -65,8 +65,7 @@ additional peripherals may also be implemented as time and necessity allow.
 
    Required to load programs for the CPU
 
-   STATUS: Sort of working.  There remain some latent bugs in the interface
-   that still need to be chased down.
+   STATUS: PASS.
 
 2. [LED/Switch](rtl/spio.v)
 
@@ -84,12 +83,10 @@ additional peripherals may also be implemented as time and necessity allow.
 
 4. [ICAPE Controller](https://github.com/ZipCPU/wbicapetwo)
 
-   Status: Mostly working
+   Status: PASS
 
-   I've demonstrated the ability to read and write configuration registers.
-   I haven't (yet) demonstrated the ability to restart the FPGA from a flash
-   image.  This may have more to do with a broken image, however, than with
-   the [ICAPE controller](rtl/wbicapetwo.v).
+   Note that to restart the design, you'll have to take the flash out of
+   XiP mode.
 
 5. [CPU](https://github.com/ZipCPU/zipcpu)
 
@@ -119,7 +116,19 @@ additional peripherals may also be implemented as time and necessity allow.
 
    STATUS: PASS
 
-8. DDR3 SDRAM memory
+8. [Network debugging protocol](rtl/proto/netdebug.v) _(Optional test)_
+
+    This will test whether or not memory can be read and/or written from an
+    external host, via [specially crafted UDP/IP
+    packets](https://zipcpu.com/blog/2022/08/24/protocol-design.html).
+    This network packet protocol blows the doors off of the UART alternative,
+    although it is a bit harder to setup and get working initially.  For
+    example, both [ARP](rtl/proto/arp.v) and [ICMP](rtl/proto/icmpecho.v)
+    handling have to work automatically and without CPU involvement first.
+
+    STATUS: Needs some more testing, but appears to pass.
+
+9. DDR3 SDRAM memory
 
    This test will first verify that the onboard memory works with Xilinx's
    DDR3 memory controller, commonly known as "the MIG".
@@ -130,40 +139,30 @@ additional peripherals may also be implemented as time and necessity allow.
    Status: FAIL.  Any attempt (at present) to load the design with the
    SDRAM controller enabled within it will fail to configure the FPGA.
 
-9. OpenSource DDR3 SDRAM memory
+10. OpenSource DDR3 SDRAM memory
 
    If and when the MIG DDR3 SDRAM test passes, we'll move on to testing
    the [open source DDR3 memory controller](https://github.com/AngeloJacobo/DDR3_Controller).
 
    STATUS: Pending MIG controller success.
 
-10. Open source place and route
+11. Open source place and route
 
     Can the design be built using all open-source tools, instead of via Vivado?
 
-11. [SDIO](rtl/sdspi/sdio.v) _(Optional test)_
+12. [SDIO](rtl/sdspi/sdio.v) _(Optional test)_
 
     Requires both the CPU and memory
 
     STATUS: Not yet tested.  (Waiting on memory.)
-
-12. [Network debugging protocol](rtl/proto/netdebug.v) _(Optional test)_
-
-    This will test whether or not memory can be read and/or written from an
-    external host, via [specially crafted UDP/IP
-    packets](https://zipcpu.com/blog/2022/08/24/protocol-design.html).
-    This network packet protocol blows the doors off of the UART alternative,
-    although it is a bit harder to setup and get working initially.  For
-    example, both [ARP](rtl/proto/arp.v) and [ICMP](rtl/proto/icmpecho.v)
-    handling have to work automatically and without CPU involvement first.
-
-    STATUS: Not yet tested.  Pending on a software driver.
 
 13. Network CPU Access _(Optional test)_
 
     Can the CPU send and receive packets?
 
     STATUS: Not yet tested.  Pending on a software driver.
+
+14. [I2C Testing](rtl/wbi2c/wbi2ccpu.v) _(Optional test)_
 
 # Current project status
 
@@ -175,7 +174,8 @@ several of the initial component tests already pass--as noted above and [in
 the diagram](doc/kimos-busblocks.png).
 
 At present, the design is configured to use Xilinx's MIG controller.  Using
-this controller, the design synthesizes, but fails to load ...  If I remove the
-[SDRAM component--controller and all](autodata/sdram.txt), then the design
-loads fine and the DONE LED goes high.
+this controller, the design synthesizes, but then doesn't work when loaded.
+If I remove the [SDRAM component--controller and all](autodata/sdram.txt), then
+the design loads fine and several components (see [the
+diagram](doc/kimos-busblocks.png)) can be demonstrated to work.
 
