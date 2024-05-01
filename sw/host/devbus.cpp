@@ -53,11 +53,18 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+
 #include "port.h"
 #include "regdefs.h"
 #include "devbus.h"
-// #include "netbus.h"
+#ifdef	UDP_DBGPORT
+#include "nexbus.h"
+#endif
 #include "exbus.h"
+
+#ifndef	UARTDBGPORT
+#define	UARTDBGPORT	5927
+#endif
 
 DEVBUS	*connect_devbus(const char *ustr) {
 	const char *str, *start = NULL;
@@ -80,17 +87,13 @@ DEVBUS	*connect_devbus(const char *ustr) {
 		tty_flag = true; start = &str[9];
 	} else if (0==strncasecmp(str, "SIM://", 6)) {
 		tty_flag = true; start = &str[6];
-	}
-/*
-	else if (0==strncasecmp(str, "NET://", 6)) {
+	} else if (0==strncasecmp(str, "NET://", 6)) {
 		tty_flag = false; start = &str[6];
 	} else if (0==strncasecmp(str, "UDP://", 6)) {
 		tty_flag = false; start = &str[6];
 	} else if (0==strncasecmp(str, "NETBUS://", 9)) {
 		tty_flag = false; start = &str[9];
-	}
-*/
-	else {
+	} else {
 		tty_flag = true; start = str;
 	}
 
@@ -101,22 +104,25 @@ DEVBUS	*connect_devbus(const char *ustr) {
 	ptr = strchr(host, ':');
 
 	if (NULL == ptr)
-		udp_port = FPGAPORT; // (tty_flag) ? UARTDBGPORT : UDP_DBGPORT;
+#ifdef	UDP_DBGPORT
+		udp_port = (tty_flag) ? UARTDBGPORT : UDP_DBGPORT;
+#else
+		udp_port = UARTDBGPORT;
+#endif
 	else {
 		udp_port = atoi(ptr + 1);
 		*ptr = '\0';
 	}
 
 	if (tty_flag) {
-		// {{{
 		devbus = new EXBUS(new NETCOMMS(host, udp_port));
-		// }}}
 	} else {
-		// {{{
-		// devbus = new NETBUS(host, udp_port);
-		assert(tty_flag);
+#ifdef	UDP_DBGPORT
+		devbus = new NEXBUS(host, udp_port);
+#else
+		fprintf(stderr, "ERR: No network bus defined\n");
 		exit(EXIT_FAILURE);
-		// }}}
+#endif
 	}
 
 	free(host);

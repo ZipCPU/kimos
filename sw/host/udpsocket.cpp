@@ -320,7 +320,7 @@ ssize_t	UDPSOCKET::read(size_t len, void *buf, int timeout_ms) {
 
 	nr = recvfrom(m_skt, buf, len, flags, (sockaddr *)&m_source, &addrlen);
 	if (nr < 0) {
-		perror("O/S Err:");
+		perror("RX O/S Err:");
 		exit(-1);
 	}
 	return nr;

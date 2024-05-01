@@ -111,7 +111,7 @@ module	exdeword (
 	begin
 		r_word <= i_word[27:0];
 		o_byte <= i_word[34:28];	// Type 7 bits, always
-		o_last <= (w_len == 0);
+		o_last <= (w_len == 0) && i_last;
 		r_last <= (w_len != 0) && i_last;
 	end else if (!i_busy && (r_len != 0))
 	begin

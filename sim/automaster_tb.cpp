@@ -147,8 +147,10 @@ int	main(int argc, char **argv) {
 		willexit = true;
 	if (debug_flag && verbose_flag) {
 		printf("Opening design with\n");
+#ifdef	FPGAPORT
 		printf("\tDebug Access port = %d\n", FPGAPORT); // fpga_port);
 		printf("\tSerial Console    = %d\n", FPGAPORT+1);
+#endif
 		printf("\tVCD File         = %s\n", trace_file);
 		if (elfload)
 			printf("\tELF File         = %s\n", elfload);

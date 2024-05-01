@@ -54,15 +54,18 @@
 #include "port.h"
 #include "devbus.h"
 
-typedef	DEVBUS FPGA;
+DEVBUS	*m_fpga;
+const	char	*gbl_fpgahost = FPGAHOST, *gbl_proto = "UART://";
+int		gbl_fpgaport = FPGAPORT;
+bool		gbl_uart = true;
 
-FPGA	*m_fpga;
 void	closeup(int v) {
 	m_fpga->kill();
 	exit(0);
 }
 
 bool	isvalue(const char *v) {
+	// {{{
 	const char *ptr = v;
 
 	while(isspace(*ptr))
@@ -80,8 +83,10 @@ bool	isvalue(const char *v) {
 
 	return (isdigit(*ptr));
 }
+// }}}
 
 unsigned getmap_address(const char *map_fname, const char *name) {
+	// {{{
 	FILE	*fmp = fopen(map_fname, "r");
 	char	line[512];
 
@@ -107,12 +112,14 @@ unsigned getmap_address(const char *map_fname, const char *name) {
 		if (0 == strcasecmp(nstr, name))
 			return strtoul(astr, NULL, 0);
 	}
-	
+
 	fclose(fmp);
 	return 0;
 }
+// }}}
 
 char	*getmap_name(const char *map_fname, const unsigned val) {
+	// {{{
 	if (!map_fname)
 		return NULL;
 	FILE	*fmp = fopen(map_fname, "r");
@@ -139,12 +146,14 @@ char	*getmap_name(const char *map_fname, const unsigned val) {
 		if (strtoul(astr, NULL, 0) == val)
 			return strdup(nstr);
 	}
-	
+
 	fclose(fmp);
 	return NULL;
 }
+// }}}
 
 void	usage(void) {
+	// {{{
 	printf("USAGE: exregs [-d] address [value]\n"
 "\n"
 "\tWBREGS stands for Wishbone registers.  It is designed to allow a\n"
@@ -160,36 +169,86 @@ void	usage(void) {
 "\t\tSuch a file can then be used to access named global values\n"
 "\t\twithin the register space.  To use the capability, the name of\n"
 "\t\tthe map file must be provided here on the command line.\n"
-"\t-n [host]\tAttempt to connect, via TCP/IP, to host named [host].\n"
+"\t-n [host]\tAttempt to connect, via IP, to host named [host].\n"
 "\t\tThe default host is \'%s\'\n"
 "\n"
-"\t-p [port]\tAttempt to connect, via TCP/IP, to port number [port].\n"
-"\t\tThe default port is \'%d\'\n"
-"\n"
+"\t-p [port]\tAttempt to connect, via IP, to port number [port].\n"
+"\t\tThe default port is \'%d\'\n", gbl_fpgahost, gbl_fpgaport);
+	printf("\n"
+"\t-u\tUse UART protocols over TCP/IP");
+	if (gbl_uart)
+		printf(", this is the default");
+	printf("\n"
+"\t-U\tUse network UDP/IP packet protocols");
+	if (!gbl_uart)
+		printf(", this is the default");
+	printf("\n"
 "\tAddress is either a 32-bit value with the syntax of strtoul, or a\n"
 "\tregister name.  Register names can be found in regdefs.cpp\n"
 "\n"
 "\tIf a value is given, that value will be written to the indicated\n"
 "\taddress, otherwise the result from reading the address will be \n"
-"\twritten to the screen.\n", FPGAHOST, FPGAPORT);
+"\twritten to the screen.\n");
 }
+// }}}
 
 int main(int argc, char **argv) {
 	bool	use_decimal = false;
-	const char *host = FPGAHOST;
-	int	port=FPGAPORT;
-	char	*map_file = NULL;
+	char	*map_file = NULL, *kimos_env = NULL;
 	int	opt;
+
+	// Check first for our environment value -- use it to set defaults
+	// {{{
+	if (NULL != (kimos_env = getenv("KIMOSDEV")) && kimos_env[0]) {
+		char	*portstr, *host = NULL;
+
+		kimos_env = strdup(kimos_env);
+		if (0 == strncasecmp(kimos_env, "UART://", 7)) {
+			host = kimos_env+7;
+			gbl_uart = true;
+		} else if (0 == strncasecmp(kimos_env, "EXBUS://", 8)) {
+			host = kimos_env+8;
+			gbl_uart = true;
+		} else if (0 == strncasecmp(kimos_env, "SIM://", 6)) {
+			host = kimos_env+6;
+			gbl_uart = true;
+		} else if (0 == strncasecmp(kimos_env, "NEXBUS://", 9)) {
+			host = kimos_env+6;
+			gbl_uart = false;
+		} else if (0 == strncasecmp(kimos_env, "NET://", 6)) {
+			host = kimos_env+6;
+			gbl_uart = false;
+		} else if (0 == strncasecmp(kimos_env, "UDP://", 6)) {
+			host = kimos_env+6;
+			gbl_uart = false;
+		} else {
+			fprintf(stderr, "ERR: Unrecognized environment string\n");
+			exit(EXIT_FAILURE);
+		}
+
+		portstr = strchr(host, ':');
+		if (portstr) {
+			*portstr++ = '\0';
+			if (*portstr && isdigit(*portstr))
+				gbl_fpgaport = atoi(portstr);
+		} if (host)
+			gbl_fpgahost = host;
+fprintf(stderr, "Connecting to %s://%s:%d\n", gbl_uart ? "UART":"NET",
+gbl_fpgahost, gbl_fpgaport);
+	}
+	// }}}
 
 	// Process all arguments, save the address and optional value
 	// {{{
-	while(-1 != (opt=getopt(argc, argv, "dn:p:m:"))) {
+	while(-1 != (opt=getopt(argc, argv, "dn:p:m:uU"))) {
 		switch(opt) {
 		case 'd': use_decimal = true; break;
 		case 'h': usage(); exit(EXIT_SUCCESS); break;
-		case 'n': host = strdup(optarg); break;
-		case 'p': port = strtoul(optarg, NULL, 0); break;
+		case 'n': gbl_fpgahost = strdup(optarg); break;
 		case 'm': map_file = strdup(optarg); break;
+		case 'p': gbl_fpgaport = strtoul(optarg, NULL, 0); break;
+		case 'u': gbl_uart = true; break;
+		case 'U': gbl_uart = false; break;
 		default: usage();
 			exit(EXIT_FAILURE);
 			break;
@@ -199,7 +258,8 @@ int main(int argc, char **argv) {
 
 	{
 		char	comstr[256];
-		sprintf(comstr, "UART://%s:%d", host, port);
+		sprintf(comstr, "%s://%s:%d", (gbl_uart) ? "UART":"NET",
+				gbl_fpgahost, gbl_fpgaport);
 		m_fpga = connect_devbus(comstr);
 	}
 
@@ -246,7 +306,7 @@ int main(int argc, char **argv) {
 
 	if (argc -optind < 2) { // Read from the device
 		// {{{
-		FPGA::BUSW	v;
+		DEVBUS::BUSW	v;
 		try {
 			unsigned char a, b, c, d;
 			v = m_fpga->readio(address);
@@ -257,7 +317,7 @@ int main(int argc, char **argv) {
 			if (use_decimal)
 				printf("%d\n", v);
 			else
-			printf("%08x (%8s) : [%c%c%c%c] %08x\n", address, nm, 
+			printf("%08x (%8s) : [%c%c%c%c] %08x\n", address, nm,
 				isgraph(a)?a:'.', isgraph(b)?b:'.',
 				isgraph(c)?c:'.', isgraph(d)?d:'.', v);
 		} catch(BUSERR b) {

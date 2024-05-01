@@ -104,3 +104,9 @@ const	char *addrname(const unsigned v) {
 @$BUS.WIDTH=32
 @BUS.CLOCK=clk
 @$BUS.NULLSZ=0x400
+@PREFIX=wbwide
+@BUS.NAME=wbwide
+@BUS.WIDTH=512
+@BUS.CLOCK=clk
+@BUS.TYPE=wb
+@BUS.RESET=i_reset

@@ -38,77 +38,85 @@
 //
 `default_nettype none
 // }}}
-module	ledbouncer(i_clk, o_leds);
-	parameter	NLEDS=8, CTRBITS=25;
-	input	wire		i_clk;
-	output	reg	[(NLEDS-1):0]	o_leds;
+module	ledbouncer #(
+		parameter	NLEDS=8, CTRBITS=25
+	) (
+		input	wire			i_clk,
+		output	reg	[(NLEDS-1):0]	o_leds
+	);
 
+	// Local declarations
+	// {{{
 	reg	[(NLEDS-1):0]	led_owner;
 	reg		led_dir;
 
 	reg	[(CTRBITS-1):0]	led_ctr;
 	reg			led_clk;
+	reg	[4:0]	led_pwm [0:(NLEDS-1)];
+	genvar	k;
+	wire	[4:0]	br_ctr;
+	// }}}
+
 	always @(posedge i_clk)
 		{ led_clk, led_ctr } <= led_ctr + {{(CTRBITS-2){1'b0}},2'b11};
 
 	initial	led_owner = { {(NLEDS-1){1'b0}}, 1'b1};
 	always @(posedge i_clk)
-		if (led_owner == 0)
-		begin
-			led_owner <= { {(NLEDS-1){1'b0}}, 1'b1 };
-			led_dir   <= 1'b1; // Left, or shift up
-		end else if ((led_clk)&&(led_dir)) // Go left
-		begin
-			if (led_owner == { 1'b1, {(NLEDS-1){1'b0}} })
-				led_dir <= !led_dir;
-			else
-				led_owner <= { led_owner[(NLEDS-2):0], 1'b0 };
-		end else if (led_clk) begin
-			if (led_owner == { {(NLEDS-1){1'b0}}, 1'b1 })
-				led_dir <= !led_dir;
-			else
-				led_owner <= { 1'b0, led_owner[(NLEDS-1):1] };
-		end
+	if (led_owner == 0)
+	begin
+		led_owner <= { {(NLEDS-1){1'b0}}, 1'b1 };
+		led_dir   <= 1'b1; // Left, or shift up
+	end else if ((led_clk)&&(led_dir)) // Go left
+	begin
+		if (led_owner == { 1'b1, {(NLEDS-1){1'b0}} })
+			led_dir <= !led_dir;
+		else
+			led_owner <= { led_owner[(NLEDS-2):0], 1'b0 };
+	end else if (led_clk) begin
+		if (led_owner == { {(NLEDS-1){1'b0}}, 1'b1 })
+			led_dir <= !led_dir;
+		else
+			led_owner <= { 1'b0, led_owner[(NLEDS-1):1] };
+	end
 
-	reg	[4:0]	led_pwm [0:(NLEDS-1)];
-	genvar	k;
 	generate for(k=0; k<(NLEDS); k=k+1)
+	begin : LED_DIMMER
 		always@(posedge i_clk)
-			if (led_clk)
-			begin
-				if (led_owner[k])
-					led_pwm[k] <= 5'h1f;
-				else if (led_pwm[k] > 5'h1c)
-					led_pwm[k] <= 5'h1c;
-				else if (led_pwm[k] > 5'h17)
-					led_pwm[k] <= 5'h17;
-				else if (led_pwm[k] > 5'h0f)
-					led_pwm[k] <= 5'h0f;
-				else if (led_pwm[k] > 5'h0b)
-					led_pwm[k] <= 5'h0b;
-				else if (led_pwm[k] > 5'h07)
-					led_pwm[k] <= 5'h07;
-				else if (led_pwm[k] > 5'h05)
-					led_pwm[k] <= 5'h05;
-				else if (led_pwm[k] > 5'h03)
-					led_pwm[k] <= 5'h03;
-				else if (led_pwm[k] > 5'h01)
-					led_pwm[k] <= 5'h01;
-				else
-					led_pwm[k] <= 5'h00;
-			end
-	endgenerate
+		if (led_clk)
+		begin
+			if (led_owner[k])
+				led_pwm[k] <= 5'h1f;
+			else if (led_pwm[k] > 5'h1c)
+				led_pwm[k] <= 5'h1c;
+			else if (led_pwm[k] > 5'h17)
+				led_pwm[k] <= 5'h17;
+			else if (led_pwm[k] > 5'h0f)
+				led_pwm[k] <= 5'h0f;
+			else if (led_pwm[k] > 5'h0b)
+				led_pwm[k] <= 5'h0b;
+			else if (led_pwm[k] > 5'h07)
+				led_pwm[k] <= 5'h07;
+			else if (led_pwm[k] > 5'h05)
+				led_pwm[k] <= 5'h05;
+			else if (led_pwm[k] > 5'h03)
+				led_pwm[k] <= 5'h03;
+			else if (led_pwm[k] > 5'h01)
+				led_pwm[k] <= 5'h01;
+			else
+				led_pwm[k] <= 5'h00;
+		end
+	end endgenerate
 
-	wire	[4:0]	br_ctr;
 	assign	br_ctr = { led_ctr[0], led_ctr[1], led_ctr[2], led_ctr[3],
 			led_ctr[4] };
 
 	generate for(k=0; k<(NLEDS); k=k+1)
+	begin : LED_FINAL_ASSIGNMENT
 		always @(posedge i_clk)
 			o_leds[k] <= (led_pwm[k] == 5'h1f)? 1'b1
 				:((led_pwm[k] == 5'h00) ? 1'b0
 				: (br_ctr[4:0] <= led_pwm[k][4:0]));
-	endgenerate
+	end endgenerate
 
 endmodule
 

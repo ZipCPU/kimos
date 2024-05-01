@@ -233,6 +233,10 @@ module	netdbgrx #(
 			addr <= 0;
 	end
 
+	// On entrance, we know this packet is to us, its to our IP address,
+	// its a UDP packet, and its to our UDP port.  Now we need to know
+	// if it is a synch packet:
+	// 1. It must have a frame ID of zero.
 	always @(posedge S_AXI_ACLK)
 	if (!S_AXI_ARESETN)
 		o_sync <= 0;
@@ -303,4 +307,118 @@ module	netdbgrx #(
 	assign	unused = &{ 1'b0, new_load[3] };
 	// Verilator lint_on  UNUSED
 	// }}}
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//
+// Formal properties
+// {{{
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+`ifdef	FORMAL
+	reg	f_past_valid;
+
+	initial	f_past_valid = 1'b0;
+	always @(posedge S_AXI_ACLK)
+		f_past_valid <= 1'b1;
+
+	always @(*)
+	if (!f_past_valid)
+		assert(!S_AXI_ARESETN);
+	////////////////////////////////////////////////////////////////////////
+	//
+	// Stream properties
+	// {{{
+	////////////////////////////////////////////////////////////////////////
+	//
+	//
+
+	always @(posedge S_AXI_ACLK)
+	if (!f_past_valid || !$past(S_AXI_ARESETN))
+		assume(!S_AXI_TVALID);
+	else if ($past(S_AXI_TVALID && !S_AXI_TREADY))
+	begin
+		assume(S_AXI_TVALID);
+		assume($stable(S_AXI_TDATA));
+	end
+
+	always @(*)
+	begin
+		fs_len_words = fs_len + 3;
+		fs_len_words = fs_len_words >> 2;
+	end
+
+	initial	fs_word = 0;
+	initial	fs_len  = 0;
+	always @(posedge S_AXI_ACLK)
+	if (!S_AXI_ARESETN)
+	begin
+		fs_word <= 0;
+		fs_len  <= 0;
+	end else if (S_AXI_TVALID && S_AXI_TREADY)
+	begin
+		if (fs_word == 0)
+			fs_len <= S_AXI_TDATA[15:0];
+		fs_word <= fs_word + 1;
+
+		if (fs_word + 1 >= fs_len_words[15:2])
+			fs_word = 0;
+	end
+
+	always @(posedge S_AXI_ACLK)
+	if (!f_past_valid || !$past(S_AXI_ARESETN))
+		assert(!M_AXI_TVALID);
+	else if ($past(M_AXI_TVALID && !M_AXI_TREADY))
+	begin
+		assert(M_AXI_TVALID);
+		assert($stable(M_AXI_TDATA));
+		assert($stable(M_AXI_TLAST));
+	end
+
+	initial	fm_word = 0;
+	always @(posedge S_AXI_ACLK)
+	if (!S_AXI_ARESETN)
+		fm_word <= 0;
+	else if (M_AXI_TVALID && M_AXI_TREADY)
+	begin
+		fm_word <= fm_word + 1;
+		if (M_AXI_TLAST)
+			fm_word <= 0;
+	end
+
+	// }}}
+	////////////////////////////////////////////////////////////////////////
+	//
+	// Contract properties
+	// {{{
+	(* anyconst *)	reg		fc_check;
+	(* anyconst *)	reg	[13:0]	fc_index;
+	(* anyconst *)	reg	[31:0]	fc_data;
+	reg	[7:0]	fsub_data;
+
+	always @(posedge S_AXI_ACLK)
+	if (fc_check && S_AXI_TVALID && fs_word == fc_index)
+		assume(S_AXI_TDATA == fc_data);
+
+	always @(*)
+		fsub_data = fc_data >> (fm_word*8);
+
+	// always @(posedge S_AXI_ACLK)
+	// if (fc_check && M_AXI_TVALID && fc_index > 11 && fm_word[15:2] == fc_index - 11)
+	//	assert(M_AXI_TDATA == fc_data);
+
+	// }}}
+	////////////////////////////////////////////////////////////////////////
+	//
+	// Cover properties
+	// {{{
+	// }}}
+	////////////////////////////////////////////////////////////////////////
+	//
+	// "Careless" assumptions
+	// {{{
+	// }}}
+`endif
+// }}}
 endmodule

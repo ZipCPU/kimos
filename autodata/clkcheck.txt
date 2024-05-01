@@ -41,7 +41,7 @@
 @PREFIX=ck_pps
 @MAIN.DEFNS=
 	// Verilator lint_off UNUSED
-	reg		ck_pps;
+	reg		@$(PREFIX);
 	reg	[26:0]	@$(PREFIX)_counter;
 	// Verilator lint_on  UNUSED
 @MAIN.INSERT=

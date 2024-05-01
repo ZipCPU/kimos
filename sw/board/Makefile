@@ -38,7 +38,7 @@
 ##
 ## }}}
 .PHONY: all
-PROGRAMS := hello cputest sdinfo sdiochk # memtest netcheck contest
+PROGRAMS := hello cputest sdinfo sdiochk mdio # memtest # netcheck contest
 all:	$(PROGRAMS)
 #
 #
@@ -116,6 +116,9 @@ $(OBJDIR)/hello.o: hello.c
 hello: $(OBJDIR)/hello.o board.ld $(LIB)
 	$(CC) $(CFLAGS) $(LFLAGS) $< $(LIBS) -o $@
 ## }}}
+
+mdio: $(OBJDIR)/mdio.o board.ld $(LIB)
+	$(CC) $(CFLAGS) $(LFLAGS) $< $(LIBS) -o $@
 
 sdiochk: $(OBJDIR)/sdiochk.o $(OBJDIR)/txfns.o board.ld $(LIB)
 	$(CC) $(CFLAGS) $(LBKRAM) $< $(OBJDIR)/txfns.o $(LIBS) -o $@

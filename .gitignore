@@ -30,6 +30,7 @@ core
 *.vrb
 *.yslog
 *.smt2
+/refs/
 vzip
 thruhull
 legal.txt
@@ -39,3 +40,5 @@ vivado*.str
 vivado*.debug
 xtim-*.txt
 /20*-build.v
+/20*.bit
+ft232.bin

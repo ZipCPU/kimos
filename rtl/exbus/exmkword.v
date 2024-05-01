@@ -216,7 +216,7 @@ module	exmkword #(
 		assert(bytes_remaining == 0);
 
 	always @(posedge i_clk)
-	if (f_past_valid && !$past(i_stb))
+	if (f_past_valid && !$past(i_stb) && !$past(o_stb && i_busy))
 		assert(!this_word);
 
 	always @(*)

@@ -1,5 +1,9 @@
+excheck
 exregs
 exuart
+flashid
+flashscope
+mdioscope
 zipdbg
 zipload
 zipstate

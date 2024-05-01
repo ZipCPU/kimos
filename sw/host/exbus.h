@@ -64,28 +64,29 @@ private:
 	LLCOMMSI	*m_dev;
 	static	const	unsigned MAXRDLEN, MAXWRLEN;
 
-	bool	m_interrupt_flag, m_decode_err, m_addr_set, m_bus_err;
-	unsigned int	m_lastaddr;
+	bool	m_interrupt_flag, m_decode_err, m_txaddr_set, m_rxaddr_set,
+		m_bus_err;
+	unsigned int	m_txaddr, m_rxaddr;
 
 	int	m_buflen, m_rdfirst, m_rdlast;
-	char	*m_buf, *m_rdbuf;
+	char	*m_buf;
 
 	bool	m_wrloaded;
 	int	m_rdaddr, m_wraddr, m_qkaddr;
-	BUSW	m_readtbl[1024], m_writetbl[512], m_quiktbl[4];
+	BUSW	m_readtbl[512], m_writetbl[512], m_quiktbl[4];
 
 	void	init(void) {
 		m_total_nread = 0;
 		m_interrupt_flag = false;
 		m_buflen = 0; m_buf = NULL;
-		m_addr_set = false;
+		m_txaddr_set = false;
+		m_rxaddr_set = false;
 		bufalloc(64);
 		m_bus_err = false;
 		m_decode_err = false;
 		m_wrloaded = false;
 
 		m_rdfirst = m_rdlast = 0;
-		m_rdbuf = new char[RDBUFLN];
 
 		m_qkaddr = m_rdaddr = m_wraddr = 0;
 
@@ -101,7 +102,7 @@ private:
 
 	int	lclread(char *buf, int len);
 	int	lclreadcode(char *buf, int len);
-	char	*encode_address(const BUSW a);
+	char	*encode_address(const BUSW a, const bool inc=true);
 	char	*readcmd(const int len, char *buf);
 	void	sync(void);
 public:
@@ -109,7 +110,6 @@ public:
 	virtual	~EXBUS(void) {
 		m_dev->close();
 		if (m_buf) { delete[] m_buf; m_buf = NULL; }
-		delete m_rdbuf; m_rdbuf = NULL;
 		delete	m_dev;
 	}
 
@@ -128,7 +128,5 @@ public:
 	void	reset_err(void) { m_bus_err = false; }
 	void	clear(void) { m_interrupt_flag = false; }
 };
-
-typedef	EXBUS	FPGA;
 
 #endif

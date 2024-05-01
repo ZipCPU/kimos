@@ -92,7 +92,8 @@ module	exdecompress #(
 	// addr_word
 	// {{{
 	always @(posedge i_clk)
-	if (!OPT_LOWPOWER || (i_stb && !o_busy && i_word[34:33] == 2'b00))
+	if ((!r_stb || !r_busy) && (!OPT_LOWPOWER
+			|| (i_stb && !o_busy && i_word[34:33] == 2'b00)))
 	casez(i_word[32:29])
 	4'b0???:addr_word <= { 3'b000, i_word[31:2], 1'b0, i_word[0] };
 	4'b10??:addr_word <= { 3'b001, {(29){i_word[30]}}, i_word[29], 1'b0, i_word[28] };
@@ -101,16 +102,21 @@ module	exdecompress #(
 	4'b1110:addr_word <= { 3'b000, {(17){i_word[28]}}, i_word[27:15], 1'b0, i_word[14] };
 	4'b1111:addr_word <= { 3'b001, {(17){i_word[28]}}, i_word[27:15], 1'b0, i_word[14] };
 	endcase
+`ifdef	FORMAL
+	always @(*)
+	if (r_stb)
+		assert(addr_word[34:33] == 2'b00);
+`endif
 	// }}}
 
 	// write_word: Decode the write word
 	// {{{
 	always @(posedge i_clk)
 	if (i_stb && !o_busy)
-	casez(i_word[34:30])
-	5'b??0??:write_word <= { 3'b010, i_word[31:0] };
-	5'b??1?0:write_word <= { 3'b010, {(24){i_word[29]}}, i_word[28:21] };
-	5'b??1?1:write_word <= { 3'b010, {(17){i_word[29]}}, i_word[28:14] };
+	casez(i_word[32:30])
+	3'b0??:write_word <= { 3'b010, i_word[31:0] };
+	3'b1?0:write_word <= { 3'b010, {(24){i_word[29]}}, i_word[28:21] };
+	3'b1?1:write_word <= { 3'b010, {(17){i_word[29]}}, i_word[28:14] };
 	endcase
 	// }}}
 
@@ -282,10 +288,13 @@ module	exdecompress #(
 	always @(posedge i_clk)
 	if (OPT_LOWPOWER && i_reset)
 		o_word <= 0;
-	else if (q_stb && !q_busy && partial_type)
-		o_word <= { 3'b010, write_table_value };
-	else
-		o_word <= partial;
+	else if (!q_busy)
+	begin
+		if (q_stb && partial_type)
+			o_word <= { 3'b010, write_table_value };
+		else
+			o_word <= partial;
+	end
 	// }}}
 
 	assign	q_busy = o_stb && i_busy;
@@ -303,6 +312,254 @@ module	exdecompress #(
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 `ifdef	FORMAL
+	reg	f_past_valid;
+	reg		fq_valid, fr_valid, fo_valid;
+	reg	[34:0]	fq_word, fr_word, fo_word;
+
+	initial	f_past_valid = 0;
+	always @(posedge i_clk)
+		f_past_valid <= 1;
+
+	////////////////////////////////////////////////////////////////////////
+	//
+	// Stream properties
+	// {{{
+
+	always @(posedge i_clk)
+	if (!f_past_valid || $past(i_reset))
+		assume(!i_stb);
+	else if ($past(i_stb && o_busy))
+		assume(i_stb && $stable(i_word));
+
+	always @(posedge i_clk)
+	if (!f_past_valid || $past(i_reset))
+		assert(!o_stb);
+	else if ($past(o_stb && i_busy))
+		assert(o_stb && $stable(o_word));
+
+	// }}}
+	////////////////////////////////////////////////////////////////////////
+	//
+	// Induction
+	// {{{
+
+	// R-Stage
+	// {{{
+	initial	fr_valid = 0;
+	always @(posedge i_clk)
+	if (i_reset)
+		fr_valid <= 1'b0;
+	else if (i_stb && !o_busy)
+		fr_valid <= 1'b1;
+	else if (!fq_valid || !o_stb || !i_busy)
+		fr_valid <= 1'b0;
+
+	always @(posedge i_clk)
+	if (i_stb && !o_busy)
+		fr_word <= i_word;
+
+	always @(*)
+	begin
+		assert(r_stb == fr_valid);
+		assert(!f_past_valid || !fr_valid
+					|| fr_word[34:33] == word_type);
+		if(f_past_valid && fr_valid)
+		begin
+			if (fr_word[32:31] != 2'b10)
+			begin
+				assert(!write_table_lookup);
+			end else if (OPT_LOWPOWER)
+			begin
+				assert(write_table_lookup == (fr_word[34:31] == 4'h6));
+			end else
+				assert(write_table_lookup);
+
+			if(fr_word[34:33] == 2'b10)
+			case(fr_word[32])
+			1'b0: assert(read_count == 12'd1  + { 8'h0, fr_word[31:28] });
+			1'b1: assert(read_count == 12'd17 + { 1'b0, fr_word[31:21] });
+			endcase
+		end
+	end
+
+	always @(*)
+	if (fr_valid)
+	case(fr_word[34:33])
+	2'b00: begin
+		assert(word_type == 2'b00);
+		casez(fr_word[32:30])
+		3'b0??: assert(addr_word == { 3'h0, fr_word[31:2], 1'b0, fr_word[0] });
+		3'b10?: assert(addr_word == { 3'b001, {(29){fr_word[30]}}, fr_word[29], 1'b0, fr_word[28] });
+		3'b110: assert(addr_word == { 2'b00, fr_word[29], {(24){fr_word[28]}}, fr_word[27:22], 1'b0, fr_word[21] });
+		3'b111: assert(addr_word == { 2'b00, fr_word[29], {(17){fr_word[28]}}, fr_word[27:15], 1'b0, fr_word[14] });
+		default: begin end
+		endcase end
+	2'b01: begin // Write
+		casez(fr_word[32:30])
+		3'b0??: assert(write_word == fr_word);
+		3'b110: assert(write_word == {3'b010, {(24){fr_word[29]}}, fr_word[28:21]});
+		3'b111: assert(write_word == { 3'b010, {(17){fr_word[29]}}, fr_word[28:14]});
+		default: assert(write_word[34:32] == 3'b010);
+		endcase end
+	// 2'b01: begin end
+	2'b11: assert(r_special == fr_word[32:28]);
+	default: begin end
+	endcase
+	// }}}
+
+	// Q-Stage
+	// {{{
+	initial	fq_valid = 0;
+	always @(posedge i_clk)
+	if (i_reset)
+		fq_valid <= 1'b0;
+	else if (fr_valid && (!fq_valid || !o_stb || !i_busy))
+		fq_valid <= 1'b1;
+	else if (!o_stb || !i_busy)
+		fq_valid <= 1'b0;
+
+	always @(posedge i_clk)
+	if (fr_valid && (!fq_valid || !o_stb || !i_busy))
+		fq_word <= fr_word;
+
+	always @(*)
+	begin
+		assert(q_stb == fq_valid);
+	end
+
+	always @(*)
+	if (f_past_valid && fq_valid)
+	begin
+		assert(partial[34:33] == fq_word[34:33]);
+		assert(partial_type == (fq_word[34:31] == 4'b0110));
+	end
+
+	always @(*)
+	if (fq_valid)
+	case(fq_word[34:33])
+	2'b00: begin
+		casez(fq_word[32:30])
+		3'b0??: assert(partial == { 3'h0, fq_word[31:2], 1'b0, fq_word[0] });
+		3'b10?: assert(partial == { 3'b001, {(29){fq_word[30]}}, fq_word[29], 1'b0, fq_word[28] });
+		3'b110: assert(partial == { 2'b00, fq_word[29], {(24){fq_word[28]}}, fq_word[27:22], 1'b0, fq_word[21] });
+		3'b111: assert(partial == { 2'b00, fq_word[29], {(17){fq_word[28]}}, fq_word[27:15], 1'b0, fq_word[14] });
+		default: begin end
+		endcase end
+	2'b01: begin
+		casez(fq_word[32:30])
+		3'b0??: assert(partial == fq_word);
+		3'b110: assert(partial == { 3'b010, {(24){fq_word[29]}}, fq_word[28:21]});
+		3'b111: assert(partial == { 3'b010, {(17){fq_word[29]}}, fq_word[28:14]});
+		default: begin end
+		endcase end
+	2'b10: begin
+		casez(fq_word[32])
+		1'b0: assert(partial == { 3'b100, 28'h0, fq_word[31:28]}+ 35'd1);
+		// 500E30018
+		// 101,000_0000,011_1000,11
+		1'b1: assert(partial == { 3'b100, 21'h0, fq_word[31:21]}+35'd17);
+		endcase end
+	2'b11: assert(partial[32:28] == fq_word[32:28]);
+	endcase
+	// }}}
+
+	// O/Output-Stage
+	// {{{
+	initial	fo_valid = 0;
+	always @(posedge i_clk)
+	if (i_reset)
+		fo_valid <= 1'b0;
+	else if (!o_stb || !i_busy)
+		fo_valid <= fq_valid;
+
+	always @(posedge i_clk)
+	if (!o_stb || !i_busy)
+		fo_word <= fq_word;
+
+	always @(*)
+		assert(o_stb == fo_valid);
+
+	always @(*)
+	if (fo_valid)
+	case(fo_word[34:33])
+	2'b00: begin
+		casez(fo_word[32:30])
+		3'b0??: assert(o_word == { 3'h0, fo_word[31:2], 1'b0, fo_word[0] });
+		3'b10?: assert(o_word == { 3'b001, {(29){fo_word[30]}}, fo_word[29], 1'b0, fo_word[28] });
+		3'b110: assert(o_word == { 2'b00, fo_word[29], {(24){fo_word[28]}}, fo_word[27:22], 1'b0, fo_word[21] });
+		3'b111: assert(o_word == { 2'b00, fo_word[29], {(17){fo_word[28]}}, fo_word[27:15], 1'b0, fo_word[14] });
+		default: begin end
+		endcase end
+	2'b01: begin
+		casez(fo_word[32:30])
+		3'b0??: assert(o_word == fo_word);
+		3'b110: assert(o_word == {3'b010, {(24){fo_word[29]}}, fo_word[28:21]});
+		3'b111: assert(o_word == { 3'b010, {(17){fo_word[29]}}, fo_word[28:14]});
+		default: begin end
+		endcase end
+	2'b10: begin
+		casez(fo_word[32])
+		1'b0: assert(o_word == { 3'b100, 28'h0, fo_word[31:28]}+ 35'd1);
+		// 500E30018
+		// 101,000_0000,011_1000,11
+		1'b1: assert(o_word == { 3'b100, 21'h0, fo_word[31:21]}+35'd17);
+		endcase end
+	2'b11: assert(o_word[32:28] == fo_word[32:28]);
+	endcase
+	// }}}
+
+	// }}}
+	////////////////////////////////////////////////////////////////////////
+	//
+	// Contract properties
+	// {{{
+
+// TODO/FIXME: Need to formally verify the table lookup still
+
+	// }}}
+	////////////////////////////////////////////////////////////////////////
+	//
+	// o_active properties
+	// {{{
+	always @(posedge i_clk)
+	if (!f_past_valid || $past(i_reset))
+		assert(!o_active);
+	else if ($past(i_stb && !o_busy))
+		assert(o_active);
+	else if ($past(o_active))
+		assert(o_active || o_stb);
+	else
+		assert(!$rose(o_stb));
+
+	// }}}
+	////////////////////////////////////////////////////////////////////////
+	//
+	// cover properties
+	// {{{
+
+	always @(posedge i_clk)
+	if (f_past_valid && !i_reset && o_stb)
+	case(o_word[34:33])
+	2'b00: begin
+		cover(!fo_word[32]);
+		cover( fo_word[32:31] == 2'b10);
+		cover( fo_word[32:30] == 3'b110);
+		cover( fo_word[32:30] == 3'b111);
+		end
+	2'b01: begin
+		cover(!fo_word[32]);
+		cover( fo_word[32:30] == 3'b100);
+		cover( fo_word[32:30] == 3'b101);
+		cover( fo_word[32:30] == 3'b110);
+		cover( fo_word[32:30] == 3'b111);
+		end
+	2'b10: begin
+		cover(!fo_word[32]);
+		cover( fo_word[32]);
+		end
+	2'b11: cover(1);
+	endcase
+	// }}}
 `endif
 // }}}
 endmodule

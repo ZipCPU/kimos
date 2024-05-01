@@ -40,7 +40,7 @@
 // }}}
 module	migsdram #(
 		// {{{
-		parameter	DDRWIDTH = 16, WBDATAWIDTH=32,
+		parameter	DDRWIDTH = 16, WBDATAWIDTH=(DDRWIDTH*8),
 		parameter	AXIDWIDTH = 1,
 		// The SDRAM address bits (RAMABITS) are a touch more difficult
 		// to work out.  Here we leave them as a fixed parameter, but
@@ -51,20 +51,25 @@ module	migsdram #(
 		// DDRAWID: The number of physical address wires to the DDR3
 		// memory.
 		parameter	DDRAWID = 14,
-		// All DDR3 memories have 8 timeslots.  This, if the DDR3 memory
-		// has 16 bits to it (as above), the entire transaction must
-		// take AXIWIDTH bits ...
+		// All DDR3 memories have 8 timeslots.  Thus, if the DDR3 memory
+		// has DDRWIDTH bits to it, the entire transaction must take
+		// AXIWIDTH = 8 times that many bits ...
 		localparam	AXIWIDTH= DDRWIDTH *8,
 		localparam	DW=WBDATAWIDTH,
 		localparam	AW=RAMABITS-$clog2(WBDATAWIDTH/8),
-		localparam	SELW= (WBDATAWIDTH/8)
+		localparam	SELW= (WBDATAWIDTH/8),
+		// ACTIVE_LOW_MIG_RESET is based upon how the MIG is configured.
+		// If it's configured to produce an active low reset, then we'll
+		// need to swap polarity here before we can use it to generate
+		// an active high reset output.
+		localparam [0:0]	ACTIVE_LOW_MIG_RESET = 1'b1
 		// }}}
 	) (
 		// {{{
-		input	wire		i_clk, i_clk_200mhz,
-		output	wire		o_sys_clk,
-		input	wire		i_rst,
-		output	wire		o_sys_reset,
+		input	wire			i_clk, i_clk_200mhz,
+		output	wire			o_sys_clk,
+		input	wire			i_reset,
+		output	wire			o_sys_reset,
 		// Wishbone bus slave port
 		// {{{
 		input	wire			i_wb_cyc, i_wb_stb, i_wb_we,
@@ -77,12 +82,12 @@ module	migsdram #(
 		// }}}
 		// SDRAM connections
 		// {{{
-		output	wire	[0:0]		o_ddr_ck_p, o_ddr_ck_n,
-		output	wire			o_ddr_reset_n,
-		output	wire	[0:0]		o_ddr_cke,
-		output wire	[0:0]		o_ddr_cs_n,
-		output	wire			o_ddr_ras_n, o_ddr_cas_n,
-						o_ddr_we_n,
+		output	wire	[0:0]			o_ddr_ck_p, o_ddr_ck_n,
+		output	wire				o_ddr_reset_n,
+		output	wire	[0:0]			o_ddr_cke,
+		output	wire	[0:0]			o_ddr_cs_n,
+		output	wire				o_ddr_ras_n,o_ddr_cas_n,
+							o_ddr_we_n,
 		output	wire	[2:0]			o_ddr_ba,
 		output	wire	[DDRAWID-1:0]		o_ddr_addr,
 		output	wire	[0:0]			o_ddr_odt,
@@ -100,9 +105,6 @@ module	migsdram #(
 `ifdef	SDRAM_ACCESS
 	// Local declarations
 	// {{{
-	wire	aresetn;
-	assign	aresetn = 1'b1; // Never reset
-
 	// Write address channel
 	wire	[(AXIDWIDTH-1):0]	s_axi_awid;
 	wire	[(RAMABITS-1):0]	s_axi_awaddr;
@@ -150,7 +152,7 @@ module	migsdram #(
 	wire		app_sr_active, app_ref_ack, app_zq_ack;
 	wire		app_sr_req, app_ref_req, app_zq_req;
 	wire		w_sys_reset;
-	wire	[11:0]	w_device_temp;
+	// wire	[11:0]	w_device_temp;
 	// }}}
 
 	mig_axis
@@ -171,7 +173,9 @@ module	migsdram #(
 		.ui_clk(o_sys_clk),
 		.ui_clk_sync_rst(w_sys_reset),
 		.mmcm_locked(mmcm_locked),
-		.aresetn(aresetn),
+		// aresetn is an AXI signal.  This could be i_reset, but i_reset
+		// isn't in the UI clock domain.
+		.aresetn(1'b1),
 		.app_sr_req(1'b0),
 		.app_ref_req(1'b0),
 		.app_zq_req(1'b0),
@@ -206,8 +210,8 @@ module	migsdram #(
 		.s_axi_rdata(s_axi_rdata),	.s_axi_rresp(s_axi_rresp),
 		.s_axi_rlast(s_axi_rlast),	.s_axi_rvalid(s_axi_rvalid),
 		.init_calib_complete(init_calib_complete),
-		.sys_rst(i_rst),
-		.device_temp(w_device_temp)
+		.sys_rst(i_reset ^ ACTIVE_LOW_MIG_RESET)
+		// , .device_temp_i(12'h0), .device_temp(w_device_temp)
 		// }}}
 	);
 
@@ -291,7 +295,7 @@ module	migsdram #(
 	reg	r_sys_reset;
 	initial	r_sys_reset = 1'b1;
 	always @(posedge o_sys_clk)
-		r_sys_reset <= (w_sys_reset)
+		r_sys_reset <= (w_sys_reset ^ ACTIVE_LOW_MIG_RESET)
 				||(!init_calib_complete)
 				||(!mmcm_locked);
 

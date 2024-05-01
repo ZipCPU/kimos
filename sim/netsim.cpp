@@ -63,6 +63,7 @@
 // #define	UDP_DBGPORT
 // #define	UDP_DATAPORT
 
+#ifdef	UDP_DBGPORT
 
 NETSIM::NETSIM(void) {
 	// {{{
@@ -70,7 +71,7 @@ NETSIM::NETSIM(void) {
 	snprintf(dbgportstr, sizeof(dbgportstr), "127.0.0.1:%d", UDP_DBGPORT);
 	snprintf(dataportstr,sizeof(dataportstr),"127.0.0.1:%d", UDP_DATAPORT);
 	m_dbgskt  = new UDPSOCKET(dbgportstr);
-	m_dataskt = new UDPSOCKET(dataportstr);
+	m_dataskt = NULL; // m_dataskt = new UDPSOCKET(dataportstr);
 	m_dbgskt->bind(UDP_DBGPORT);
 
 	m_rxaddr = 0; m_rxlen = 0; m_rxstate = RX_IDLE;
@@ -399,7 +400,7 @@ void	NETSIM::forward_udp(unsigned ln, unsigned char *buf) {
 		m_dbgskt->write(udpln, udpptr+8, &d);
 	} else if (sport == UDP_DATAPORT) {
 		// printf("DATAPKT\n");
-		m_dataskt->write(udpln, udpptr+8, &d);
+		// m_dataskt->write(udpln, udpptr+8, &d);
 	} else
 		printf("UNKNOWN SOURCE PORT: %04x\n", sport);
 }
@@ -506,8 +507,11 @@ void	NETSIM::checkrx(unsigned length, const unsigned char *buf) const {
 }
 // }}}
 
+#endif	// UDP_DBGPORT
+
 unsigned	NETSIM::rxtick(const int resetn) {
 	// {{{
+#ifdef	UDP_DBGPORT
 	unsigned	rv = 0;
 
 	if (resetn == 0) {
@@ -535,6 +539,7 @@ unsigned	NETSIM::rxtick(const int resetn) {
 				// printf("ICMP LEN = %d\n", m_rxlen);
 			}
 		} else if (m_rxlen > 0) {
+printf("NETSIM::PKT received\n");
 			m_rxlen = load_udp(m_rxlen, (unsigned char *)m_rxdata,
 				m_dbgskt->source());
 
@@ -563,12 +568,15 @@ unsigned	NETSIM::rxtick(const int resetn) {
 
 
 	return rv;
+#endif
+	return 0;
 }
 // }}}
 
 void	NETSIM::txtick(const int resetn,
 				const unsigned ctl, const unsigned txd) {
 	// {{{
+#ifdef	UDP_DBGPORT
 	if (!resetn) {
 		// Reset all states
 		m_txstate = TX_IDLE;
@@ -619,6 +627,8 @@ void	NETSIM::txtick(const int resetn,
 			m_txdata[m_txaddr++] = txd;
 		}
 	}
+#endif
 }
 // }}}
+
 

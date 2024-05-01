@@ -1,0 +1,22 @@
+[tasks]
+prf
+cvr
+
+[options]
+prf: mode prove
+cvr: mode cover
+depth 10
+
+[engines]
+smtbmc
+
+[script]
+read -formal exdecompress.v
+--pycode-begin--
+cmd = "hierarchy -top exdecompress"
+output(cmd)
+--pycode-end--
+prep -top exdecompress
+
+[files]
+../../rtl/exbus/exdecompress.v

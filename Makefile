@@ -27,7 +27,7 @@
 ## for more details.
 ##
 ## You should have received a copy of the GNU General Public License along
-## with this program.  (It's in the $(ROOT)/doc directory, run make with no
+## with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
 ## target there if the PDF file isn't present.)  If not, see
 ## <http://www.gnu.org/licenses/> for a copy.
 ## }}}
@@ -147,6 +147,25 @@ autodata: check-autofpga
 	$(call copyif-changed,$(AUTOD)/rtl.make.inc,rtl/make.inc)
 	$(call copyif-changed,$(AUTOD)/testb.h,$(SIMD)/testb.h)
 	$(call copyif-changed,$(AUTOD)/main_tb.cpp,$(SIMD)/main_tb.cpp)
+
+.PHONY: altauto
+## Build our main (and toplevel) Verilog files via autofpga
+##
+altauto: check-autofpga
+	$(SUBMAKE) $(AUTOD) lddata
+	$(call copyif-changed,$(AUTOD)/toplevel.v,rtl/toplevel.v)
+	$(call copyif-changed,$(AUTOD)/main.v,rtl/main.v)
+	$(call copyif-changed,$(AUTOD)/iscachable.v,rtl/iscachable.v)
+	$(call copyif-changed,$(AUTOD)/build.xdc,rtl/board.xdc)
+	$(call copyif-changed,$(AUTOD)/regdefs.h,sw/host/regdefs.h)
+	$(call copyif-changed,$(AUTOD)/regdefs.cpp,sw/host/regdefs.cpp)
+	$(call copyif-changed,$(AUTOD)/board.h,sw/zlib/board.h)
+	$(call copyif-changed,$(AUTOD)/board.h,sw/board/board.h)
+	$(call copyif-changed,$(AUTOD)/bkram.ld,sw/board/bkram.ld)
+	$(call copyif-changed,$(AUTOD)/board.ld,sw/board/board.ld)
+	$(call copyif-changed,$(AUTOD)/rtl.make.inc,rtl/make.inc)
+	$(call copyif-changed,$(AUTOD)/testb.h,$(SIMD)/testb.h)
+	$(call copyif-changed,$(AUTOD)/main_tb.cpp,$(SIMD)/main_tb.cpp)
 ## }}}
 ################################################################################
 ##
@@ -194,7 +213,7 @@ sw: sw-host sw-zlib sw-board # sw-boot
 ##
 ## Build the host support software
 ##
-sw-host: check-gpp
+sw-host: check-gpp rtl
 	+@$(SUBMAKE) sw/host
 ## }}}
 
@@ -203,13 +222,13 @@ sw-host: check-gpp
 ##
 ## Build the hardware specific newlib library
 ##
-sw-zlib: check-zip-gcc
+sw-zlib: check-zip-gcc rtl
 	+@$(SUBMAKE) sw/zlib
 ## }}}
 
 .PHONY: sw-fatfs
 ## {{{
-sw-fatfs: check-zip-gcc
+sw-fatfs: check-zip-gcc rtl
 	+@$(SUBMAKE) sw/fatfs
 ## }}}
 
@@ -217,17 +236,18 @@ sw-fatfs: check-zip-gcc
 ## {{{
 ## Build the board software.  This may (or may not) use the software library
 ##
-sw-board: sw-zlib sw-fatfs check-zip-gcc
+sw-board: sw-zlib sw-fatfs check-zip-gcc rtl
 	+@$(SUBMAKE) sw/board
 ## }}}
 
 .PHONY: sw-boot
 ## {{{
 ##
-## Build the boot software.
+## Build the boot software.  This would allow us to boot from an SD card,
+## however ... this project doesn't currently use it.
 ##
-sw-boot: check-zip-gcc sw-zlib
-	+@$(SUBMAKE) sw/boot
+## sw-boot: check-zip-gcc sw-zlib
+##	+@$(SUBMAKE) sw/boot
 ## }}}
 ## }}}
 ################################################################################
@@ -254,13 +274,13 @@ sw-boot: check-zip-gcc sw-zlib
 ## Load the device
 ## {{{
 ## BITFILE := blinky.bit
-BITFILE := wetend.bit
-$(BITFILE): ../../xilinxwet/wetend.runs/impl_1/toplevel.bit
+BITFILE := kimos.bit
+$(BITFILE): ../xilinx/xkimos.runs/impl_1/toplevel.bit
 	@cp $< $@
 
 .PHONY: load
 load: $(BITFILE)
-	$(LOADER) --ftdi-serial FTENC $(BITFILE)
+	$(LOADER) --freq 3750000 --ftdi-serial FTENC $(BITFILE)
 ## }}}
 ################################################################################
 ##

@@ -43,7 +43,7 @@
 ## }}}
 @PREFIX=wbu
 @DEVID=DBGBUS
-@ACCESS=WBUBUS_MASTER
+@ACCESS=EXBUS_MASTER
 @MASTER.BUS=wbu
 @MASTER.TYPE=HOST
 @MASTER.PREFIX=@$(PREFIX)
@@ -68,7 +68,7 @@
 @MAIN.PARAM=
 	////////////////////////////////////////////////////////////////////////
 	//
-	// WBUBUS parameters
+	// EXBUS parameters
 	// {{{
 	// Baudrate : @$[%9d](BAUDRATE)
 	// Clock    : @$[%9d](CLOCK.FREQUENCY)
@@ -78,7 +78,7 @@
 @MAIN.DEFNS=
 	////////////////////////////////////////////////////////////////////////
 	//
-	// WBUBUS: USB-UART interface declarations
+	// EXBUS: USB-UART interface declarations
 	// {{{
 	//
 	wire	[7:0]	@$(PREFIX)_rx_data, @$(PREFIX)_tx_data;
@@ -93,7 +93,7 @@
 @MAIN.INSERT=
 	////////////////////////////////////////////////////////////////////////
 	//
-	// WBUBUS: USB-UART driven bus master and console
+	// EXBUS: USB-UART driven bus master and console
 	// {{{
 	// The Host USB interface, to be used by the WB-UART bus
 	rxuartlite	#(
@@ -168,7 +168,7 @@
 	// }}}
 @REGDEFS.H.DEFNS=
 #define	BAUDRATE	@$[%d](BAUDRATE)
-@RTL.MAKE.GROUP= WBUBUS
+@RTL.MAKE.GROUP= EXBUS
 @RTL.MAKE.SUBD=exbus
 @RTL.MAKE.FILES= exbuswb.v excompress.v exdecompress.v exdeword.v
 	exidle.v exmkword.v exwb.v exfifo.v
