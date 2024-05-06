@@ -40,7 +40,7 @@
 ##
 ## }}}
 .PHONY: all
-all: excompress exdecompress exdeword exmkword exidle exwb
+all: excompress exdecompress exdeword exmkword exidle exwb netdbgrx
 
 .PHONY: excompress
 ## {{{
@@ -80,7 +80,7 @@ exdeword_cvr/PASS: exdeword.sby ../../rtl/exbus/exdeword.v
 
 .PHONY: exidle
 ## {{{
-exidle: exdeword_prf/PASS exdeword_cvr/PASS
+exidle: exidle_prf/PASS exidle_cvr/PASS
 exidle_prf/PASS: exidle.sby ../../rtl/exbus/exidle.v
 	-sby -f exidle.sby prf
 exidle_cvr/PASS: exdeword.sby ../../rtl/exbus/exidle.v
@@ -106,6 +106,16 @@ exwb_cvr/PASS: exwb.sby fwb_master.v ../../rtl/exbus/exwb.v
 exwb_cvrp/PASS: exwb.sby fwb_master.v ../../rtl/exbus/exwb.v
 	sby -f exwb.sby cvrp
 ## }}}
+
+.PHONY: netdbgrx
+## {{{
+netdbgrx: netdbgrx_prf/PASS netdbgrx_cvr/PASS
+netdbgrx_prf/PASS: netdbgrx.sby ../../rtl/proto/netdbgrx.v
+	-sby -f netdbgrx.sby prf
+netdbgrx_cvr/PASS: exdeword.sby ../../rtl/proto/netdbgrx.v
+	sby -f netdbgrx.sby cvr
+## }}}
+
 
 .PHONY: clean
 ## {{{
