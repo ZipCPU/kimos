@@ -438,27 +438,27 @@ char	*NEXBUS::encode_address(const NEXBUS::BUSW a, const bool inc) {
 			if (inc)
 				*ptr |= 1;
 			ptr++;
-		} else if ((diffaddr >= -(1<<7))&&(diffaddr < (1<<7))) {
-			*ptr++ = 0x1a | ((diffaddr < 0) ? 1:0);
-			*ptr   = (diffaddr << 1) & 0x07e;
+		} else if ((diffaddr >= -(1<<6))&&(diffaddr < (1<<6))) {
+			*ptr++ = 0x1a | ((diffaddr < 0) ? 1:0);	// SGN bit
+			*ptr   = (diffaddr << 1) & 0x07e;	// 6b
 			if (inc)
-				*ptr |= 1;
+				*ptr |= 1;			// 1b for INC
 			ptr++;
-		} else if ((diffaddr >= -(1<<14))&&(diffaddr < (1<<14))) {
-			*ptr++ = 0x1e | ((diffaddr < 0) ? 1:0);
-			*ptr++ = (diffaddr >> 6) & 0x07f;
-			*ptr   = (diffaddr << 1) & 0x07e;
+		} else if ((diffaddr >= -(1<<13))&&(diffaddr < (1<<13))) {
+			*ptr++ = 0x1e | ((diffaddr < 0) ? 1:0);	// SGN bit
+			*ptr++ = (diffaddr >> 6) & 0x07f;	// 7b
+			*ptr   = (diffaddr << 1) & 0x07e;	// 6b
 			if (inc)
-				*ptr |= 1;
+				*ptr |= 1;			// 1b for INC
 			ptr++;
 		}
 		*ptr = '\0';
 
 #ifdef	NEXDEBUG
-		DBGPRINTF("DIF-ADDR: (%ld) encodes last_addr(0x%08x) %d(0x%08x):",
+		DBGPRINTF("DIF-ADDR: (%ld) encodes last_addr(0x%08x) %6d(0x%06x):",
 			ptr-sbuf,
 			m_txaddr,
-			diffaddr, diffaddr&0x0ffffffff);
+			diffaddr, diffaddr&0x0fffff);
 		for(char *sptr = sbuf; sptr < ptr; sptr++)
 			DBGPRINTF("%02x ", (uint32_t)*sptr);
 		DBGPRINTF("\n");

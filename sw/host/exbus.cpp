@@ -201,9 +201,10 @@ void	EXBUS::writev(const BUSW a, const int p, const int len, const BUSW *buf) {
 		if ((unsigned)ln > MAXWRLEN)
 			ln = MAXWRLEN;
 
-		DBGPRINTF("WRITEV-SUB(%08x%s,#%d,&buf[%d])\n", a+(p?nw:0),
-			(p)?"++":"", ln, nw);
-		for(int i=0; i<ln; i++) {
+		DBGPRINTF("WRITEV-SUB(%08x%s [-> %08x],#%d,&buf[%d])\n",
+			m_txaddr, (p)?"++":"", a/4+(p? nw:0), ln, nw);
+		for(int i=0; i<ln; i++) { // Write one word at a time
+			// {{{
 			BUSW	val = buf[nw+i];
 			int	ival = (int)val;
 
@@ -263,16 +264,15 @@ void	EXBUS::writev(const BUSW a, const int p, const int len, const BUSW *buf) {
 			}
 
 			if (p == 1) m_txaddr += 4;
+			// }}}
 		}
 
-		// *ptr = '\0';	// Not needed, since we don't use strlen()
 		m_dev->write(m_buf, ptr-m_buf);
 assert(ptr-m_buf <= m_buflen);
 		DBGPRINTF(">> ");
 		for(char *tp=m_buf; tp<ptr; tp++)
 			DBGPRINTF("0x%02x ", (*tp)&0x0ff);
 		DBGPRINTF("\n");
-		// DBGPRINTF(">> %s\n", m_buf);
 
 		readidle();
 
@@ -362,7 +362,7 @@ EXBUS::BUSW	EXBUS::readio(const EXBUS::BUSW a) {
 //
 char	*EXBUS::encode_address(const EXBUS::BUSW a, const bool inc) {
 	EXBUS::BUSW	addr = a;
-	char	*ptr = m_buf;
+	char	*sbuf = m_buf, *ptr = m_buf;
 	int	diffaddr = ((a&-2) - (m_txaddr & -2))>>2;
 
 	// Sign extend the difference address
@@ -394,28 +394,28 @@ char	*EXBUS::encode_address(const EXBUS::BUSW a, const bool inc) {
 			if (inc)
 				*ptr |= 1;
 			ptr++;
-		} else if ((diffaddr >= -(1<<7))&&(diffaddr < (1<<7))) {
-			*ptr++ = 0x1a | ((diffaddr < 0) ? 1:0);
-			*ptr   = (diffaddr << 1) & 0x07e;
+		} else if ((diffaddr >= -(1<<6))&&(diffaddr < (1<<6))) {
+			*ptr++ = 0x1a | ((diffaddr < 0) ? 1:0);	// SGN bit
+			*ptr   = (diffaddr << 1) & 0x07e;	// 6b
 			if (inc)
-				*ptr |= 1;
+				*ptr |= 1;			// 1b for INC
 			ptr++;
-		} else if ((diffaddr >= -(1<<14))&&(diffaddr < (1<<14))) {
-			*ptr++ = 0x1e | ((diffaddr < 0) ? 1:0);
-			*ptr++ = (diffaddr >> 6) & 0x07f;
-			*ptr   = (diffaddr << 1) & 0x07e;
+		} else if ((diffaddr >= -(1<<13))&&(diffaddr < (1<<13))) {
+			*ptr++ = 0x1e | ((diffaddr < 0) ? 1:0);	// SGN bit
+			*ptr++ = (diffaddr >> 6) & 0x07f;	// 7b
+			*ptr   = (diffaddr << 1) & 0x07e;	// 6b
 			if (inc)
-				*ptr |= 1;
+				*ptr |= 1;			// 1b for INC
 			ptr++;
 		}
 		*ptr = '\0';
 
 #ifdef	EXDEBUG
-		DBGPRINTF("DIF-ADDR: (%ld) encodes last_addr(0x%08x) %d(0x%08x):",
-			ptr-m_buf,
+		DBGPRINTF("DIF-ADDR: (%ld) encodes last_addr(0x%08x) %6d(0x%06x):",
+			ptr-sbuf,
 			m_txaddr,
-			diffaddr, diffaddr&0x0ffffffff);
-		for(char *sptr = m_buf; sptr < ptr; sptr++)
+			diffaddr, diffaddr&0x0fffff);
+		for(char *sptr = sbuf; sptr < ptr; sptr++)
 			DBGPRINTF("%02x ", (uint32_t)*sptr);
 		DBGPRINTF("\n");
 #endif
@@ -431,27 +431,27 @@ char	*EXBUS::encode_address(const EXBUS::BUSW a, const bool inc) {
 		int	waddr = ((int)addr) >> 2;
 
 		if ((waddr >= -(1<<7))&&(waddr < 1<<7)
-				&&((ptr == m_buf)||(ptr >= &m_buf[2]))) {
+				&&((ptr == sbuf)||(ptr >= &sbuf[2]))) {
 			DBGPRINTF("Setting ADDR.1 to %08x\n", addr);
-			ptr = m_buf;
+			ptr = sbuf;
 			*ptr++ = 0x18 | ((waddr  < 0) ? 1:0);
 			*ptr   = ( waddr << 1) & 0x07e;
 			if (inc)
 				*ptr |= 1;
 			ptr++;
 		} else if (((waddr >= -1<<13)&&(waddr < 1<<13))
-				&&((ptr == m_buf)||(ptr >= &m_buf[3]))) {
+				&&((ptr == sbuf)||(ptr >= &sbuf[3]))) {
 			DBGPRINTF("Setting ADDR.2 to %08x\n", addr);
-			ptr = m_buf;
+			ptr = sbuf;
 			*ptr++ = 0x1c | ((waddr  < 0) ? 1:0);
 			*ptr++ = ( waddr >> 6) & 0x07f;
 			*ptr   = ( waddr << 1) & 0x07e;
 			if (inc)
 				*ptr |= 1;
 			ptr++;
-		} else if (ptr == m_buf) { // Send our full/raw/complete address
+		} else if (ptr == sbuf) { // Send our full/raw/complete address
 			DBGPRINTF("Setting ADDR.F to %08x\n", addr);
-			ptr = m_buf;
+			ptr = sbuf;
 			*ptr++ = ((addr>>28) & 0x00f) | 0;
 			*ptr++ = ( addr>>21) & 0x07f;
 			*ptr++ = ( addr>>14) & 0x07f;
@@ -466,9 +466,9 @@ char	*EXBUS::encode_address(const EXBUS::BUSW a, const bool inc) {
 
 	*ptr = '\0';
 #ifdef	EXDEBUG
-	DBGPRINTF("ADDR-CMD%2s%2s: (%ld) ", (m_txaddr_set) ? "/S":"", (inc) ? "/I":"", ptr-m_buf);
-	for(int k=0; k<ptr-m_buf; k++)
-		DBGPRINTF("%02x%s", m_buf[k] & 0x0ff, (k+1 < ptr-m_buf)?":":"");
+	DBGPRINTF("ADDR-CMD%2s%2s: (%ld) ", (m_txaddr_set) ? "/S":"", (inc) ? "/I":"", ptr-sbuf);
+	for(int k=0; k<ptr-sbuf; k++)
+		DBGPRINTF("%02x%s", sbuf[k] & 0x0ff, (k+1 < ptr-sbuf)?":":"");
 	if (m_txaddr_set)
 		DBGPRINTF("\tDIF=0x%08x", diffaddr);
 	DBGPRINTF("\n");

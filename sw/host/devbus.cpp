@@ -54,8 +54,8 @@
 #include <unistd.h>
 #include <assert.h>
 
-#include "port.h"
 #include "regdefs.h"
+#include "port.h"
 #include "devbus.h"
 #ifdef	UDP_DBGPORT
 #include "nexbus.h"

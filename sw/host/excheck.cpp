@@ -239,6 +239,33 @@ gbl_fpgahost, gbl_fpgaport);
 	}
 	// }}}
 
+	if (passed)
+		m_fpga->writei(R_BKRAM, NLEN, testbuf);
+	for(unsigned offset=0; (offset + 8 < NLEN) && passed; offset++) {
+		// {{{
+		printf("Address check, testing offset  %d\n", offset);
+
+		// Now, read both back
+		printf("\tREAD"); fflush(stdout);
+		m_fpga->readi(R_BKRAM, 2, checkbuf);
+		printf(", READ"); fflush(stdout);
+		m_fpga->readi(R_BKRAM + 4*offset, 8, &checkbuf[2]);
+		// ... and compare the result
+		printf(", CHECK\n"); fflush(stdout);
+		for(unsigned k=0; k<2; k++) {
+			if (checkbuf[k] != testbuf[k]) {
+				printf("AD-ERR: CHECK[%d+%d]=%08x != 0x%08x (expected)\n", offset, k, checkbuf[k], testbuf[k]);
+				passed = false;
+			}
+		} for(unsigned k=0; k<8; k++) {
+			if (checkbuf[2+k] != testbuf[k+offset]) {
+				printf("AD-ERR: CHECK[%d+%d]=%08x != 0x%08x (expected)\n", offset, k+2, checkbuf[2+k], testbuf[k+offset]);
+				passed = false;
+			}
+		}
+	}
+	// }}}
+
 	if (passed) printf("SUCCESS!\n");
 
 	if (m_fpga->poll())

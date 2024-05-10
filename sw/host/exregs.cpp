@@ -55,7 +55,7 @@
 #include "devbus.h"
 
 DEVBUS	*m_fpga;
-const	char	*gbl_fpgahost = FPGAHOST, *gbl_proto = "UART://";
+const	char	*gbl_fpgahost = FPGAHOST;
 int		gbl_fpgaport = FPGAPORT;
 bool		gbl_uart = true;
 
@@ -260,6 +260,7 @@ gbl_fpgahost, gbl_fpgaport);
 		char	comstr[256];
 		sprintf(comstr, "%s://%s:%d", (gbl_uart) ? "UART":"NET",
 				gbl_fpgahost, gbl_fpgaport);
+fprintf(stderr, "Connecting to %s\n", comstr);
 		m_fpga = connect_devbus(comstr);
 	}
 
