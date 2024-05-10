@@ -164,7 +164,6 @@ module	netdbgrx #(
 		o_null_pkt <= 1'b0;
 	// }}}
 
-	initial	word_valid = 1'b0;
 	initial	word_last  = 4'b0;
 	initial	o_gpio     = DEF_GPIO;
 	initial	o_repeat_stb  = 1'b0;
