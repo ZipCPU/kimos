@@ -214,14 +214,14 @@ module	netdebug #(
 	wire	[6:0]	deword_byte;
 
 
-	wire		w_sync, w_repeat_stb;
+	wire		w_sync, w_repeat_stb, w_null_pkt;
 	wire	[47:0]	host_mac;
 	wire	[31:0]	host_ip;
 	wire	[15:0]	host_sport;
 	wire	[15:0]	host_frameid;
 
 	wire		pkt_pvalid, pkt_pready, pkt_plast,
-			pkt_ready, pkt_active, pkt_pabort;
+			pkt_ready, pkt_pabort;
 	wire	[31:0]	pkt_pdata;
 
 	wire		udp_hdr_valid, udp_hdr_ready, udp_hdr_last;
@@ -272,6 +272,7 @@ module	netdebug #(
 		// }}}
 		.o_gpio(proto_gpio),
 		.o_sync(w_sync), .o_repeat_stb(w_repeat_stb),
+			.o_null_pkt(w_null_pkt),
 		.o_host_mac(host_mac), .o_host_ip(host_ip),
 		.o_host_udpport(host_sport), .o_host_frameid(host_frameid),
 		.i_handler_busy(handler_busy),
@@ -460,7 +461,7 @@ module	netdebug #(
 		.OPT_IDLE(1'b0)
 	) idle(
 		.i_clk(i_clk), .i_reset(i_reset || cmd_reset),
-		.i_stb(compress_valid || null_valid),
+		.i_stb(compress_valid || null_valid || w_null_pkt),
 			.i_word(null_valid ? { idle_null, compress_data[27:0] }
 					: compress_data),
 			.i_last(null_valid || compress_last),
@@ -588,7 +589,6 @@ module	netdebug #(
 		//
 		.i_sync(w_sync), .i_gpio(return_gpio),
 		.i_repeat_stb(w_repeat_stb), .i_hostid(host_frameid),
-		.o_busy(pkt_active),
 		//
 		.S_AXI_TVALID(deword_valid), .S_AXI_TREADY(pkt_ready),
 		.S_AXI_TDATA({ 1'b1, deword_byte }), .S_AXI_TLAST(deword_last),
@@ -687,7 +687,7 @@ module	netdebug #(
 	// verilator lint_off UNUSED
 	wire	unused;
 	assign	unused = &{ 1'b0, ofifo_err, i_gpio, pl_last, pkt_pabort,
-			M_AXI_TLAST, pkt_active, ignored_reset,
+			M_AXI_TLAST, ignored_reset,
 			ign_ofifo_fill };
 	// verilator lint_on  UNUSED
 	// }}}

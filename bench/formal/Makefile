@@ -1,4 +1,3 @@
-
 ################################################################################
 ##
 ## Filename:	Makefile
@@ -40,7 +39,7 @@
 ##
 ## }}}
 .PHONY: all
-all: excompress exdecompress exdeword exmkword exidle exwb
+all: excompress exdecompress exdeword exmkword exidle exwb netdbgrx netdbgtx
 
 .PHONY: excompress
 ## {{{
@@ -80,10 +79,10 @@ exdeword_cvr/PASS: exdeword.sby ../../rtl/exbus/exdeword.v
 
 .PHONY: exidle
 ## {{{
-exidle: exdeword_prf/PASS exdeword_cvr/PASS
+exidle: exidle_prf/PASS exidle_cvr/PASS
 exidle_prf/PASS: exidle.sby ../../rtl/exbus/exidle.v
 	-sby -f exidle.sby prf
-exidle_cvr/PASS: exdeword.sby ../../rtl/exbus/exidle.v
+exidle_cvr/PASS: exidle.sby ../../rtl/exbus/exidle.v
 	sby -f exidle.sby cvr
 ## }}}
 
@@ -93,24 +92,44 @@ exwb: exwb_prf/PASS exwb_cvr/PASS
 exwb: exwb_prfp/PASS exwb_cvrp/PASS
 exwb: exwb_prflp/PASS exwb_prflpp/PASS
 
-exwb_prf/PASS: exwb.sby fwb_master.v ../../rtl/exbus/exwb.v
+exwb_prf/PASS: exwb.sby		fwb_master.v ../../rtl/exbus/exwb.v
 	-sby -f exwb.sby prf
-exwb_prfp/PASS: exwb.sby fwb_master.v ../../rtl/exbus/exwb.v
+exwb_prfp/PASS: exwb.sby	fwb_master.v ../../rtl/exbus/exwb.v
 	-sby -f exwb.sby prfp
-exwb_prflp/PASS: exwb.sby fwb_master.v ../../rtl/exbus/exwb.v
+exwb_prflp/PASS: exwb.sby	fwb_master.v ../../rtl/exbus/exwb.v
 	-sby -f exwb.sby prflp
-exwb_prflpp/PASS: exwb.sby fwb_master.v ../../rtl/exbus/exwb.v
+exwb_prflpp/PASS: exwb.sby	fwb_master.v ../../rtl/exbus/exwb.v
 	-sby -f exwb.sby prflpp
-exwb_cvr/PASS: exwb.sby fwb_master.v ../../rtl/exbus/exwb.v
+exwb_cvr/PASS: exwb.sby		fwb_master.v ../../rtl/exbus/exwb.v
 	sby -f exwb.sby cvr
-exwb_cvrp/PASS: exwb.sby fwb_master.v ../../rtl/exbus/exwb.v
+exwb_cvrp/PASS: exwb.sby	fwb_master.v ../../rtl/exbus/exwb.v
 	sby -f exwb.sby cvrp
 ## }}}
+
+.PHONY: netdbgrx
+## {{{
+netdbgrx: netdbgrx_prf/PASS netdbgrx_cvr/PASS
+netdbgrx_prf/PASS: netdbgrx.sby ../../rtl/proto/netdbgrx.v
+	-sby -f netdbgrx.sby prf
+netdbgrx_cvr/PASS: netdbgrx.sby ../../rtl/proto/netdbgrx.v
+	sby -f netdbgrx.sby cvr
+## }}}
+
+.PHONY: netdbgtx
+## {{{
+netdbgtx: netdbgtx_prf/PASS netdbgtx_cvr/PASS
+netdbgtx_prf/PASS: netdbgtx.sby ../../rtl/proto/netdbgtx.v
+	-sby -f netdbgtx.sby prf
+netdbgtx_cvr/PASS: netdbgtx.sby ../../rtl/proto/netdbgtx.v
+	sby -f netdbgtx.sby cvr
+## }}}
+
 
 .PHONY: clean
 ## {{{
 clean:
-	rm -rf excompress_*/ exdecompress_*/
-	rm -rf exmkword_*/ exdeword_*/
-	rm -rf exwb_*/ exidle_*/
+	rm -rf excompress_*/	exdecompress_*/
+	rm -rf exmkword_*/	exdeword_*/
+	rm -rf exwb_*/		exidle_*/
+	rm -rf netdbgrx_*/	netdbgtx_*/
 ## }}}

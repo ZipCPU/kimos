@@ -1,0 +1,24 @@
+[tasks]
+prf
+cvr
+
+[options]
+prf: mode prove
+prf: depth 5
+cvr: mode cover
+cvr: depth 40
+
+[engines]
+smtbmc
+
+[script]
+read -formal netdbgrx.v
+--pycode-begin--
+cmd = "hierarchy -top netdbgrx"
+output(cmd)
+--pycode-end--
+proc -norom
+prep -top netdbgrx
+
+[files]
+../../rtl/proto/netdbgrx.v
