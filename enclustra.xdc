@@ -366,12 +366,12 @@ set_property -dict {PACKAGE_PIN A20   IOSTANDARD LVCMOS18  } [get_ports {o_wbu_u
 
 # set_property -dict {PACKAGE_PIN AC12  IOSTANDARD DIFF_SSTL15} [get_ports {o_ddr3_clk_n}];
 # set_property -dict {PACKAGE_PIN AB12  IOSTANDARD DIFF_SSTL15} [get_ports {o_ddr3_clk_p}];
-# set_property -dict {PACKAGE_PIN AA13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[0]}];	## CKE	!!!
-## # set_property -dict {PACKAGE_PIN AF13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[1]}];	## (WRONG)
+# set_property -dict {PACKAGE_PIN AA13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[0]}];	## CKE
+## # set_property -dict {PACKAGE_PIN AF13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[1]}];
 ## set_property -dict {SLEW SLOW PACKAGE_PIN AA3   IOSTANDARD SSTL15    } [get_ports {o_ddr3_vsel}];
 set_property -dict {SLEW SLOW PACKAGE_PIN AA3   IOSTANDARD LVCMOS15    } [get_ports {o_ddr3_vsel}];
 # set_property -dict {PACKAGE_PIN Y12   IOSTANDARD SSTL15    } [get_ports {o_ddr3_cs_n[0]}];
-## # set_property -dict {PACKAGE_PIN Y13   IOSTANDARD SSTL15    } [get_ports {o_ddr3_cs_n[1]}];	## ?? Unused?
+## # set_property -dict {PACKAGE_PIN Y13   IOSTANDARD SSTL15    } [get_ports {o_ddr3_cs_n[1]}];	## Unused
 # set_property -dict {PACKAGE_PIN AE12  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cas_n}];
 # set_property -dict {PACKAGE_PIN AE13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_ras_n}]
 # set_property -dict {PACKAGE_PIN AA12  IOSTANDARD SSTL15    } [get_ports {o_ddr3_we_n}];

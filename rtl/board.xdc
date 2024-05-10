@@ -366,12 +366,12 @@ set_property -dict {PACKAGE_PIN J8    IOSTANDARD LVCMOS18  } [get_ports {o_zero[
 
 # set_property -dict {PACKAGE_PIN AC12  IOSTANDARD DIFF_SSTL15} [get_ports {o_ddr3_clk_n}];
 # set_property -dict {PACKAGE_PIN AB12  IOSTANDARD DIFF_SSTL15} [get_ports {o_ddr3_clk_p}];
-# set_property -dict {PACKAGE_PIN AA13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[0]}];	## CKE	!!!
-## # set_property -dict {PACKAGE_PIN AF13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[1]}];	## (WRONG)
+# set_property -dict {PACKAGE_PIN AA13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[0]}];	## CKE
+## # set_property -dict {PACKAGE_PIN AF13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[1]}];	## (Demo PRJ file uses this as cke[0], appears WRONG)
 ## set_property -dict {SLEW SLOW PACKAGE_PIN AA3   IOSTANDARD SSTL15    } [get_ports {o_ddr3_vsel}];
 set_property -dict {SLEW SLOW PACKAGE_PIN AA3   IOSTANDARD LVCMOS15    } [get_ports {o_ddr3_vsel}];
 # set_property -dict {PACKAGE_PIN Y12   IOSTANDARD SSTL15    } [get_ports {o_ddr3_cs_n[0]}];
-## # set_property -dict {PACKAGE_PIN Y13   IOSTANDARD SSTL15    } [get_ports {o_ddr3_cs_n[1]}];	## ?? Unused?
+## # set_property -dict {PACKAGE_PIN Y13   IOSTANDARD SSTL15    } [get_ports {o_ddr3_cs_n[1]}];	## Unused
 # set_property -dict {PACKAGE_PIN AE12  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cas_n}];
 # set_property -dict {PACKAGE_PIN AE13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_ras_n}]
 # set_property -dict {PACKAGE_PIN AA12  IOSTANDARD SSTL15    } [get_ports {o_ddr3_we_n}];
@@ -663,11 +663,11 @@ set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *afifo*/wgra
 set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *afifo*/rgray_r*}] -to [ get_cells -hier -filter {NAME =~ *afifo*/rgray_cross*}] 8.0
 
 set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/o_net_reset_n_reg*}]    -to [ get_cells -hier -filter {NAME =~*u_eth0/net_core/n_tx_reset_reg*}] 8.0
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]         -to [ get_cells -hier -filter {NAME =~*net_core/preq_tx_reset*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/SAME_CLOCK.r_sys_reset*}]         -to [ get_cells -hier -filter {NAME =~*net_core/preq_tx_reset*}] 8.0
 set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/o_net_reset_n_reg}]  -to [ get_cells -hier -filter {NAME =~*net_core/q_tx_reset*}] 8.0
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]         -to [ get_cells -hier -filter {NAME =~*u_eth0/u_icmpstream/M_AXIN_VALID_reg*}] 8.0
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]         -to [ get_cells -hier -filter {NAME =~*u_eth0/u_icmpstream/M_AXIN_DATA_reg*}] 8.0
-set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]         -to [ get_cells -hier -filter {NAME =~*u_eth0/u_icmpstream/M_AXIN_LAST_reg*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/SAME_CLOCK.r_sys_reset*}]         -to [ get_cells -hier -filter {NAME =~*u_eth0/u_icmpstream/M_AXIN_VALID_reg*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/SAME_CLOCK.r_sys_reset*}]         -to [ get_cells -hier -filter {NAME =~*u_eth0/u_icmpstream/M_AXIN_DATA_reg*}] 8.0
+set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/SAME_CLOCK.r_sys_reset*}]         -to [ get_cells -hier -filter {NAME =~*u_eth0/u_icmpstream/M_AXIN_LAST_reg*}] 8.0
 set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/tfrtxspd/a_req*}]  -to [ get_cells -hier -filter {NAME =~*u_eth0/net_core/tfrtxspd/b_pipe*}] 8.0
 set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/tfrtxspd/a_data*}] -to [ get_cells -hier -filter {NAME =~*u_eth0/net_core/tfrtxspd/o_b_data_reg*}] 8.0
 set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/hw_mac_reg*}]        -to [ get_cells -hier -filter {NAME =~*txmaci/r_hw*}] 8.0
@@ -682,10 +682,10 @@ set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/ar
 set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/icmp_afifo/mem*}]      -to [ get_cells -hier -filter {NAME =~*u_eth0/icmp_afifo/GEN_REGISTERED_READ.o_rd_data*}] 8.0
 set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *u_eth0/net_core/n_rx_link_spd*}]      -to [ get_cells -hier -filter {NAME =~*u_eth0/net_core/n_tx_spd*}] 8.0
 
-set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]       -to [ get_cells -hier -filter {NAME =~ *net_core/preq_rx_reset*}] 8.0
-set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]       -to [ get_cells -hier -filter {NAME =~ *tfrrxspd/a_ack*}] 8.0
-set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]       -to [ get_cells -hier -filter {NAME =~*tfrrxspd/a_pipe*}] 8.0
-set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/r_sys_reset*}]       -to [ get_cells -hier -filter {NAME =~ *tfrrxspd/a_req*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/SAME_CLOCK.r_sys_reset*}]       -to [ get_cells -hier -filter {NAME =~ *net_core/preq_rx_reset*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/SAME_CLOCK.r_sys_reset*}]       -to [ get_cells -hier -filter {NAME =~ *tfrrxspd/a_ack*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/SAME_CLOCK.r_sys_reset*}]       -to [ get_cells -hier -filter {NAME =~*tfrrxspd/a_pipe*}] 8.0
+set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *sdrami/SAME_CLOCK.r_sys_reset*}]       -to [ get_cells -hier -filter {NAME =~ *tfrrxspd/a_req*}] 8.0
 set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/o_net_reset_n_reg*}]   -to [ get_cells -hier -filter {NAME =~ *n_rx_reset*}] 8.0
 set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/o_net_reset_n_reg*}]   -to [ get_cells -hier -filter {NAME =~ *q_rx_reset*}] 8.0
 set_max_delay   -datapath_only -from [get_cells -hier -filter {NAME=~ *net_core/tfrrxspd/b_last*}] -to [ get_cells -hier -filter {NAME =~ *tfrrxspd/a_pipe*}] 8.0

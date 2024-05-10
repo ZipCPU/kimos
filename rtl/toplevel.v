@@ -597,12 +597,14 @@ i_sdcard_cd_n,
 		.DDRWIDTH(64),
 		// .WBDATAWIDTH(512),	// BUS.WIDTH must == 8*DDRWIDTH
 		.DDRAWID(15),
+		.OPT_ASYNC_CLOCKS(1'b0),
 		.RAMABITS(30+1)
 		// }}}
 	) sdrami(
 		// {{{
 		.i_clk(i_clk200_buffered),
 		.i_clk_200mhz(s_clk_200mhz),
+		.i_async_clk(i_clk_buffered),
 		.o_sys_clk(s_clk),
 		// .i_reset(!i_cpu_resetn),
 		// pll_reset is an asynchronous incoming reset.  It does not
