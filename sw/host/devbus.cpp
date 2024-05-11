@@ -103,13 +103,14 @@ DEVBUS	*connect_devbus(const char *ustr) {
 	host = strdup(start);
 	ptr = strchr(host, ':');
 
-	if (NULL == ptr)
+	if (NULL == ptr) {
 #ifdef	UDP_DBGPORT
 		udp_port = (tty_flag) ? UARTDBGPORT : UDP_DBGPORT;
 #else
+fprintf(stderr, "UDP_DBGPORT is not defined\n");
 		udp_port = UARTDBGPORT;
 #endif
-	else {
+	} else {
 		udp_port = atoi(ptr + 1);
 		*ptr = '\0';
 	}

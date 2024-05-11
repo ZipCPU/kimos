@@ -176,7 +176,9 @@ module	netdebug #(
 	reg	[1:0]	ex_gpio;
 
 	wire		cmd_reset, ignored_reset;
-	reg		r_wdt_reset, r_active, null_valid, compress_last;
+	reg		r_wdt_reset, r_active, null_valid, compress_last,
+			past_active;
+
 
 	wire		iword_stb, iword_busy, iword_active;
 	wire	[34:0]	iword_data;
@@ -429,27 +431,35 @@ module	netdebug #(
 	// {{{
 	always @(posedge i_clk)
 	if (i_reset || cmd_reset)
-		{ r_active, null_valid } <= 2'b00;
-	else if (pl_valid
-		|| iword_stb || iword_active
-		|| in_stb || in_active
-		|| bus_busy || exec_stb
-		|| ofifo_valid)
-	begin
-		{ r_active, null_valid } <= 2'b10;
-	end else if (r_active)
-	begin
-		if ((compress_valid || null_valid) && idle_busy)
-		begin
-			// No changes
-		end else if (compress_valid && !compress_active)
-			{ r_active, null_valid } <= 2'b00;
-		else if (!compress_active && !compress_valid)
-			{ r_active, null_valid } <= 2'b01;
-		else
-			{ r_active, null_valid } <= 2'b10;
-	end else if (!idle_busy)
-		{ r_active, null_valid } <= 2'b00;
+		r_active <= 1'b0;
+	else if (pl_valid || iword_stb || iword_active
+			|| in_stb || in_active || bus_busy || exec_stb
+			|| ofifo_valid)
+		r_active <= 1'b1;
+	else
+		r_active <= 1'b0;
+
+	initial	past_active = 1'b0;
+	always @(posedge i_clk)
+	if (i_reset || cmd_reset)
+		past_active <= 1'b0;
+	else if (r_active)
+		past_active <= 1'b1;
+	else if ((compress_valid && !compress_last) || compress_active)
+		past_active <= 1'b1;
+	else
+		past_active <= 1'b0;
+
+	initial	null_valid = 1'b0;
+	always @(posedge i_clk)
+	if (i_reset || cmd_reset)
+		null_valid <= 1'b0;
+	else if (r_active)
+		null_valid <= 1'b0;
+	else if (past_active && !compress_active && !compress_valid)
+		null_valid <= 1'b1;
+	else
+		null_valid <= 1'b0;
 
 	always @(*)
 		compress_last = !r_active && compress_valid && !compress_active;

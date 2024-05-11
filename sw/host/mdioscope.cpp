@@ -4,7 +4,7 @@
 // {{{
 // Project:	KIMOS, a Mercury KX2 demonstration project
 //
-/ Purpose:	
+// Purpose:	
 //
 // Creator:	Dan Gisselquist, Ph.D.
 //		Gisselquist Technology, LLC

@@ -379,7 +379,7 @@ module	sdtxframe #(
 	end
 	// }}}
 
-	function automatic [NCRC-1:0] STEPCRC(reg [NCRC-1:0] prior,
+	function automatic [NCRC-1:0] STEPCRC(input [NCRC-1:0] prior,
 		// {{{
 				input i_bit);
 	begin
@@ -390,7 +390,7 @@ module	sdtxframe #(
 	end endfunction
 	// }}}
 
-	function automatic [NCRC-1:0] APPLYCRC32(reg [NCRC-1:0] prior,
+	function automatic [NCRC-1:0] APPLYCRC32(input [NCRC-1:0] prior,
 		// {{{
 			input [31:0] i_crc_data);
 		integer		ck;
@@ -417,7 +417,7 @@ module	sdtxframe #(
 	end endfunction
 	// }}}
 
-	function automatic [NCRC-1:0] APPLYCRC8(reg [NCRC-1:0] prior,
+	function automatic [NCRC-1:0] APPLYCRC8(input [NCRC-1:0] prior,
 		// {{{
 			input [7:0] i_crc_data);
 		integer		ck;
@@ -430,7 +430,7 @@ module	sdtxframe #(
 	end endfunction
 	// }}}
 
-	function automatic [NCRC-1:0] APPLYCRC4(reg [NCRC-1:0] prior,
+	function automatic [NCRC-1:0] APPLYCRC4(input [NCRC-1:0] prior,
 		// {{{
 			input [3:0] i_crc_data);
 		integer		ck;
@@ -443,7 +443,7 @@ module	sdtxframe #(
 	end endfunction
 	// }}}
 
-	function automatic [NCRC-1:0] APPLYCRC2(reg [NCRC-1:0] prior,
+	function automatic [NCRC-1:0] APPLYCRC2(input [NCRC-1:0] prior,
 		// {{{
 			input [1:0] i_crc_data);
 		integer		ck;

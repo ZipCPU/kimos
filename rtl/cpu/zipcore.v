@@ -1936,6 +1936,7 @@ module	zipcore #(
 
 	generate if (OPT_SIM)
 	begin : ALU_SIM
+`ifndef	YOSYS
 		reg		r_alu_sim;
 		reg	[22:0]	r_alu_sim_immv;
 		wire	[4:0]	regid;
@@ -2212,7 +2213,7 @@ module	zipcore #(
 
 		assign	alu_sim      = r_alu_sim;
 		assign	alu_sim_immv = r_alu_sim_immv;
-
+`endif
 	end else begin : NO_ALU_SIM
 
 		assign	alu_sim = 0;

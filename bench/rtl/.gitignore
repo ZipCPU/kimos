@@ -1,0 +1,7 @@
+mdl_i2c.v
+mdl_sdio.v
+mdl_sdcmd.v
+mdl_sdrx.v
+mdl_sdtx.v
+ddr3.sv
+8192Mb_ddr3_parameters.vh

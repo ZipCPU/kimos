@@ -906,14 +906,19 @@ void	EXBUS::readidle(void) {
 // {{{
 void	EXBUS::sync(void) {
 	int	nr, sync_count;
-	char	syncbuf;
+	char	syncbuf[6];
+
+	syncbuf[0] = 0x61;
+	for(int k=1; k<6; k++)
+		syncbuf[k] = 0x66;
+	m_dev->write(syncbuf, 6);
 
 	DBGPRINTF("Waiting on sync ...\n");
 	sync_count = 0;
 	do {
-		nr = lclreadcode(&syncbuf, 1);
+		nr = lclreadcode(syncbuf, 1);
 		if (nr == 1) {
-			if (0x64 == (syncbuf & 0x64))
+			if (0x64 == (syncbuf[0] & 0x64))
 				sync_count++;
 			else
 				sync_count = 0;

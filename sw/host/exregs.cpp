@@ -226,6 +226,7 @@ int main(int argc, char **argv) {
 			exit(EXIT_FAILURE);
 		}
 
+		gbl_fpgaport = gbl_uart ? UARTDBGPORT : UDP_DBGPORT;
 		portstr = strchr(host, ':');
 		if (portstr) {
 			*portstr++ = '\0';
@@ -233,8 +234,7 @@ int main(int argc, char **argv) {
 				gbl_fpgaport = atoi(portstr);
 		} if (host)
 			gbl_fpgahost = host;
-fprintf(stderr, "Connecting to %s://%s:%d\n", gbl_uart ? "UART":"NET",
-gbl_fpgahost, gbl_fpgaport);
+// fprintf(stderr, "Connecting to %s://%s:%d\n", gbl_uart ? "UART":"NET", gbl_fpgahost, gbl_fpgaport);
 	}
 	// }}}
 
@@ -260,7 +260,7 @@ gbl_fpgahost, gbl_fpgaport);
 		char	comstr[256];
 		sprintf(comstr, "%s://%s:%d", (gbl_uart) ? "UART":"NET",
 				gbl_fpgahost, gbl_fpgaport);
-fprintf(stderr, "Connecting to %s\n", comstr);
+// fprintf(stderr, "Connecting to %s\n", comstr);
 		m_fpga = connect_devbus(comstr);
 	}
 

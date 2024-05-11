@@ -114,6 +114,7 @@
 	wire	[(@$(BUS.WIDTH)-1):0]	@$(PREFIX)_wdata,
 					@$(PREFIX)_rdata;
 	wire	[(@$(BUS.WIDTH)/8-1):0]	@$(PREFIX)_sel;
+	wire	[31:0]			@$(PREFIX)_dbg;
 
 	// }}}
 	// Wires coming back from the SDRAM
@@ -125,9 +126,8 @@
 			@$(PREFIX)_addr, @$(PREFIX)_wdata, @$(PREFIX)_sel,
 			@$(PREFIX)_stall, @$(PREFIX)_ack, @$(PREFIX)_rdata,
 			@$(PREFIX)_err
+			, @$(PREFIX)_dbg
 @TOP.INSERT=
-	wire	[31:0]	@$(PREFIX)_debug;
-
 	// Force VSEL to 1'bz, to make the DDR3 SDRAM operate at 1.5V.
 	assign	o_ddr3_vsel = 1'bz;
 
@@ -170,6 +170,7 @@
 		.o_ddr_odt(ddr3_odt), .o_ddr_dm(ddr3_dm),
 		.io_ddr_dqs_p(ddr3_dqs_p), .io_ddr_dqs_n(ddr3_dqs_n),
 		.io_ddr_data(ddr3_dq)
+		,  .o_ram_dbg(@$(PREFIX)_dbg)
 		// }}}
 	);
  	
@@ -179,6 +180,7 @@
 				o_@$(PREFIX)_addr, o_@$(PREFIX)_data, o_@$(PREFIX)_sel,
 			i_@$(PREFIX)_stall, i_@$(PREFIX)_ack, i_@$(PREFIX)_data,
 			i_@$(PREFIX)_err
+			, i_@$(PREFIX)_dbg
 @MAIN.IODECL=
 	// SDRAM I/O declarations
 	// {{{
@@ -193,6 +195,7 @@
 	input	wire	[(@$(BUS.WIDTH)-1):0]	i_@$(PREFIX)_data;
 	// Verilator lint_off UNUSED
 	input	wire			i_@$(PREFIX)_err;
+	input	wire	[31:0]		i_@$(PREFIX)_dbg;
 	// Verilator lint_on  UNUSED
 	// }}}
 @MAIN.INSERT=

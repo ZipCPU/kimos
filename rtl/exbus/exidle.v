@@ -41,11 +41,12 @@
 module	exidle #(
 		// {{{
 		parameter [0:0]	OPT_IDLE = 1'b1,	// Generate idle msgs
+`ifdef	VERILATOR
 		parameter	SHORT_LGIDLE = 15,
-		// It takes 5 idles to sync and know where you are in the
-		// data stream.  Let's synchronize in 0.4s in h/w, faster in
-		// simulation
-		parameter	LGIDLE = 23
+`else
+		parameter	SHORT_LGIDLE = 17,
+`endif
+		parameter	LGIDLE = 25
 		// }}}
 	) (
 		// {{{

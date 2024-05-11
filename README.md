@@ -126,7 +126,7 @@ additional peripherals may also be implemented as time and necessity allow.
     example, both [ARP](rtl/proto/arp.v) and [ICMP](rtl/proto/icmpecho.v)
     handling have to work automatically and without CPU involvement first.
 
-    STATUS: Needs some more testing, but appears to pass.
+    STATUS: PASS.
 
 9. DDR3 SDRAM memory
 
@@ -136,15 +136,14 @@ additional peripherals may also be implemented as time and necessity allow.
    Once hooked up, the MIG will be subjected to a memory test.  [Portions
    of the test have been drafted already](sw/board/memtest.c).
 
-   Status: FAIL.  Any attempt (at present) to load the design with the
-   SDRAM controller enabled within it will fail to configure the FPGA.
+   Status: PASS.
 
 10. OpenSource DDR3 SDRAM memory
 
    If and when the MIG DDR3 SDRAM test passes, we'll move on to testing
    the [open source DDR3 memory controller](https://github.com/AngeloJacobo/DDR3_Controller).
 
-   STATUS: Pending MIG controller success.
+   STATUS: Pending.
 
 11. Open source place and route
 
@@ -160,7 +159,7 @@ additional peripherals may also be implemented as time and necessity allow.
 
     Can the CPU send and receive packets?
 
-    STATUS: Not yet tested.  Pending on a software driver.
+    STATUS: Not yet tested.  Pending a software driver.
 
 14. [I2C Testing](rtl/wbi2c/wbi2ccpu.v) _(Optional test)_
 
@@ -170,12 +169,11 @@ This project is a work in progress.
 
 The current project status is maintained pictorially [here, in the doc/
 directory](doc/kimos-busblocks.png).  The project has been assembled, and
-several of the initial component tests already pass--as noted above and [in
+several of the key component tests already pass--as noted above and [in
 the diagram](doc/kimos-busblocks.png).
 
-At present, the design is configured to use Xilinx's MIG controller.  Using
-this controller, the design synthesizes, but then doesn't work when loaded.
-If I remove the [SDRAM component--controller and all](autodata/sdram.txt), then
-the design loads fine and several components (see [the
-diagram](doc/kimos-busblocks.png)) can be demonstrated to work.
+At present, the design is configured to use Xilinx's MIG controller.  It
+works in this configuration.  The next step will involve running memory
+performance tests, and then moving from Xilinx's controller to the [open
+source uberDDR3 controller](https://github.com/AngeloJacobo/uberDDR3).
 

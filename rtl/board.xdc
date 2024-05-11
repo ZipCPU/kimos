@@ -367,7 +367,7 @@ set_property -dict {PACKAGE_PIN J8    IOSTANDARD LVCMOS18  } [get_ports {o_zero[
 # set_property -dict {PACKAGE_PIN AC12  IOSTANDARD DIFF_SSTL15} [get_ports {o_ddr3_clk_n}];
 # set_property -dict {PACKAGE_PIN AB12  IOSTANDARD DIFF_SSTL15} [get_ports {o_ddr3_clk_p}];
 # set_property -dict {PACKAGE_PIN AA13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[0]}];	## CKE
-## # set_property -dict {PACKAGE_PIN AF13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[1]}];	## (Demo PRJ file uses this as cke[0], appears WRONG)
+## # set_property -dict {PACKAGE_PIN AF13  IOSTANDARD SSTL15    } [get_ports {o_ddr3_cke[1]}];
 ## set_property -dict {SLEW SLOW PACKAGE_PIN AA3   IOSTANDARD SSTL15    } [get_ports {o_ddr3_vsel}];
 set_property -dict {SLEW SLOW PACKAGE_PIN AA3   IOSTANDARD LVCMOS15    } [get_ports {o_ddr3_vsel}];
 # set_property -dict {PACKAGE_PIN Y12   IOSTANDARD SSTL15    } [get_ports {o_ddr3_cs_n[0]}];
@@ -643,6 +643,7 @@ set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
 ## No XDC.INSERT tag in XDC
 ## No XDC.INSERT tag in mem_bkram_only
 ## No XDC.INSERT tag in mem_flash_bkram
+## No XDC.INSERT tag in wb2axiscope
 ## From sdio
 set_property -dict { PULLTYPE PULLUP } [get_ports io_sdcard_cmd]
 ## From eth0bus

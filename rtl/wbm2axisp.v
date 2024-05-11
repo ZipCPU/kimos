@@ -131,7 +131,10 @@ module wbm2axisp #(
 	output	reg			o_wb_stall,
 	output	reg			o_wb_ack,
 	output	reg	[(DW-1):0]	o_wb_data,
-	output	reg			o_wb_err
+	output	reg			o_wb_err,
+	//
+	// For debugging
+	output	reg	[31:0]		o_dbg
 	// }}}
 );
 	////////////////////////////////////////////////////////////////////////
@@ -210,6 +213,7 @@ module wbm2axisp #(
 	wire	[DW-1:0]	m_data;
 	wire	[DW/8-1:0]	m_sel;
 
+	wire	[2*(LGFIFO+1)-1:0]	fifo_dbg;
 	// }}}
 
 	////////////////////////////////////////////////////////////////////////
@@ -449,6 +453,8 @@ module wbm2axisp #(
 		always @(*)
 			o_wb_err = !flushing&&((i_axi_rvalid && i_axi_rresp[1])
 				||(i_axi_bvalid && i_axi_bresp[1]));
+
+		assign	fifo_dbg = { {((LGFIFO+1)){1'b0}}, npending };
 		// }}}
 	end else begin : READ_FIFO_DATA_SELECT
 	// {{{
@@ -537,9 +543,22 @@ module wbm2axisp #(
 		// ...
 		//
 `endif
+
+		assign	fifo_dbg = { wr_addr, rd_addr };
 	// }}}
 	end endgenerate
 	// }}}
+
+	always @(posedge i_clk)
+		o_dbg <= { (i_wb_stb||o_wb_err), i_reset, 2'b0,	//4b
+				empty, flushing,		// 2b
+			o_axi_awvalid, o_axi_wvalid,
+				i_axi_awready, i_axi_wready,	// 4b
+			i_axi_bvalid,	o_axi_arvalid,
+				i_axi_arready,	i_axi_rvalid,	// 4b
+			i_wb_cyc, i_wb_stb, i_wb_we,		// 3b
+				o_wb_stall, o_wb_ack, o_wb_err,	// 3b
+			fifo_dbg[11:0] };			// 12 bits
 
 	// Read data channel / response logic
 	assign	o_axi_rready = 1'b1;

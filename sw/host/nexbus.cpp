@@ -67,8 +67,8 @@
 #include "nexbus.h"
 // }}}
 
-const	unsigned NEXBUS::MAXRDLEN = 32; // 1024;
-const	unsigned NEXBUS::MAXWRLEN = 32;
+const	unsigned NEXBUS::MAXRDLEN = 256; // 1024;
+const	unsigned NEXBUS::MAXWRLEN = 256;
 const	unsigned NEXBUS::MAXTRIES = 10;
 const	unsigned NEXBUS::PKT_TIMEOUT = 750;
 
@@ -664,6 +664,7 @@ NEXBUS::BUSW	NEXBUS::readword(void) {
 		for(unsigned tries=0; tries < MAXTRIES
 			&&((m_rxframeid != m_frameid)||(m_rxlen < 8)); tries++){
 			// This process will also cull any repeat packets
+			DBGPRINTF("READ-WORD() -- Wrong frame (0x%04x != 0x%04x), try again\n", m_rxframeid & 0x0ffff, m_frameid & 0x0ffff);
 			readpkt(PKT_TIMEOUT);
 		} m_rxpos = 8;
 	}
@@ -738,8 +739,9 @@ NEXBUS::BUSW	NEXBUS::readword(void) {
 				val |= (p[0] & 0x7f) << 28;
 
 				DBGPRINTF("READ-WORD() -- FULL-READ %02x:%02x:%02x:%02x:%02x -- %08x, A=%08x --> TBL[%04x]\n",
-					p[0], p[1], p[2], p[3],
-					p[4], val, m_rxaddr & -2, m_rdaddr);
+					p[0] & 0x07f, p[1] & 0x07f,
+					p[2] & 0x07f, p[3] & 0x07f,
+					p[4] & 0x07f, val, m_rxaddr & -2, m_rdaddr);
 
 				m_readtbl[m_rdaddr++] = val; m_rdaddr &= 0x01ff;
 				m_quiktbl[m_qkaddr++] = val; m_qkaddr &= 3;
@@ -788,7 +790,7 @@ NEXBUS::BUSW	NEXBUS::readword(void) {
 
 
 				DBGPRINTF("READ-WORD() -- SMALL-READ %02x:%02x -- %08x, A=%08x\n",
-					p[0], p[1], val, m_rxaddr & -2);
+					p[0] & 0x07f, p[1] & 0x07f, val, m_rxaddr & -2);
 					m_quiktbl[m_qkaddr++] = val; m_qkaddr &= 3;
 				// }}}
 			} else if ((sbyte & 0x07c) == 0x3c) {
@@ -807,7 +809,7 @@ NEXBUS::BUSW	NEXBUS::readword(void) {
 
 
 				DBGPRINTF("READ-WORD() -- MEDIUM-READ %02x:%02x:%02x -- %08x, A=%08x --> TBL[0x%04x]\n",
-					p[0], p[1], p[2], val,
+					p[0] & 0x07f, p[1] & 0x07f, p[2] & 0x07f, val,
 					m_rxaddr & -2, m_rdaddr);
 
 				m_readtbl[m_rdaddr++] = val; m_rdaddr &= 0x01ff;
@@ -1002,8 +1004,9 @@ void	NEXBUS::readidle(unsigned timeout_ms) {
 				val |= (p[0] & 0x7f) << 28;
 
 				DBGPRINTF("READ-WORD() -- FULL-READ %02x:%02x:%02x:%02x:%02x -- %08x, A=%08x --> TBL[%04x]\n",
-					p[0], p[1], p[2], p[3],
-					p[4], val, m_rxaddr & -2, m_rdaddr);
+					p[0] & 0x07f, p[1] & 0x07f,
+					p[2] & 0x07f, p[3] & 0x07f,
+					p[4] & 0x07f, val, m_rxaddr & -2, m_rdaddr);
 
 				m_readtbl[m_rdaddr++] = val; m_rdaddr &= 0x01ff;
 				m_quiktbl[m_qkaddr++] = val; m_qkaddr &= 3;
@@ -1052,7 +1055,7 @@ void	NEXBUS::readidle(unsigned timeout_ms) {
 
 
 				DBGPRINTF("READ-WORD() -- SMALL-READ %02x:%02x -- %08x, A=%08x\n",
-					p[0], p[1], val, m_rxaddr & -2);
+					p[0] & 0x7f, p[1] & 0x7f, val, m_rxaddr & -2);
 					m_quiktbl[m_qkaddr++] = val; m_qkaddr &= 3;
 				// }}}
 				} else if ((sbyte & 0x07c) == 0x3c) {
@@ -1071,7 +1074,7 @@ void	NEXBUS::readidle(unsigned timeout_ms) {
 
 
 				DBGPRINTF("READ-WORD() -- MEDIUM-READ %02x:%02x:%02x -- %08x, A=%08x --> TBL[0x%04x]\n",
-					p[0], p[1], p[2], val,
+					p[0]&0x7f, p[1]&0x7f, p[2]&0x7f, val,
 					m_rxaddr & -2, m_rdaddr);
 
 				m_readtbl[m_rdaddr++] = val; m_rdaddr &= 0x01ff;
@@ -1228,7 +1231,7 @@ unsigned	NEXBUS::readpkt(unsigned timeout_ms) {
 
 		// Cull any repeat packets
 		// {{{
-		rxframe = ((m_rdbuf[0] && 0x0ff) << 8) | (m_rdbuf[1] & 0x0ff);
+		rxframe = ((m_rdbuf[0] & 0x0ff) << 8) | (m_rdbuf[1] & 0x0ff);
 		if (rxframe == m_rxframeid) {
 			if (m_rxframeid == 0 && m_frameid == 0)
 				DBGPRINTF("SYNC PACKET RETURN\n");
@@ -1237,7 +1240,8 @@ unsigned	NEXBUS::readpkt(unsigned timeout_ms) {
 					m_rdbuf[0] & 0x0ff, m_rdbuf[1]&0x0ff);
 				return 0;
 			}
-		}
+		} m_rxframeid = rxframe;
+		DBGPRINTF("RECEIVED FRAME: %04x\n", m_rxframeid);
 		// }}}
 
 		// Remove any console characters from the received payload

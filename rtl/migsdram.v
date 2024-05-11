@@ -96,10 +96,10 @@ module	migsdram #(
 		output	wire	[(DDRWIDTH/8-1):0]	o_ddr_dm,
 		inout	wire	[(DDRWIDTH/8)-1:0]	io_ddr_dqs_p,
 							io_ddr_dqs_n,
-		inout	wire	[(DDRWIDTH-1):0]	io_ddr_data
+		inout	wire	[(DDRWIDTH-1):0]	io_ddr_data,
 		// }}}
 		// Debug connection (unused)
-		// output	wire	[31:0]			o_ram_dbg
+		output	wire	[31:0]			o_ram_dbg
 		// }}}
 	);
 
@@ -199,7 +199,7 @@ module	migsdram #(
 	wire		app_sr_active, app_ref_ack, app_zq_ack;
 	wire		app_sr_req, app_ref_req, app_zq_req;
 	wire		w_sys_reset;
-	// wire	[11:0]	w_device_temp;
+	wire	[11:0]	w_device_temp;
 	// }}}
 
 	generate if (OPT_ASYNC_CLOCKS)
@@ -322,7 +322,7 @@ module	migsdram #(
 		// {{{
 		initial	r_sys_reset = 1'b1;
 		always @(posedge o_sys_clk)
-			r_sys_reset <= (w_sys_reset ^ ACTIVE_LOW_MIG_RESET)
+			r_sys_reset <= (w_sys_reset)
 					||(!init_calib_complete)
 					||(!mmcm_locked);
 		// }}}
@@ -351,7 +351,7 @@ module	migsdram #(
 		assign	s_axi_wstrb  = xclk_wstrb;
 		assign	s_axi_wlast  = xclk_wlast;
 
-		assign	xclk_bvalid  = s_axi_rvalid;
+		assign	xclk_bvalid  = s_axi_bvalid;
 		assign	s_axi_bready = xclk_bready;
 		assign	xclk_bid     = s_axi_bid;
 		assign	xclk_bresp   = s_axi_bresp;
@@ -382,7 +382,7 @@ module	migsdram #(
 		// {{{
 		initial	r_sys_reset = 1'b1;
 		always @(posedge o_sys_clk)
-			r_sys_reset <= (w_sys_reset ^ ACTIVE_LOW_MIG_RESET)
+			r_sys_reset <= (w_sys_reset)
 					||(!init_calib_complete)
 					||(!mmcm_locked);
 
@@ -447,7 +447,7 @@ module	migsdram #(
 		.s_axi_rlast(s_axi_rlast),	.s_axi_rvalid(s_axi_rvalid),
 		.init_calib_complete(init_calib_complete),
 		.sys_rst(i_reset ^ ACTIVE_LOW_MIG_RESET)
-		// , .device_temp_i(12'h0), .device_temp(w_device_temp)
+		, .device_temp_i(12'h0), .device_temp(w_device_temp)
 		// }}}
 	);
 
@@ -515,9 +515,9 @@ module	migsdram #(
 			.o_wb_stall(	o_wb_stall),
 			.o_wb_ack(	o_wb_ack),
 			.o_wb_data(	o_wb_data),
-			.o_wb_err(	o_wb_err)
+			.o_wb_err(	o_wb_err),
 		//
-			// , .o_dbg(	o_ram_dbg)
+			.o_dbg(	o_ram_dbg)
 		// }}}
 	);
 

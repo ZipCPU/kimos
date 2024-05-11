@@ -89,6 +89,9 @@ const	char	*gbl_fpgahost = FPGAHOST;
 int		gbl_fpgaport = FPGAPORT;
 bool		gbl_uart = true;
 
+// #define	MEM_ADDR	R_BKRAM
+#define	MEM_ADDR	R_SDRAM
+
 int main(int argc, char **argv) {
 	const	unsigned NLEN = 768;
 	char	*kimos_env;
@@ -125,6 +128,7 @@ int main(int argc, char **argv) {
 			exit(EXIT_FAILURE);
 		}
 
+		gbl_fpgaport = gbl_uart ? UARTDBGPORT : UDP_DBGPORT;
 		portstr = strchr(host, ':');
 		if (portstr) {
 			*portstr++ = '\0';
@@ -192,23 +196,23 @@ gbl_fpgahost, gbl_fpgaport);
 
 		// Write this data to the device
 		printf("\tWRITE"); fflush(stdout);
-		m_fpga->writei(R_BKRAM, NLEN, testbuf);
+		m_fpga->writei(MEM_ADDR, NLEN, testbuf);
 		// Write it again, this time with an offset
 		printf(", WRITE"); fflush(stdout);
-		m_fpga->writei(R_BKRAM + 4*offset, NLEN, testbuf);
+		m_fpga->writei(MEM_ADDR + 4*offset, NLEN, testbuf);
 		// Now, read both back
 		printf(", READ"); fflush(stdout);
-		m_fpga->readi(R_BKRAM, NLEN + offset, checkbuf);
+		m_fpga->readi(MEM_ADDR, NLEN + offset, checkbuf);
 		// ... and compare the result
 		printf(", CHECK\n"); fflush(stdout);
 		for(unsigned k=0; k<offset; k++) {
 			if (checkbuf[k] != testbuf[k]) {
-				printf("RD-ERR: @0x%08x -- CHECK[%d]=%08x != 0x%08x (expected)\n", R_BKRAM + k, k, checkbuf[k], testbuf[k]);
+				printf("RD-ERR: @0x%08x -- CHECK[%d]=%08x != 0x%08x (expected)\n", MEM_ADDR + k, k, checkbuf[k], testbuf[k]);
 				passed = false;
 			}
 		} for(unsigned k=0; k<NLEN; k++) {
 			if (checkbuf[offset+k] != testbuf[k]) {
-				printf("RD-ERR: @0x%08x -- CHECK[%d+%d]=%08x != 0x%08x (expected)\n", R_BKRAM + offset + k, offset, k, checkbuf[offset+k], testbuf[k]);
+				printf("RD-ERR: @0x%08x -- CHECK[%d+%d]=%08x != 0x%08x (expected)\n", MEM_ADDR + offset + k, offset, k, checkbuf[offset+k], testbuf[k]);
 				passed = false;
 			}
 		}
@@ -224,10 +228,10 @@ gbl_fpgahost, gbl_fpgaport);
 			ovbuf[offset+k] = testbuf[k];
 
 		printf("\tWRITE"); fflush(stdout);
-		m_fpga->writei(R_BKRAM, NLEN + offset, ovbuf);
+		m_fpga->writei(MEM_ADDR, NLEN + offset, ovbuf);
 		// Now, read both back
 		printf(", READ"); fflush(stdout);
-		m_fpga->readi(R_BKRAM, NLEN + offset, checkbuf);
+		m_fpga->readi(MEM_ADDR, NLEN + offset, checkbuf);
 		// ... and compare the result
 		printf(", CHECK\n"); fflush(stdout);
 		for(unsigned k=0; k<NLEN+offset; k++) {
@@ -240,16 +244,16 @@ gbl_fpgahost, gbl_fpgaport);
 	// }}}
 
 	if (passed)
-		m_fpga->writei(R_BKRAM, NLEN, testbuf);
+		m_fpga->writei(MEM_ADDR, NLEN, testbuf);
 	for(unsigned offset=0; (offset + 8 < NLEN) && passed; offset++) {
 		// {{{
 		printf("Address check, testing offset  %d\n", offset);
 
 		// Now, read both back
 		printf("\tREAD"); fflush(stdout);
-		m_fpga->readi(R_BKRAM, 2, checkbuf);
+		m_fpga->readi(MEM_ADDR, 2, checkbuf);
 		printf(", READ"); fflush(stdout);
-		m_fpga->readi(R_BKRAM + 4*offset, 8, &checkbuf[2]);
+		m_fpga->readi(MEM_ADDR + 4*offset, 8, &checkbuf[2]);
 		// ... and compare the result
 		printf(", CHECK\n"); fflush(stdout);
 		for(unsigned k=0; k<2; k++) {
