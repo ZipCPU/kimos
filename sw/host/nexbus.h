@@ -87,7 +87,7 @@ private:
 		m_buflen = 8192; m_buf = new char[8192];
 		m_txaddr_set = false;
 		m_rxaddr_set = false;
-		bufalloc(64);
+		bufalloc(2048);
 		m_bus_err = false;
 		m_decode_err = false;
 		m_wrloaded = false;

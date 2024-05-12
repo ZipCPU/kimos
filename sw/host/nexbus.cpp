@@ -233,10 +233,11 @@ void	NEXBUS::writev(const BUSW a, const int p, const int len, const BUSW *buf) {
 		// {{{
 		// This is important if any packets get dropped, at least each
 		// packet can then be (somewhat) independent.
-		ptr = begin_packet(a + (p ? nw:0), p);
+		ptr = begin_packet(a + (p ? (4*nw):0), p);
 		// }}}
 
 		for(int i=0; i<ln; i++) { // Encode each word to be written
+			// {{{
 			BUSW	val = buf[nw+i];
 			int	ival = (int)val;
 
@@ -296,6 +297,7 @@ void	NEXBUS::writev(const BUSW a, const int p, const int len, const BUSW *buf) {
 			}
 
 			if (p == 1) m_txaddr += 4;
+			// }}}
 		}
 
 		// *ptr = '\0';	// Not needed, since we don't use strlen()
@@ -584,6 +586,8 @@ void	NEXBUS::readv(const NEXBUS::BUSW a, const int inc, const int len, NEXBUS::B
 				nrd = READBLOCK;
 			ptr = readcmd(nrd, ptr);
 			cmdrd += nrd;
+			if (inc)
+				m_txaddr += 4*nrd;
 
 			DBGPRINTF("TX/R PKT: ");
 			for(char *tp=m_buf; tp<ptr; tp++)
@@ -684,8 +688,8 @@ NEXBUS::BUSW	NEXBUS::readword(void) {
 	// Look for the start of the data packet
 	// {{{
 	do {
-		DBGPRINTF("READWORD: -- lclreadcode, m_rdbuf[%3d] = %02x\n",
-			m_rxpos, m_rdbuf[m_rxpos]);
+		DBGPRINTF("READWORD: -- lclreadcode, m_rdbuf[%3d] = 0x%02x\n",
+			m_rxpos, m_rdbuf[m_rxpos] & 0x07f);
 
 		// Read the rest of the return word.  This is necessary
 		//   to keep us synchronized
@@ -719,7 +723,7 @@ NEXBUS::BUSW	NEXBUS::readword(void) {
 				if (sbyte & 0x01)
 					m_interrupt_flag = true;
 				break;
-			}
+			} m_rxpos++;
 
 			// Otherwise ignore any Idle's (for now)
 			continue;
@@ -822,7 +826,8 @@ NEXBUS::BUSW	NEXBUS::readword(void) {
 
 			return val;
 		} else if ((sbyte & 0x060) == 0x40) {
-			// Write acknowledgment -- ignore it here
+			// Write acknowledgment
+			m_rxpos++;	// Advance the ACK pointer
 			if (m_rxaddr_set && (m_rxaddr & 1))
 				m_rxaddr += (1+(sbyte & 0x1f)) * 4;
 		} else if ((sbyte & 0x060) == 0x00) {

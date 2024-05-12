@@ -167,7 +167,7 @@ module	netdebug #(
 	// Local declarations
 	// {{{
 	// localparam	LGINPUT_FIFO  = 4;
-	localparam	LGOUTPUT_FIFO = 4;
+	localparam	LGOUTPUT_FIFO = 8;
 
 	// Incoming packet payload processing
 	wire		pl_valid, pl_busy, pl_ready, pl_last;
