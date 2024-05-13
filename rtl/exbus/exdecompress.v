@@ -128,8 +128,8 @@ module	exdecompress #(
 		if (OPT_LOWPOWER && i_word[34:33] != 2'b01)
 			write_lookup_addr <= 0;
 		else case(i_word[30])
-		1'b0:write_lookup_addr<= { 8'hff, ~i_word[29:28] } + write_addr;
-		1'b1:write_lookup_addr<= { 1'b1,  ~i_word[29:21] } + write_addr;
+		1'b0:write_lookup_addr<= { 8'hff, ~i_word[29:28] } + write_addr + (write_to_table ? 1:0);
+		1'b1:write_lookup_addr<= { 1'b1,  ~i_word[29:21] } + write_addr + (write_to_table ? 1:0);
 		endcase
 	end
 	// }}}

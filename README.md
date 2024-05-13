@@ -143,7 +143,7 @@ additional peripherals may also be implemented as time and necessity allow.
    If and when the MIG DDR3 SDRAM test passes, we'll move on to testing
    the [open source DDR3 memory controller](https://github.com/AngeloJacobo/DDR3_Controller).
 
-   STATUS: Pending.
+   STATUS: Pending.  (Up next for testing ...)
 
 11. Open source place and route
 
@@ -153,7 +153,7 @@ additional peripherals may also be implemented as time and necessity allow.
 
     Requires both the CPU and memory
 
-    STATUS: Not yet tested.  (Waiting on memory.)
+    STATUS: Cleared for testing, tests not started.
 
 13. Network CPU Access _(Optional test)_
 
@@ -169,7 +169,7 @@ This project is a work in progress.
 
 The current project status is maintained pictorially [here, in the doc/
 directory](doc/kimos-busblocks.png).  The project has been assembled, and
-several of the key component tests already pass--as noted above and [in
+all of the key component tests pass--as noted above and [in
 the diagram](doc/kimos-busblocks.png).
 
 At present, the design is configured to use Xilinx's MIG controller.  It

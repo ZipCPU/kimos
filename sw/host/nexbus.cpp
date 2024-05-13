@@ -70,7 +70,7 @@
 const	unsigned NEXBUS::MAXRDLEN = 256; // 1024;
 const	unsigned NEXBUS::MAXWRLEN = 256;
 const	unsigned NEXBUS::MAXTRIES = 10;
-const	unsigned NEXBUS::PKT_TIMEOUT = 750;
+const	unsigned NEXBUS::PKT_TIMEOUT = 3000;
 
 // Debug DBGPRINTF infrastructure
 // {{{
@@ -696,7 +696,7 @@ NEXBUS::BUSW	NEXBUS::readword(void) {
 		unsigned	sbyte, rdaddr;
 
 		sbyte = m_rdbuf[m_rxpos];
-		DBGPRINTF("Read-rest from %02x\n", sbyte & 0x0ff);
+		DBGPRINTF("Read-rest from %02x @%3d\n", sbyte & 0x0ff, m_rxpos);
 
 		if ((sbyte & 0x060) == 0x60) {
 			// Specials
@@ -962,7 +962,7 @@ void	NEXBUS::readidle(unsigned timeout_ms) {
 			unsigned	sbyte, rdaddr;
 
 			sbyte = m_rdbuf[m_rxpos];
-			DBGPRINTF("Read-rest from %02x\n", sbyte & 0x0ff);
+			DBGPRINTF("Read-rest #2 from %02x @%3d\n", sbyte & 0x0ff, m_rxpos);
 
 			if ((sbyte & 0x060) == 0x60) {
 			// Specials
@@ -989,7 +989,7 @@ void	NEXBUS::readidle(unsigned timeout_ms) {
 				if (sbyte & 0x01)
 					m_interrupt_flag = true;
 				break;
-			}
+			} m_rxpos++;
 
 			// Otherwise ignore any Idle's (for now)
 			continue;
@@ -1093,6 +1093,7 @@ void	NEXBUS::readidle(unsigned timeout_ms) {
 				// return val;
 			} else if ((sbyte & 0x060) == 0x40) {
 				// Write acknowledgment -- ignore it here
+				m_rxpos++;
 				if (m_rxaddr_set && (m_rxaddr & 1))
 					m_rxaddr += (1+(sbyte & 0x1f)) * 4;
 			} else if ((sbyte & 0x060) == 0x00) {
@@ -1202,7 +1203,7 @@ unsigned	NEXBUS::readpkt(unsigned timeout_ms) {
 	DBGPRINTF("READ-PKT\n");
 
 	if (m_rxlen >= 8) {
-		rxframe = ((m_rdbuf[0] && 0x0ff) << 8) | (m_rdbuf[1] & 0x0ff);
+		rxframe = ((m_rdbuf[0] & 0x0ff) << 8) | (m_rdbuf[1] & 0x0ff);
 		if ((rxframe == m_frameid)&&(m_frameid != 0)) {
 			DBGPRINTF("NOT DONE: Frame IDs %04x %04x match! RxLen = %d\n", rxframe, m_frameid, m_rxlen);
 			// We already have the packet we need.  Don't waste our
