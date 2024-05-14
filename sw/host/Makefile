@@ -56,7 +56,7 @@ all:
 ## {{{
 CXX := g++
 OBJDIR := obj-pc
-SCOPES := flashscope mdioscope wb2axiscope
+SCOPES := flashscope mdioscope wb2axiscope sdioscope
 SCOPESRCS := $(addsuffix .cpp,$(SCOPES))
 BUSSRCS   := exbus.cpp devbus.cpp regdefs.cpp llcomms.cpp byteswap.cpp flashdrvr.cpp nexbus.cpp udpsocket.cpp
 BUSOBJS   := $(addprefix $(OBJDIR)/,$(subst .cpp,.o,$(BUSSRCS)))
@@ -98,6 +98,8 @@ flashscope: $(OBJDIR)/flashscope.o $(OBJDIR)/scopecls.o $(BUSOBJS)
 flashid: $(OBJDIR)/flashid.o $(BUSOBJS)
 	$(CXX) $(CFLAGS) $^ -o $@
 mdioscope: $(OBJDIR)/mdioscope.o $(OBJDIR)/scopecls.o $(BUSOBJS)
+	$(CXX) $(CFLAGS) $^ -o $@
+sdioscope: $(OBJDIR)/sdioscope.o $(OBJDIR)/scopecls.o $(BUSOBJS)
 	$(CXX) $(CFLAGS) $^ -o $@
 wb2axiscope: $(OBJDIR)/wb2axiscope.o $(OBJDIR)/scopecls.o $(BUSOBJS)
 	$(CXX) $(CFLAGS) $^ -o $@

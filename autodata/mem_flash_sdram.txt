@@ -66,7 +66,7 @@ SECTIONS
 		}> bkram AT> flash
 	_kram_end = .;
        _ram_image_start = . ;
-       .kernel : ALIGN_WITH_INPUT {
+       .text : ALIGN_WITH_INPUT {
                *(.text*)
                *(.rodata*) *(.strings)
                *(.data) *(COMMON)

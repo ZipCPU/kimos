@@ -78,9 +78,9 @@ typedef	uint16_t WORD;
 typedef	uint32_t DWORD, LBA_t, UINT;
 #include <diskio.h>
 #include "board.h"
+#include "zipcpu.h"
 #ifdef	INCLUDE_DMA_CONTROLLER
 #include "zipsys.h"
-#include "zipcpu.h"
 #endif
 #include "sdiodrv.h"
 
@@ -95,6 +95,14 @@ typedef	uint32_t DWORD, LBA_t, UINT;
 // extern	void	txstr(const char *);
 // extern	void	txhex(unsigned);
 // extern	void	txdecimal(int);
+#endif
+
+#ifdef	_BOARD_HAS_SDIOSCOPE
+#define	SET_SCOPE	_sdioscope->s_ctrl = 0x04000020;
+#define	TRIGGER_SCOPE	_sdioscope->s_ctrl = 0xff000020;
+#else
+#define	SET_SCOPE
+#define	TRIGGER_SCOPE
 #endif
 
 static	const int	SDINFO = 1, SDDEBUG=1, SDEXTDMA=0;
@@ -133,6 +141,10 @@ static	const	uint32_t
 		SDIO_DMA      = 0x00002000,
 		SDIO_CMDBUSY  = 0x00004000,
 		SDIO_ERR      = 0x00008000,
+		SDIO_CMDTMOUT = 0x00000000,
+		SDIO_CMDEOKAY = 0x00010000,
+		SDIO_CMDCRCER = 0x00020000,
+		SDIO_CMDFRMER = 0x00030000,
 		SDIO_CMDECODE = 0x00030000,
 		SDIO_REMOVED  = 0x00040000,
 		SDIO_PRESENTN = 0x00080000,
@@ -386,7 +398,7 @@ uint32_t sdio_send_op_cond(SDIODRV *dev, uint32_t opcond) { // ACMD41
 
 	dev->d_OCR = r;
 	if (SDDEBUG && SDINFO) {
-		txstr("CMD8:    SEND_OP_COND : "); txhex(opcond); txstr("\n");
+		txstr("ACMD41:  SEND_OP_COND : "); txhex(opcond); txstr("\n");
 		txstr("  Cmd:     "); txhex(c); txstr("\n");
 		txstr("  Data:    "); txhex(r); txstr("\n");
 	}
@@ -1010,12 +1022,16 @@ int	sdio_read_block(SDIODRV *dev, uint32_t sector, uint32_t *buf){// CMD 17
 
 SDIODRV *sdio_init(SDIO *dev) {
 	// {{{
-	unsigned	ifcond, op_cond;
+	unsigned	ifcond, op_cond, hcs;
 	SDIODRV	*dv = (SDIODRV *)malloc(sizeof(SDIODRV));
+	unsigned op_cond_query;
+
 	dv->d_dev = dev;
 	dv->d_RCA = 0;
 	dv->d_sector_count = 0;
 	dv->d_block_size   = 0;
+
+	SET_SCOPE;
 
 	// NEW_MUTEX;
 	GRAB_MUTEX;
@@ -1026,24 +1042,47 @@ SDIODRV *sdio_init(SDIO *dev) {
 
 	sdio_go_idle(dv);
 	ifcond = sdio_send_if_cond(dv,0x01a5);
-	if (0x08000 == (dv->d_dev->sd_cmd & 0x038000)) {
-		do {
-			op_cond = 0;
-			op_cond = sdio_send_op_cond(dv, op_cond);
-		} while(0 == (op_cond & 0x80000000));
-	} else {
-		if (0xa5 != (ifcond & 0x0ff)) {
+
+	hcs = dv->d_dev->sd_cmd;
+	if (8 != (hcs & 0x80ff)) {
+		TRIGGER_SCOPE;
+		RELEASE_MUTEX;
+
+		txstr("SDIO ERROR: IFCOND not acknowledged ");
+		txhex(hcs); txstr("\n");
+		free(dv);
+		return NULL;
+	} else if (0xa5 != (ifcond & 0x0ff)) {
+		TRIGGER_SCOPE;
+		RELEASE_MUTEX;
+
+		txstr("SDIO ERROR: IFCOND returned ");
+		txhex(ifcond); txstr("\n");
+		free(dv);
+		return NULL;
+	}
+
+	hcs = 1;
+
+	{
+		// Query potential voltage options
+		op_cond_query = 0;
+		op_cond_query = sdio_send_op_cond(dv, op_cond_query);
+
+		op_cond_query &= 0x40ff8000;
+		if (0 == (op_cond_query & 0x0ff8000)) {
+			// No compatible voltages found
+			TRIGGER_SCOPE;
 			RELEASE_MUTEX;
 
-			txstr("SDIO ERROR: IFCOND returned ");
-			txhex(ifcond); txstr("\n");
+			txstr("SDIO ERROR: SEND-OP-COND Query returned ");
+			txhex(op_cond_query); txstr("\n");
 			free(dv);
 			return NULL;
 		}
 
 		do {
-			op_cond = 0x40ff8000;
-			op_cond = sdio_send_op_cond(dv, op_cond);
+			op_cond = sdio_send_op_cond(dv, op_cond_query);
 		} while(0 == (op_cond & 0x80000000));
 	} if (SDINFO)
 		sdio_dump_ocr(dv);
@@ -1315,6 +1354,12 @@ int	sdio_read(SDIODRV *dev, const unsigned sector,
 	unsigned	st = 0;
 	unsigned	err=0, dev_stat, card_stat, phy, cmd;
 
+
+	if (SDDEBUG) {
+		printf("SDIO-READ(%08x, %08x, %08x):\n",
+			sector, count, buf);
+	}
+
 	if (0 == count)
 		return RES_OK;
 
@@ -1437,9 +1482,11 @@ int	sdio_read(SDIODRV *dev, const unsigned sector,
 		// If the card has an error, return an error status
 		err = 1;
 
-	if (err)
+	if (err) {
+		if (SDDEBUG)
+			printf("SDIO-READ -> ERR\n");
 		return RES_ERROR;
-	return RES_OK;
+	} return RES_OK;
 }
 // }}}
 

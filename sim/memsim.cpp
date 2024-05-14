@@ -46,21 +46,21 @@
 //
 // }}}
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 #include <assert.h>
 #include "memsim.h"
 #include "byteswap.h"
 
-const int	MEMSIM::NWRDWIDTH = 4;
-// const int	MEMSIM::NWRDWIDTH = 1;
+const int	MEMSIM::NWRDWIDTH = 16;
 
-MEMSIM::MEMSIM(const unsigned int nwords, const unsigned int delay) {
+MEMSIM::MEMSIM(const unsigned int nbytes, const unsigned int delay) {
 	// {{{
 	unsigned int	nxt;
-	for(nxt=1; nxt < nwords*NWRDWIDTH; nxt<<=1)
+	for(nxt=1; nxt < nbytes; nxt<<=1)
 		;
-	m_len = nxt; m_mask = nxt-1;
+	m_len = nxt >> 2; m_mask = nxt-1;
 	m_mem = new BUSW[m_len];
 
 	m_delay = delay;
@@ -118,13 +118,14 @@ void	MEMSIM::load(const unsigned int addr, const char *buf, const size_t len) {
 // }}}
 
 void	MEMSIM::apply(const uchar wb_cyc, const uchar wb_stb, const uchar wb_we,
-		const BUSW wb_addr, const uint32_t *wb_data, const short wb_sel,
+		const BUSW wb_addr, const uint32_t *wb_data, const uint64_t wb_sel,
 		unsigned char &o_stall, unsigned char &o_ack, uint32_t *o_data){
+	// {{{
 	unsigned	sel = 0, addr = wb_addr*NWRDWIDTH;
 	const uint32_t	*sp = &wb_data[NWRDWIDTH-1];
 	uint32_t	*dp = &o_data[NWRDWIDTH-1];
-	uint32_t	wbsel = ((unsigned)wb_sel)&0x0ffff;
-	bool		DEBUG = false;
+	uint64_t	wbsel = ((uint64_t)wb_sel);//&0xfffffffffffffffful;
+	bool		DEBUG = true;
 
 	if (!wb_cyc) {
 		// {{{
@@ -143,11 +144,11 @@ void	MEMSIM::apply(const uchar wb_cyc, const uchar wb_stb, const uchar wb_we,
 		m_cleared = false;
 
 	if ((DEBUG)&&(wb_stb)&&(wb_we)) {
-		printf("MEMSIM::WR[%08x]&%0*x: <- ", addr * NWRDWIDTH,
+		// {{{
+		printf("MEMSIM::WR[%08x]&%0*lx: <- ", addr,
 				(NWRDWIDTH*32/8/4),wbsel);
 		for(unsigned k=0; k<NWRDWIDTH; k++)
-			printf("%08x%s",
-				wb_data[(NWRDWIDTH-1)-k],
+			printf("%08x%s", wb_data[(NWRDWIDTH-1)-k],
 				(k<NWRDWIDTH-1)?":":"");
 
 		printf("\n");
@@ -171,7 +172,7 @@ void	MEMSIM::apply(const uchar wb_cyc, const uchar wb_stb, const uchar wb_we,
 
 		if (wb_we) { for(unsigned k=0; k<NWRDWIDTH; k++) {
 
-			unsigned dsel  = ((unsigned)wbsel)>>((NWRDWIDTH-1-k)*4);
+			unsigned dsel  = ((uint64_t)wbsel)>>((NWRDWIDTH-1-k)*4);
 			dsel &= 0x0f;
 
 			if ((dsel&0x0f)==0x0f) {
@@ -226,6 +227,7 @@ void	MEMSIM::apply(const uchar wb_cyc, const uchar wb_stb, const uchar wb_we,
 		}} else { for(unsigned k=0; k<NWRDWIDTH; k++) {
 			// if (!wb_we)
 			m_fifo_data[m_head*NWRDWIDTH + k] = m_mem[(addr+k) & m_mask];
+			if (DEBUG && !wb_we) { printf("MEMBUS-RD[%08x + %d & %08x] = %08x\n", addr, k, m_mask, m_fifo_data[m_head*NWRDWIDTH+k]); }
 		}}
 
 		if (DEBUG) {

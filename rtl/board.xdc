@@ -7,17 +7,15 @@ set_property BITSTREAM.CONFIG.OVERTEMPPOWERDOWN ENABLE [current_design]
 set_property BITSTREAM.CONFIG.UNUSEDPIN PULLNONE [current_design]
 
 # set_property -dict {PACKAGE_PIN AD24  IOSTANDARD LVCMOS18  } [get_ports {CLK_100_CAL}]
-## set_property DCI_CASCADE {32 33} [get_iobanks 34]
-set_property DCI_CASCADE {32} [get_iobanks 34]
+set_property DCI_CASCADE {32 33} [get_iobanks 34]
 ## For a 1.5V memory, the appropriate VREF voltage is half of 1.5, or 0.75 Volts
 ##  Of the DDR3 bank(s), only bank 33 needs the INTERNAL_VREF.  The other DDR3
 ##  banks are explicitly connected to an external VREF signal.  However, bank
 ##  33s IOs are overloaded--there was no room for the VREF.  Hence, to spare
 ##  two pins, bank 33 uses an internal voltage reference.  Sadly, the same
 ##  problem plays out in banks 12-16 as well.
-## set_property INTERNAL_VREF 0.750 [get_iobanks 32]
 set_property INTERNAL_VREF 0.750 [get_iobanks 33]
-## set_property INTERNAL_VREF 0.750 [get_iobanks 34]
+## Other IO banks have internal VREFs as well, those these aren't as critical
 set_property INTERNAL_VREF 0.90 [get_iobanks 12]
 set_property INTERNAL_VREF 0.60 [get_iobanks 13]
 set_property INTERNAL_VREF 0.90 [get_iobanks 14]
@@ -656,6 +654,7 @@ set_max_delay -datapath_only -from [get_cells -hier -filter {NAME=~ thedesign/u_
 ## No XDC.INSERT tag in zip_alt_mpc
 ## No XDC.INSERT tag in wbu
 ## No XDC.INSERT tag in version
+## No XDC.INSERT tag in sdioscope
 ## From eth0
 create_clock -period 8.0 -name ETH0RX -waveform { 0.0 4.0 } -add [get_ports {i_eth0_rx_clk} ];
 

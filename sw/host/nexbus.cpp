@@ -70,7 +70,7 @@
 const	unsigned NEXBUS::MAXRDLEN = 256; // 1024;
 const	unsigned NEXBUS::MAXWRLEN = 256;
 const	unsigned NEXBUS::MAXTRIES = 10;
-const	unsigned NEXBUS::PKT_TIMEOUT = 3000;
+const	unsigned NEXBUS::PKT_TIMEOUT = 500;
 
 // Debug DBGPRINTF infrastructure
 // {{{
