@@ -153,7 +153,7 @@ additional peripherals may also be implemented as time and necessity allow.
 
     Requires both the CPU and memory
 
-    STATUS: Cleared for testing, tests not started.
+    STATUS: Pass.
 
 13. Network CPU Access _(Optional test)_
 

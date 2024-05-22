@@ -145,8 +145,9 @@ module	sdio #(
 		input	wire		S_AC_VALID,
 		input	wire	[1:0]	S_AC_DATA,
 		input	wire		S_AD_VALID,
-		input	wire	[31:0]	S_AD_DATA
+		input	wire	[31:0]	S_AD_DATA,
 		// }}}
+		output	reg	[31:0]	o_debug
 		// }}}
 	);
 
@@ -183,6 +184,7 @@ module	sdio #(
 	wire	[MW/8-1:0]	rx_mem_strb;
 	wire	[MW-1:0]	rx_mem_data;
 	wire			rx_done, rx_err, rx_ercode, rx_active, rx_en;
+	wire	[31:0]		w_debug;
 
 	// DMA declarations
 	// {{{
@@ -292,11 +294,20 @@ module	sdio #(
 		.i_card_busy(i_card_busy),
 		.o_hwreset_n(o_hwreset_n),
 		.o_1p8v(o_1p8v),
-		.o_int(o_int)
+		.o_int(o_int),
+		.o_debug(w_debug)
 		// }}}
 	);
 
 	assign	o_rx_en = rx_en && rx_active;
+
+	always @(*)
+	begin
+		o_debug = w_debug;
+		o_debug[15:12] = {o_dma_stb, i_dma_stall, i_dma_err, i_dma_ack};
+		if (o_dma_cyc)
+			o_debug[11:0] = o_dma_addr[11:0];
+	end
 
 	sdckgen
 	u_clkgen (
@@ -500,4 +511,3 @@ module	sdio #(
 	// verilator coverage_on
 	// }}}
 endmodule
-

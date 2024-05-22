@@ -431,10 +431,12 @@ module	main(i_clk, i_reset,
 	wire	i2cdma_ready;
 	// SDIO SD Card definitions
 	// Verilator lint_off UNUSED
+	wire	[31:0]	w_sdio_sub_debug;
 	wire		w_sdio_1p8v, s_sdio_ready,
 			m_sdio_valid, m_sdio_last;
-	wire	[31:0]	sdio_debug, m_sdio_data;
-	assign		sdio_debug = i_sdio_debug;
+	reg	[31:0]	sdio_debug;
+	wire	[31:0]	m_sdio_data;
+	// assign		sdio_debug = i_sdio_debug;
 	// Verilator lint_on  UNUSED
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -1817,6 +1819,12 @@ module	main(i_clk, i_reset,
 	//
 	//
 
+	always @(*)
+	begin
+		sdio_debug = i_sdio_debug;
+		sdio_debug = w_sdio_sub_debug;
+	end
+
 	sdio #(
 		// {{{
 		.LGFIFO(10), .NUMIO(4),
@@ -1886,7 +1894,9 @@ module	main(i_clk, i_reset,
 		.S_AC_VALID(i_sdio_ac_valid),
 		.S_AC_DATA( i_sdio_ac_data),
 		.S_AD_VALID(i_sdio_ad_valid),
-		.S_AD_DATA( i_sdio_ad_data)
+		.S_AD_DATA( i_sdio_ad_data),
+		//
+		.o_debug(w_sdio_sub_debug)
 		// }}}
 	);
 
@@ -2203,9 +2213,9 @@ module	main(i_clk, i_reset,
 	// {{{
 	wbscopc #(
 		// {{{
-		.LGMEM(12),
+		.LGMEM(15),
 		.SYNCHRONOUS(1),
-		.DEFAULT_HOLDOFF(2044)
+		.DEFAULT_HOLDOFF(16380)
 		// }}}
 	) sdioscopei(
 		// {{{

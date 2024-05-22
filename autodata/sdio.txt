@@ -277,10 +277,12 @@
 @MAIN.DEFNS=
 	// @$(NAME) definitions
 	// Verilator lint_off UNUSED
+	wire	[31:0]	w_@$(PREFIX)_sub_debug;
 	wire		w_@$(PREFIX)_1p8v, s_@$(PREFIX)_ready,
 			m_@$(PREFIX)_valid, m_@$(PREFIX)_last;
-	wire	[31:0]	@$(PREFIX)_debug, m_@$(PREFIX)_data;
-	assign		@$(PREFIX)_debug = i_@$(PREFIX)_debug;
+	reg	[31:0]	@$(PREFIX)_debug;
+	wire	[31:0]	m_@$(PREFIX)_data;
+	// assign		@$(PREFIX)_debug = i_@$(PREFIX)_debug;
 	// Verilator lint_on  UNUSED
 @MAIN.INSERT=
 	////////////////////////////////////////////////////////////////////////
@@ -290,6 +292,12 @@
 	////////////////////////////////////////////////////////////////////////
 	//
 	//
+
+	always @(*)
+	begin
+		@$(PREFIX)_debug = i_@$(PREFIX)_debug;
+		@$(PREFIX)_debug = w_@$(PREFIX)_sub_debug;
+	end
 
 	sdio #(
 		// {{{
@@ -352,7 +360,9 @@
 		.S_AC_VALID(i_@$(PREFIX)_ac_valid),
 		.S_AC_DATA( i_@$(PREFIX)_ac_data),
 		.S_AD_VALID(i_@$(PREFIX)_ad_valid),
-		.S_AD_DATA( i_@$(PREFIX)_ad_data)
+		.S_AD_DATA( i_@$(PREFIX)_ad_data),
+		//
+		.o_debug(w_@$(PREFIX)_sub_debug)
 		// }}}
 	);
 

@@ -45,9 +45,9 @@
 module	sdcmd #(
 		// {{{
 		// parameter	MW = 32,
-		parameter [0:0]	OPT_DS = 1'b0,
 		// parameter [0:0]	OPT_LITTLE_ENDIAN = 1'b0,
 		parameter [0:0]	OPT_EMMC = 1'b1,
+		parameter [0:0]	OPT_DS = (OPT_EMMC),
 		parameter	LGTIMEOUT = 26,	// 500ms expected
 		parameter	LGLEN = 9,
 		parameter	MW = 32
@@ -136,6 +136,9 @@ module	sdcmd #(
 
 	reg	[6:0]	crc_fill;
 	reg		r_busy, new_data;
+
+	reg		r_delay;
+	reg	[3:0]	r_dly_count;
 
 	reg		r_done;
 
@@ -499,7 +502,9 @@ module	sdcmd #(
 			r_no_timeout <= 1'b0;
 		// }}}
 
-		assign	lcl_accept = i_cmd_request && !o_busy
+		assign	lcl_accept = i_cmd_request
+			// && !o_busy
+			&& (i_ckstb && ((!r_busy && !r_delay) || self_request))
 			&& (o_done || !r_busy || (self_request
 					&& (!response_active || rx_timeout)));
 		assign	self_request = r_self_request;
@@ -637,18 +642,46 @@ module	sdcmd #(
 		o_ercode <= 2'b00;
 	else if (!r_done)
 	begin
-		if (w_done)
+		if (rx_timeout)
+			o_ercode <= ECODE_TIMEOUT;
+		else if (w_done)
 		begin
 			o_ercode <= ECODE_OKAY;
 			if (frame_err)
 				o_ercode <= ECODE_FRAMEERR;
 			if (crc_err)
 				o_ercode <= ECODE_BADCRC;
-		end else if (rx_timeout)
-			o_ercode <= ECODE_TIMEOUT;
+		end
 	end
 	// }}}
 
+	// r_delay, r_dly_count
+	// {{{
+	initial	{ r_delay, r_dly_count } = 0;
+	always @(posedge i_clk)
+	if (i_reset)
+		{ r_delay, r_dly_count } <= 0;
+	else if (r_busy)
+		{ r_delay, r_dly_count } <= { 1'b1, 4'h8 };
+	else if (r_delay && i_ckstb)
+		{ r_delay, r_dly_count } <= { r_delay, r_dly_count } + 1;
+`ifdef	FORMAL
+	always @(posedge i_clk)
+	if (!i_reset && r_busy && !$past(lcl_accept))
+		assert({ r_delay, r_dly_count } == { 1'b1, 4'h8 });
+
+	always @(*)
+	if (r_delay)
+		assert(o_busy || self_request);
+
+	always @(*)
+	if (!r_delay)
+		assert(r_dly_count == 0);
+`endif
+	// }}}
+
+	// r_done
+	// {{{
 	initial	r_done = 1'b0;
 	always @(posedge i_clk)
 	if (i_reset || w_no_response || o_done || lcl_accept)
@@ -657,7 +690,10 @@ module	sdcmd #(
 		r_done <= 1'b1;
 	// else // if (i_ckstb)
 	//	r_done <= 1'b0;
+	// }}}
 
+	// o_done
+	// {{{
 	initial	o_done = 1'b0;
 	always @(posedge i_clk)
 	if (i_reset || o_done || lcl_accept)
@@ -665,8 +701,11 @@ module	sdcmd #(
 	else
 		o_done <= (rx_timeout || w_no_response
 					|| (r_done && i_ckstb));
+	// }}}
 
-	// r_busy is true if we are unable to accept a command
+	// r_busy
+	// {{{
+	// r_busy is a registered true if we are unable to accept a command
 	initial	r_busy = 1'b0;
 	always @(posedge i_clk)
 	if (i_reset)
@@ -675,8 +714,9 @@ module	sdcmd #(
 		r_busy <= 1'b1;
 	else if (o_done)
 		r_busy <= 1'b0;
+	// }}}
 
-	assign	o_busy = (r_busy && !self_request) || !i_ckstb;
+	assign	o_busy = ((r_busy || r_delay) && !self_request) || !i_ckstb;
 
 	//
 	// Make verilator happy
