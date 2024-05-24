@@ -378,7 +378,7 @@ public:
 		//
 		// Loading the flash component
 		//
-		base  = 0x44000000; // in octets
+		base  = 0x04000000; // in octets
 		adrln = 0x04000000;
 
 		if ((addr >= base)&&(addr < base + adrln)) {
@@ -407,7 +407,7 @@ public:
 		//
 		// Loading the bkram component
 		//
-		base  = 0x4a000000; // in octets
+		base  = 0x0a000000; // in octets
 		adrln = 0x00040000;
 
 		if ((addr >= base)&&(addr < base + adrln)) {

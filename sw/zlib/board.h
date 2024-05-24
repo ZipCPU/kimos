@@ -289,22 +289,22 @@ typedef	struct	DDR3_PHY_S {
 
 #ifdef	I2CCPU_ACCESS
 #define	_BOARD_HAS_I2CCPU
-static volatile I2CCPU *const _i2c=((I2CCPU *)0x48000700);
+static volatile I2CCPU *const _i2c=((I2CCPU *)0x08000700);
 #endif	// I2CCPU_ACCESS
 #ifdef	I2CDMA_ACCESS
 #define	_BOARD_HAS_I2CDMA
-static volatile I2CDMA *const _i2cdma=((I2CDMA *)0x48000800);
+static volatile I2CDMA *const _i2cdma=((I2CDMA *)0x08000800);
 #endif	// I2CDMA_ACCESS
 #ifdef	SDIO_ACCESS
 #define	_BOARD_HAS_SDIO
-static volatile struct SDIO_S *const _sdio = ((struct SDIO_S *)0x42000000);
+static volatile struct SDIO_S *const _sdio = ((struct SDIO_S *)0x02000000);
 #endif	// SDIO_ACCESS
 #ifdef	SPIO_ACCESS
 #define	_BOARD_HAS_SPIO
-static volatile unsigned *const _spio = ((unsigned *)0x48000a18);
+static volatile unsigned *const _spio = ((unsigned *)0x08000a18);
 #endif	// SPIO_ACCESS
 #ifdef	PWRCOUNT_ACCESS
-static volatile unsigned *const _pwrcount = ((unsigned *)0x48000a0c);
+static volatile unsigned *const _pwrcount = ((unsigned *)0x08000a0c);
 #endif	// PWRCOUNT_ACCESS
 #ifdef	CFG_ACCESS
 #define	_BOARD_HAS_ICAPTETWO
@@ -312,30 +312,30 @@ static volatile unsigned *const _icape = ((unsigned *)0x00000b00);
 #endif	// CFG_ACCESS
 #ifdef	VERSION_ACCESS
 #define	_BOARD_HAS_VERSION
-static volatile unsigned *const _version = ((unsigned *)0x48000a20);
+static volatile unsigned *const _version = ((unsigned *)0x08000a20);
 #endif	// VERSION_ACCESS
 #ifdef	SDIOSCOPE_SCOPC
 #define	_BOARD_HAS_SDIOSCOPE
-static volatile WBSCOPE *const _sdioscope = ((WBSCOPE *)0x48000600);
+static volatile WBSCOPE *const _sdioscope = ((WBSCOPE *)0x08000600);
 #endif	// SDIOSCOPE_SCOPC
 #ifdef	ETH0_ACCESS
 #define	_BOARD_HAS_ETH0
-static volatile ENETSTREAM *const io_eth0 = ((ENETSTREAM *)0x48000c00);
+static volatile ENETSTREAM *const io_eth0 = ((ENETSTREAM *)0x08000c00);
 #endif	// ETH0_ACCESS
 #ifdef	TXCLK
-static volatile unsigned *const _txclk = ((unsigned *)0x48000a1c);
+static volatile unsigned *const _txclk = ((unsigned *)0x08000a1c);
 #endif	// TXCLK
 #define	_BOARD_HAS_BUILDTIME
-static volatile unsigned *const _buildtime = ((unsigned *)0x48000a04);
+static volatile unsigned *const _buildtime = ((unsigned *)0x08000a04);
 #ifdef	NETCTRL_ACCESS
 #define	_BOARD_HAS_NETMDIO
-static volatile ENETMDIO *const _mdio = ((ENETMDIO *)0x48001000);
+static volatile ENETMDIO *const _mdio = ((ENETMDIO *)0x08001000);
 #endif	// NETCTRL_ACCESS
 #ifdef	RXETH0CK
-static volatile unsigned *const _rxeth0ck = ((unsigned *)0x48000a14);
+static volatile unsigned *const _rxeth0ck = ((unsigned *)0x08000a14);
 #endif	// RXETH0CK
 #ifdef	ADCCLK
-static volatile unsigned *const _adcclk = ((unsigned *)0x48000a00);
+static volatile unsigned *const _adcclk = ((unsigned *)0x08000a00);
 #endif	// ADCCLK
 #ifdef	FLASH_ACCESS
 #define	_BOARD_HAS_FLASH
@@ -343,11 +343,11 @@ extern int _flash[1];
 #endif	// FLASH_ACCESS
 #ifdef	FLASHSCOPE_SCOPC
 #define	_BOARD_HAS_FLASHSCOPE
-static volatile WBSCOPE *const _flashdbg = ((WBSCOPE *)0x48000500);
+static volatile WBSCOPE *const _flashdbg = ((WBSCOPE *)0x08000500);
 #endif	// FLASHSCOPE_SCOPC
 #ifdef	BUSCONSOLE_ACCESS
 #define	_BOARD_HAS_BUSCONSOLE
-static volatile CONSOLE *const _uart = ((CONSOLE *)0x48000900);
+static volatile CONSOLE *const _uart = ((CONSOLE *)0x08000900);
 #endif	// BUSCONSOLE_ACCESS
 #ifdef	BKRAM_ACCESS
 #define	_BOARD_HAS_BKRAM
@@ -355,11 +355,11 @@ extern char	_bkram[0x00040000];
 #endif	// BKRAM_ACCESS
 #ifdef	FLASHCFG_ACCESS
 #define	_BOARD_HAS_FLASHCFG
-static volatile unsigned * const _flashcfg = ((unsigned *)(0x48000400));
+static volatile unsigned * const _flashcfg = ((unsigned *)(0x08000400));
 #endif	// FLASHCFG_ACCESS
 #ifdef	DDR3_PHY_ACCESS
 #define	_BOARD_HAS_DDR3_PHY
-static volatile DDR3_PHY *const _ddr3_phy = ((DDR3_PHY *)0x48000e00);
+static volatile DDR3_PHY *const _ddr3_phy = ((DDR3_PHY *)0x08000e00);
 #endif	// DDR3_PHY_ACCESS
 #ifdef	SDRAM_ACCESS
 #define	_BOARD_HAS_SDRAM
@@ -367,7 +367,7 @@ extern char	_ddr3[0x40000000];
 #endif	// SDRAM_ACCESS
 #ifdef	BUSPIC_ACCESS
 #define	_BOARD_HAS_BUSPIC
-static volatile unsigned *const _buspic = ((unsigned *)0x48000a08);
+static volatile unsigned *const _buspic = ((unsigned *)0x08000a08);
 #endif	// BUSPIC_ACCESS
 //
 // Interrupt assignments (3 PICs)

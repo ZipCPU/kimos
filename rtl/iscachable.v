@@ -53,17 +53,17 @@ module iscachable(
 	begin
 		o_cachable = 1'b0;
 		// Bus master: wbwide
-		// ddr3
-		if ((i_addr[30:0] & 31'h40000000) == 31'h00000000)
-			o_cachable = 1'b1;
 		// Bus master: wbflash
 		// flash
-		if ((i_addr[30:0] & 31'h7c000000) == 31'h44000000)
+		if ((i_addr[30:0] & 31'h7c000000) == 31'h04000000)
 			o_cachable = 1'b1;
 		// Bus master: wb32
 		// Bus master: wb32_sio
 		// bkram
-		if ((i_addr[30:0] & 31'h7e000000) == 31'h4a000000)
+		if ((i_addr[30:0] & 31'h7e000000) == 31'h0a000000)
+			o_cachable = 1'b1;
+		// ddr3
+		if ((i_addr[30:0] & 31'h40000000) == 31'h40000000)
 			o_cachable = 1'b1;
 	end
 

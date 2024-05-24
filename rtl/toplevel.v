@@ -115,14 +115,14 @@ i_sdcard_cd_n,
 
 	localparam	[47:0]	DEF_ETH0_HWMAC  = 48'h8233_4802e1d0;
 	localparam	[31:0]	DEF_ETH0_IPADDR = 32'hc0a80f1a;
-	localparam real SDRAMCONTROLLER_CLK_PERIOD = 10, //ns, period of clock input to this DDR3 controller module
-		DDR3_CLK_PERIOD = 2.5; //ns, period of clock input to DDR3 RAM device
-	localparam SDRAMROW_BITS = 15,  // width of row address
+	localparam real SDRAMCONTROLLER_CLK_PERIOD = 10_000,  //ps, clock period of the controller interface
+		DDR3_CLK_PERIOD = 2_500; //ps, clock period of the DDR3 RAM device (must be 1/4 of the CONTROLLER_CLK_PERIOD) 
+	localparam SDRAMROW_BITS = 14,  // width of row address
 		SDRAMCOL_BITS = 10,  // width of column address
 		SDRAMBA_BITS  =  3,  // width of bank address
 		SDRAMDQ_BITS  =  8,  // Size of one octet
-		SDRAMLANES = 8, //8 lanes of DQ
-		SDRAMAUX_WIDTH = 8, //must be 8 bits or more (also used in internal test and calibration)
+		SDRAMBYTE_LANES = 8, //8 lanes of DQ
+		SDRAMAUX_WIDTH = 4, //width of aux line (must be >= 4) 
 		SDRAMSERDES_RATIO = $rtoi(SDRAMCONTROLLER_CLK_PERIOD/DDR3_CLK_PERIOD),
 		//4 is the width of a single ddr3 command {cs_n, ras_n, cas_n, we_n} plus 3 (ck_en, odt, reset_n) plus bank bits plus row bits
 		SDRAMCMD_LEN = 4 + 3 + SDRAMBA_BITS + SDRAMROW_BITS;
@@ -139,9 +139,9 @@ i_sdcard_cd_n,
 	localparam	RESET_ADDRESS = @$(/bkrom.BASE);
 `else
 `ifdef	FLASH_ACCESS
-	localparam	RESET_ADDRESS = 1153433600;
+	localparam	RESET_ADDRESS = 79691776;
 `else
-	localparam	RESET_ADDRESS = 1241513984;
+	localparam	RESET_ADDRESS = 167772160;
 `endif	// FLASH_ACCESS
 `endif	// BKROM_ACCESS
 	//
@@ -207,16 +207,16 @@ i_sdcard_cd_n,
 	// I/O declarations for the DDR3 SDRAM
 	// {{{
 	output	wire		o_ddr3_reset_n;
-	output	wire		o_ddr3_cke;
+	output	wire	[0:0]	o_ddr3_cke;
 	output	wire	[0:0]	o_ddr3_clk_p, o_ddr3_clk_n;
-	output	wire		o_ddr3_cs_n; // o_ddr3_s_n[1] is set to 0 since controller only support single rank
+	output	wire	[0:0]	o_ddr3_cs_n; // o_ddr3_s_n[1] is set to 0 since controller only support single rank
 	output	wire	[0:0]	o_ddr3_ras_n, o_ddr3_cas_n, o_ddr3_we_n;
 	output	wire	[SDRAMBA_BITS-1:0]	o_ddr3_ba;
-	output	wire	[15:0]	o_ddr3_a; //set to max of 16 bits, but only ROW_BITS bits are relevant
-	output	wire		o_ddr3_odt;
-	output	wire	[SDRAMLANES-1:0]	o_ddr3_dm;
-	inout	wire	[(SDRAMDQ_BITS*SDRAMLANES)/8-1:0]	io_ddr3_dqs_p, io_ddr3_dqs_n;
-	inout	wire	[(SDRAMDQ_BITS*SDRAMLANES)-1:0]	io_ddr3_dq;
+	output	wire	[14:0]	o_ddr3_a; //set to max of 16 bits, but only ROW_BITS bits are relevant
+	output	wire	[0:0]	o_ddr3_odt;
+	output	wire	[SDRAMBYTE_LANES-1:0]	o_ddr3_dm;
+	inout	wire	[(SDRAMDQ_BITS*SDRAMBYTE_LANES)/8-1:0]	io_ddr3_dqs_p, io_ddr3_dqs_n;
+	inout	wire	[(SDRAMDQ_BITS*SDRAMBYTE_LANES)-1:0]	io_ddr3_dq;
 	// }}}
 
 	input	wire	i_clk200_p, i_clk200_n;
@@ -287,20 +287,20 @@ i_sdcard_cd_n,
 	// {{{
 	genvar ddr3gen_index;
 
-	wire	[SDRAMDQ_BITS*SDRAMLANES*8-1:0] ddr3_iserdes_data;
-	wire	[SDRAMLANES*8-1:0] ddr3_iserdes_dqs,
+	wire	[SDRAMDQ_BITS*SDRAMBYTE_LANES*8-1:0] ddr3_iserdes_data;
+	wire	[SDRAMBYTE_LANES*8-1:0] ddr3_iserdes_dqs,
 				ddr3_iserdes_bitslip_reference;
 	wire    [SDRAMCMD_LEN*SDRAMSERDES_RATIO-1:0]
 				ddr3_cmd;
-	wire    [SDRAMDQ_BITS*SDRAMLANES*8-1:0]
+	wire    [SDRAMDQ_BITS*SDRAMBYTE_LANES*8-1:0]
 				ddr3_data;
-	wire    [(SDRAMDQ_BITS*SDRAMLANES*8)/8-1:0]
+	wire    [(SDRAMDQ_BITS*SDRAMBYTE_LANES*8)/8-1:0]
 				ddr3_dm;
 	wire    [4:0]	ddr3_odelay_data_cntvaluein,
 			ddr3_odelay_dqs_cntvaluein,
 			ddr3_idelay_data_cntvaluein,
 			ddr3_idelay_dqs_cntvaluein;
-	wire    [SDRAMLANES-1:0]	ddr3_odelay_data_ld,
+	wire    [SDRAMBYTE_LANES-1:0]	ddr3_odelay_data_ld,
 			ddr3_odelay_dqs_ld, ddr3_idelay_data_ld,
 			ddr3_idelay_dqs_ld, ddr3_bitslip,
 			ddr3_debug_read_dqs_p,
@@ -634,7 +634,7 @@ i_sdcard_cd_n,
 		.ROW_BITS(SDRAMROW_BITS),	//width of row address
 		.BA_BITS(SDRAMBA_BITS),	//width of bank address
 		.DQ_BITS(SDRAMDQ_BITS),	//width of DQ
-		.LANES(SDRAMLANES), //8 lanes of DQ
+		.LANES(SDRAMBYTE_LANES), //8 lanes of DQ
 		.CONTROLLER_CLK_PERIOD(SDRAMCONTROLLER_CLK_PERIOD), //ns, period of clock input to this DDR3 controller module
 		.DDR3_CLK_PERIOD(DDR3_CLK_PERIOD), //ns, period of clock input to DDR3 RAM device
 		.ODELAY_SUPPORTED(1)

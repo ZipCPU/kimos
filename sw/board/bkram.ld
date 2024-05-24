@@ -54,18 +54,18 @@ MEMORY
 	* 'wx' (read, write, and execute).  If no permission tag exists, a
 	* permission of 'r' will be assumed.
 	*/
-	   sdram(wx) : ORIGIN = 0x00000000, LENGTH = 0x40000000
-	   flash(rx) : ORIGIN = 0x44000000, LENGTH = 0x04000000
-	   bkram(wx) : ORIGIN = 0x4a000000, LENGTH = 0x00040000
+	   flash(rx) : ORIGIN = 0x04000000, LENGTH = 0x04000000
+	   bkram(wx) : ORIGIN = 0x0a000000, LENGTH = 0x00040000
+	   sdram(wx) : ORIGIN = 0x40000000, LENGTH = 0x40000000
 }
 
 /* For each defined memory peripheral, we also define a pointer to that
 * memory.  The name of this pointer is given by the @LD.NAME tag within
 * the memory peripheral's configuration
 */
-_sdram    = ORIGIN(sdram);
 _flash    = ORIGIN(flash);
 _bkram    = ORIGIN(bkram);
+_sdram    = ORIGIN(sdram);
 /* LD.DEFNS from mem_bkram_only */
 _kram  = 0; /* No high-speed kernel RAM */
 _ram   = ORIGIN(bkram);

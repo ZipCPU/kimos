@@ -248,14 +248,14 @@ module	main(i_clk, i_reset,
 
 	localparam	[47:0]	DEF_ETH0_HWMAC  = 48'h8233_4802e1d0;
 	localparam	[31:0]	DEF_ETH0_IPADDR = 32'hc0a80f1a;
-	localparam real SDRAMCONTROLLER_CLK_PERIOD = 10, //ns, period of clock input to this DDR3 controller module
-		DDR3_CLK_PERIOD = 2.5; //ns, period of clock input to DDR3 RAM device
-	localparam SDRAMROW_BITS = 15,  // width of row address
+	localparam real SDRAMCONTROLLER_CLK_PERIOD = 10_000,  //ps, clock period of the controller interface
+		DDR3_CLK_PERIOD = 2_500; //ps, clock period of the DDR3 RAM device (must be 1/4 of the CONTROLLER_CLK_PERIOD) 
+	localparam SDRAMROW_BITS = 14,  // width of row address
 		SDRAMCOL_BITS = 10,  // width of column address
 		SDRAMBA_BITS  =  3,  // width of bank address
 		SDRAMDQ_BITS  =  8,  // Size of one octet
-		SDRAMLANES = 8, //8 lanes of DQ
-		SDRAMAUX_WIDTH = 8, //must be 8 bits or more (also used in internal test and calibration)
+		SDRAMBYTE_LANES = 8, //8 lanes of DQ
+		SDRAMAUX_WIDTH = 4, //width of aux line (must be >= 4) 
 		SDRAMSERDES_RATIO = $rtoi(SDRAMCONTROLLER_CLK_PERIOD/DDR3_CLK_PERIOD),
 		//4 is the width of a single ddr3 command {cs_n, ras_n, cas_n, we_n} plus 3 (ck_en, odt, reset_n) plus bank bits plus row bits
 		SDRAMCMD_LEN = 4 + 3 + SDRAMBA_BITS + SDRAMROW_BITS;
@@ -272,9 +272,9 @@ module	main(i_clk, i_reset,
 	localparam	RESET_ADDRESS = @$(/bkrom.BASE);
 `else
 `ifdef	FLASH_ACCESS
-	localparam	RESET_ADDRESS = 1153433600;
+	localparam	RESET_ADDRESS = 79691776;
 `else
-	localparam	RESET_ADDRESS = 1241513984;
+	localparam	RESET_ADDRESS = 167772160;
 `endif	// FLASH_ACCESS
 `endif	// BKROM_ACCESS
 	//
@@ -370,20 +370,20 @@ module	main(i_clk, i_reset,
 	output	wire	[1:0]	o_qspi_mod;
 	// DDR3 Controller I/O declarations
 	// {{{
-	input	wire	[SDRAMDQ_BITS*SDRAMLANES*8-1:0] i_ddr3_iserdes_data;
-	input wire    [SDRAMLANES*8-1:0] i_ddr3_iserdes_dqs;
-	input wire    [SDRAMLANES*8-1:0] i_ddr3_iserdes_bitslip_reference;
+	input	wire	[SDRAMDQ_BITS*SDRAMBYTE_LANES*8-1:0] i_ddr3_iserdes_data;
+	input wire    [SDRAMBYTE_LANES*8-1:0] i_ddr3_iserdes_dqs;
+	input wire    [SDRAMBYTE_LANES*8-1:0] i_ddr3_iserdes_bitslip_reference;
 	input wire    i_ddr3_idelayctrl_rdy;
 	output wire    [SDRAMCMD_LEN*SDRAMSERDES_RATIO-1:0] o_ddr3_cmd;
 	output wire    o_ddr3_dqs_tri_control, o_ddr3_dq_tri_control;
 	output wire    o_ddr3_toggle_dqs;
-	output wire    [SDRAMDQ_BITS*SDRAMLANES*8-1:0] o_ddr3_data;
-	output wire    [(SDRAMDQ_BITS*SDRAMLANES*8)/8-1:0] o_ddr3_dm;
+	output wire    [SDRAMDQ_BITS*SDRAMBYTE_LANES*8-1:0] o_ddr3_data;
+	output wire    [(SDRAMDQ_BITS*SDRAMBYTE_LANES*8)/8-1:0] o_ddr3_dm;
 	output wire    [4:0] o_ddr3_odelay_data_cntvaluein, o_ddr3_odelay_dqs_cntvaluein;
 	output wire    [4:0] o_ddr3_idelay_data_cntvaluein, o_ddr3_idelay_dqs_cntvaluein;
-	output wire    [SDRAMLANES-1:0] o_ddr3_odelay_data_ld, o_ddr3_odelay_dqs_ld;
-	output wire    [SDRAMLANES-1:0] o_ddr3_idelay_data_ld, o_ddr3_idelay_dqs_ld;
-	output wire    [SDRAMLANES-1:0] o_ddr3_bitslip;
+	output wire    [SDRAMBYTE_LANES-1:0] o_ddr3_odelay_data_ld, o_ddr3_odelay_dqs_ld;
+	output wire    [SDRAMBYTE_LANES-1:0] o_ddr3_idelay_data_ld, o_ddr3_idelay_dqs_ld;
+	output wire    [SDRAMBYTE_LANES-1:0] o_ddr3_bitslip;
 	output wire    o_ddr3_leveling_calib;
 	output wire    o_ddr3_reset;
 	// }}}
@@ -644,15 +644,6 @@ module	main(i_clk, i_reset,
 	wire		wbwide_zip_stall, wbwide_zip_ack, wbwide_zip_err;
 	wire	[511:0]	wbwide_zip_idata;
 	// Verilator lint_on UNUSED
-	// Wishbone definitions for bus wbwide, component ddr3
-	// Verilator lint_off UNUSED
-	wire		wbwide_ddr3_cyc, wbwide_ddr3_stb, wbwide_ddr3_we;
-	wire	[24:0]	wbwide_ddr3_addr;
-	wire	[511:0]	wbwide_ddr3_data;
-	wire	[63:0]	wbwide_ddr3_sel;
-	wire		wbwide_ddr3_stall, wbwide_ddr3_ack, wbwide_ddr3_err;
-	wire	[511:0]	wbwide_ddr3_idata;
-	// Verilator lint_on UNUSED
 	// Wishbone definitions for bus wbwide, component crossflash
 	// Verilator lint_off UNUSED
 	wire		wbwide_crossflash_cyc, wbwide_crossflash_stb, wbwide_crossflash_we;
@@ -679,6 +670,15 @@ module	main(i_clk, i_reset,
 	wire	[63:0]	wbwide_bkram_sel;
 	wire		wbwide_bkram_stall, wbwide_bkram_ack, wbwide_bkram_err;
 	wire	[511:0]	wbwide_bkram_idata;
+	// Verilator lint_on UNUSED
+	// Wishbone definitions for bus wbwide, component ddr3
+	// Verilator lint_off UNUSED
+	wire		wbwide_ddr3_cyc, wbwide_ddr3_stb, wbwide_ddr3_we;
+	wire	[24:0]	wbwide_ddr3_addr;
+	wire	[511:0]	wbwide_ddr3_data;
+	wire	[63:0]	wbwide_ddr3_sel;
+	wire		wbwide_ddr3_stall, wbwide_ddr3_ack, wbwide_ddr3_err;
+	wire	[511:0]	wbwide_ddr3_idata;
 	// Verilator lint_on UNUSED
 	// }}}
 	// Bus wb32
@@ -958,10 +958,10 @@ module	main(i_clk, i_reset,
 	// No class DOUBLE peripherals on the "wbwide" bus
 	//
 
-	assign	wbwide_ddr3_err= 1'b0;
 	// info: @ERROR.WIRE for crossflash matches the buses error name, wbwide_crossflash_err
 	// info: @ERROR.WIRE for crossbus matches the buses error name, wbwide_crossbus_err
 	assign	wbwide_bkram_err= 1'b0;
+	assign	wbwide_ddr3_err= 1'b0;
 	//
 	// Connect the wbwide bus components together using the wbxbar()
 	//
@@ -971,18 +971,18 @@ module	main(i_clk, i_reset,
 		.SLAVE_ADDR({
 			// Address width    = 25
 			// Address LSBs     = 6
-			{ 25'h1280000 }, //      bkram: 0x4a000000
-			{ 25'h1200000 }, //   crossbus: 0x48000000
-			{ 25'h1000000 }, // crossflash: 0x40000000
-			{ 25'h0000000 }  //       ddr3: 0x00000000
+			{ 25'h1000000 }, //       ddr3: 0x40000000
+			{ 25'h0280000 }, //      bkram: 0x0a000000
+			{ 25'h0200000 }, //   crossbus: 0x08000000
+			{ 25'h0000000 }  // crossflash: 0x00000000
 		}),
 		.SLAVE_MASK({
 			// Address width    = 25
 			// Address LSBs     = 6
+			{ 25'h1000000 }, //       ddr3
 			{ 25'h1f80000 }, //      bkram
 			{ 25'h1f80000 }, //   crossbus
-			{ 25'h1e00000 }, // crossflash
-			{ 25'h1000000 }  //       ddr3
+			{ 25'h1e00000 }  // crossflash
 		}),
 		.OPT_DBLBUFFER(1'b1))
 	wbwide_xbar(
@@ -1059,64 +1059,64 @@ module	main(i_clk, i_reset,
 		}),
 		// Slave connections
 		.o_scyc({
+			wbwide_ddr3_cyc,
 			wbwide_bkram_cyc,
 			wbwide_crossbus_cyc,
-			wbwide_crossflash_cyc,
-			wbwide_ddr3_cyc
+			wbwide_crossflash_cyc
 		}),
 		.o_sstb({
+			wbwide_ddr3_stb,
 			wbwide_bkram_stb,
 			wbwide_crossbus_stb,
-			wbwide_crossflash_stb,
-			wbwide_ddr3_stb
+			wbwide_crossflash_stb
 		}),
 		.o_swe({
+			wbwide_ddr3_we,
 			wbwide_bkram_we,
 			wbwide_crossbus_we,
-			wbwide_crossflash_we,
-			wbwide_ddr3_we
+			wbwide_crossflash_we
 		}),
 		.o_saddr({
+			wbwide_ddr3_addr,
 			wbwide_bkram_addr,
 			wbwide_crossbus_addr,
-			wbwide_crossflash_addr,
-			wbwide_ddr3_addr
+			wbwide_crossflash_addr
 		}),
 		.o_sdata({
+			wbwide_ddr3_data,
 			wbwide_bkram_data,
 			wbwide_crossbus_data,
-			wbwide_crossflash_data,
-			wbwide_ddr3_data
+			wbwide_crossflash_data
 		}),
 		.o_ssel({
+			wbwide_ddr3_sel,
 			wbwide_bkram_sel,
 			wbwide_crossbus_sel,
-			wbwide_crossflash_sel,
-			wbwide_ddr3_sel
+			wbwide_crossflash_sel
 		}),
 		.i_sstall({
+			wbwide_ddr3_stall,
 			wbwide_bkram_stall,
 			wbwide_crossbus_stall,
-			wbwide_crossflash_stall,
-			wbwide_ddr3_stall
+			wbwide_crossflash_stall
 		}),
 		.i_sack({
+			wbwide_ddr3_ack,
 			wbwide_bkram_ack,
 			wbwide_crossbus_ack,
-			wbwide_crossflash_ack,
-			wbwide_ddr3_ack
+			wbwide_crossflash_ack
 		}),
 		.i_sdata({
+			wbwide_ddr3_idata,
 			wbwide_bkram_idata,
 			wbwide_crossbus_idata,
-			wbwide_crossflash_idata,
-			wbwide_ddr3_idata
+			wbwide_crossflash_idata
 		}),
 		.i_serr({
+			wbwide_ddr3_err,
 			wbwide_bkram_err,
 			wbwide_crossbus_err,
-			wbwide_crossflash_err,
-			wbwide_ddr3_err
+			wbwide_crossflash_err
 		})
 		);
 
@@ -2862,19 +2862,23 @@ module	main(i_clk, i_reset,
 	//
 	// DDR3 Controller instantiation
 	// {{{
+           
 	ddr3_controller #(
 		// {{{
-		.CONTROLLER_CLK_PERIOD(SDRAMCONTROLLER_CLK_PERIOD), //ns, period of clock input to this DDR3 controller module
-		.DDR3_CLK_PERIOD(DDR3_CLK_PERIOD), //ns, period of clock input to DDR3 RAM device
+		.CONTROLLER_CLK_PERIOD(SDRAMCONTROLLER_CLK_PERIOD), //ps, clock period of the controller interface
+		.DDR3_CLK_PERIOD(DDR3_CLK_PERIOD), //ps, clock period of the DDR3 RAM device (must be 1/4 of the CONTROLLER_CLK_PERIOD) 
 		.ROW_BITS(SDRAMROW_BITS),	//width of row address
 		.COL_BITS(SDRAMCOL_BITS),	//width of column address
 		.BA_BITS(SDRAMBA_BITS),	//width of bank address
 		.DQ_BITS(SDRAMDQ_BITS),	//width of DQ
-		.LANES(SDRAMLANES),		//8 lanes of DQ
-		.AUX_WIDTH(SDRAMAUX_WIDTH),	//
+		.LANES(SDRAMBYTE_LANES),		// byte lanes
+		.AUX_WIDTH(SDRAMAUX_WIDTH),	//width of aux line (must be >= 4) 
+		.WB2_ADDR_BITS(7), 		//width of 2nd wishbone address bus 
+            	.WB2_DATA_BITS(32),  		//width of 2nd wishbone data bus
 		.MICRON_SIM(0),		//simulation for micron ddr3 model (shorten POWER_ON_RESET_HIGH and INITIAL_CKE_LOW)
-		.ODELAY_SUPPORTED(1)	//set to 1 when ODELAYE2 is supported
-			// }}}
+		.ODELAY_SUPPORTED(1),		//set to 1 when ODELAYE2 is supported
+		.SECOND_WISHBONE(1) 		//set to 1 if 2nd wishbone is needed 
+		// }}}
 	) u_ddr3 (
 		.i_controller_clk(i_clk), //i_controller_clk has period of CONTROLLER_CLK_PERIOD
 		.i_rst_n(!i_reset), //200MHz input clock

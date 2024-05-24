@@ -47,7 +47,6 @@
 #include "regdefs.h"
 
 const	REGNAME	raw_bregs[] = {
-	{ R_SDRAM         ,	"SDRAM"          	},
 	{ R_SDIO_CTRL     ,	"SDCARD"         	},
 	{ R_SDIO_DATA     ,	"SDDATA"         	},
 	{ R_SDIO_FIFOA    ,	"SDFIFOA"        	},
@@ -163,6 +162,7 @@ const	REGNAME	raw_bregs[] = {
 	{ R_XMDIO_LACR    ,	"XLACR"          	},
 	{ R_XMDIO_LCR     ,	"XLCR"           	},
 	{ R_BKRAM         ,	"RAM"            	},
+	{ R_SDRAM         ,	"SDRAM"          	},
 	{ R_ZIPCTRL       ,	"CPU"            	},
 	{ R_ZIPCTRL       ,	"ZIPCTRL"        	},
 	{ R_ZIPREGS       ,	"ZIPREGS"        	},
