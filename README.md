@@ -143,7 +143,7 @@ additional peripherals may also be implemented as time and necessity allow.
    If and when the MIG DDR3 SDRAM test passes, we'll move on to testing
    the [open source DDR3 memory controller](https://github.com/AngeloJacobo/DDR3_Controller).
 
-   STATUS: Pending.  (Up next for testing ...)
+   STATUS: In progress.
 
 11. Open source place and route
 

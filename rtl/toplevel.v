@@ -673,8 +673,8 @@ i_sdcard_cd_n,
 		.o_ddr3_clk_p(o_ddr3_clk_p),
 		.o_ddr3_clk_n(o_ddr3_clk_n),
 		.o_ddr3_reset_n(o_ddr3_reset_n),
-		.o_ddr3_cke(o_ddr3_cke), // CKE
-		.o_ddr3_cs_n(o_ddr3_cs_n), // chip select signal (controls rank 1 only)
+		.o_ddr3_cke(o_ddr3_cke[0]), // CKE
+		.o_ddr3_cs_n(o_ddr3_cs_n[0]), // chip select signal (controls rank 1 only)
 		.o_ddr3_ras_n(o_ddr3_ras_n), // RAS#
 		.o_ddr3_cas_n(o_ddr3_cas_n), // CAS#
 		.o_ddr3_we_n(o_ddr3_we_n), // WE#
@@ -684,7 +684,7 @@ i_sdcard_cd_n,
 		.io_ddr3_dqs(io_ddr3_dqs_p),
 		.io_ddr3_dqs_n(io_ddr3_dqs_n),
 		.o_ddr3_dm(o_ddr3_dm),
-		.o_ddr3_odt(o_ddr3_odt), // on-die termination
+		.o_ddr3_odt(o_ddr3_odt[0]), // on-die termination
 		// DEBUG PHY
 		.o_ddr3_debug_read_dqs_p(ddr3_debug_read_dqs_p),
 		.o_ddr3_debug_read_dqs_n(ddr3_debug_read_dqs_n)
