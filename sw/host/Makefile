@@ -56,7 +56,7 @@ all:
 ## {{{
 CXX := g++
 OBJDIR := obj-pc
-SCOPES := flashscope mdioscope wb2axiscope sdioscope
+SCOPES := flashscope mdioscope wb2axiscope sdioscope ddr3scope
 SCOPESRCS := $(addsuffix .cpp,$(SCOPES))
 BUSSRCS   := exbus.cpp devbus.cpp regdefs.cpp llcomms.cpp byteswap.cpp flashdrvr.cpp nexbus.cpp udpsocket.cpp
 BUSOBJS   := $(addprefix $(OBJDIR)/,$(subst .cpp,.o,$(BUSSRCS)))
@@ -92,6 +92,8 @@ exuart: $(OBJDIR)/exuart.o
 excheck: $(OBJDIR)/excheck.o $(BUSOBJS)
 	$(CXX) $(CFLAGS) $^ -o $@
 exregs: $(OBJDIR)/exregs.o $(BUSOBJS)
+	$(CXX) $(CFLAGS) $^ -o $@
+ddr3scope: $(OBJDIR)/ddr3scope.o $(OBJDIR)/scopecls.o $(BUSOBJS)
 	$(CXX) $(CFLAGS) $^ -o $@
 flashscope: $(OBJDIR)/flashscope.o $(OBJDIR)/scopecls.o $(BUSOBJS)
 	$(CXX) $(CFLAGS) $^ -o $@

@@ -1,6 +1,6 @@
 ################################################################################
 ##
-## Filename:	autodata/sdioscope.txt
+## Filename:	autodata/ddr3scope.txt
 ## {{{
 ## Project:	KIMOS, a Mercury KX2 demonstration project
 ##
@@ -39,13 +39,13 @@
 ################################################################################
 ##
 ## }}}
-@PREFIX=sdioscope
-@DEVID=SDIOSCOPE
-@DEPENDS=SDIO_ACCESS
-@TARGET=sdio
+@PREFIX=ddr3scope
+@DEVID=DDR3SCOPE
+@DEPENDS=SDRAM_ACCESS
+@TARGET=ddr3
 @TRIGGER=@$(TARGET)_debug[31]
-@$LOG_CAPTURE_SIZE=12
+@$LOG_CAPTURE_SIZE=15
 @INCLUDEFILE=wbscopc.txt
-@INT.SDIOSCOPE.PIC=altpic
-@INT.SDIOSCOPE.WIRE=@$(PREFIX)_int
+@INT.DDR3SCOPE.PIC=altpic
+@INT.DDR3SCOPE.WIRE=@$(PREFIX)_int
 @MAIN.DEFNS=
