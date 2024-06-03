@@ -113,7 +113,9 @@ public:
 			// }}}
 		case 2: // Lower SERDES data
 			// {{{
-			register_trace("iserdes_dat",    30, 0);
+			// register_trace("iserdes_dat",    30, 0);
+			register_trace("state_calibrate", 5, 0);
+			register_trace("read_lane_data", 26, 5);
 			break;
 			// }}}
 		case 3: // Also calibration state
@@ -135,6 +137,7 @@ public:
 };
 
 int main(int argc, char **argv) {
+#error	"This DDR3 Scope no longer matches the debug data from the controller"
 	m_fpga = connect_devbus(NULL);
 
 	signal(SIGSTOP, closeup);

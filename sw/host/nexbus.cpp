@@ -75,7 +75,7 @@ const	unsigned NEXBUS::PKT_TIMEOUT = 500;
 // Debug DBGPRINTF infrastructure
 // {{{
 // #define	DBGPRINTF	printf
-#define	DBGPRINTF	nexfiledump
+// #define	DBGPRINTF	nexfiledump
 #ifndef	DBGPRINTF
 #define	DBGPRINTF	nexnull
 #else

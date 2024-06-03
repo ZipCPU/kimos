@@ -153,7 +153,7 @@
 	@$(PREFIX)_write_leveling_calib,
 	@$(PREFIX)_reset
 @TOP.INSERT=
-	assign	s_clk = i_clk_buffered;
+	assign	s_clk = s_clksync;
 	assign	o_ddr3_vsel = 1'bz;
 
 	always @(posedge s_clk or negedge clocks_locked)
@@ -178,7 +178,7 @@
 	) ddr3_phy_inst (
 		// {{{
 		// clock and reset
-		.i_controller_clk(s_clk),
+		.i_controller_clk(s_clksync),
 		.i_ddr3_clk(s_clk_400mhz),
 		.i_ref_clk(s_clk_200mhz),
 		.i_ddr3_clk_90(0), //required only when ODELAY_SUPPORTED is zero
@@ -330,7 +330,11 @@
 		.o_phy_write_leveling_calib(o_@$(PREFIX)_leveling_calib),
 		.o_phy_reset(o_@$(PREFIX)_reset),
 		// Debug port
-		.o_debug(@$(PREFIX)_debug)
+		.o_debug1(@$(PREFIX)_debug),
+		// Verilator lint_off PINCONNECTEMPTY
+		.o_debug2(),
+		.o_debug3()
+		// Verilator lint_on  PINCONNECTEMPTY
 		// }}}
 	);
 	// }}}

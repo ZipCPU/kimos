@@ -44,7 +44,7 @@ module	exidle #(
 `ifdef	VERILATOR
 		parameter	SHORT_LGIDLE = 15,
 `else
-		parameter	SHORT_LGIDLE = 17,
+		parameter	SHORT_LGIDLE = 20,
 `endif
 		parameter	LGIDLE = 25
 		// }}}

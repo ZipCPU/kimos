@@ -122,7 +122,7 @@
 	);
 
 	BUFG	sysbuf(     .I(s_clk_200mhz_unbuffered),.O(s_clk_200mhz));
-	// BUFG	clksync_buf(.I(s_clksync_unbuffered),   .O(s_clksync));
+	BUFG	clksync_buf(.I(s_clksync_unbuffered),   .O(s_clksync));
 	BUFG	clk4x_buf(  .I(s_clk_400mhz_unbuffered),.O(s_clk_400mhz));
 	BUFG	sys_feedback(.I(sysclk_feedback),.O(sysclk_feedback_buffered));
 
