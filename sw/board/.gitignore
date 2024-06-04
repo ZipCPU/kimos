@@ -1,6 +1,7 @@
 cputest
 hello
 mdio
+memtest
 sdinfo
 sdiochk
 /*.txt

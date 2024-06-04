@@ -39,7 +39,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 // }}}
 #include "zipcpu.h"
+#include "zipsys.h"
 #include "board.h"
+#include "txfns.h"
 
 extern	char	_sdram[0x40000000];
 
@@ -71,21 +73,22 @@ void	memchk(int *mem, int *end, unsigned seed) {
 
 	for(int i=0; i<9; i++)
 		timestamps[i] = 0;
-	timestamps[0] = z_m.c_ck;
+	timestamps[0] = _zip->z_m.ac_ck;
 
 	////////////////////////////////////////////////////////////////////////
 	//
 	// #1, data line check
 	// {{{
+	txchr('\n');
 	for(int k=0; k<512; k++) {
-		for(j=0; j<512/8; j++) {
+		for(int j=0; j<512/8; j++) {
 			if ((k>>3) == j)
-				_cmem[j] = (1<<(k&7));
+				cmem[j] = (1<<(k&7));
 			else
-				_cmem[j] = '\0';
+				cmem[j] = '\0';
 		}
 
-		for(j=0; j<512/8; j++) {
+		for(int j=0; j<512/8; j++) {
 			if ((k>>3) == j) {
 				if (cmem[j] != (1<<(k&7)))
 					FAIL;
@@ -99,23 +102,24 @@ void	memchk(int *mem, int *end, unsigned seed) {
 	*_spio = 0x0e00;
 	// }}}
 #endif
-	timestamps[1] = z_m.c_ck;
+	timestamps[1] = _zip->z_m.ac_ck;
 	// }}}
 	////////////////////////////////////////////////////////////////////////
 	//
 	// #2, address line check
 	// {{{
+	txchr('1');
 	for(int k=0; cmem + (1<<k)<endc; k++) {
-		for(j=0; cmem + (1<<j) < endc; j++) {
+		for(int j=0; cmem + (1<<j) < endc; j++) {
 			if (k == j)
-				_cmem[j] = 0xad;
+				cmem[j] = 0xad;
 			else
-				_cmem[j] = '\0';
+				cmem[j] = '\0';
 		}
 
-		for(j=0; cmem + (1<<j) < endc; j++) {
-			if (k == j)
-				if (cmem[j] != 0xad;
+		for(int j=0; cmem + (1<<j) < endc; j++) {
+			if (k == j) {
+				if (cmem[j] != 0xad)
 					FAIL;
 			} else if (cmem[j] != '\0')
 				FAIL;
@@ -128,7 +132,7 @@ void	memchk(int *mem, int *end, unsigned seed) {
 	*_spio = 0x0e02;
 	// }}}
 #endif
-	timestamps[2] = z_m.c_ck;
+	timestamps[2] = _zip->z_m.ac_ck;
 	// }}}
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -137,6 +141,7 @@ void	memchk(int *mem, int *end, unsigned seed) {
 	////////////////////////////////////////////////////////////////////////
 	//
 	//
+	txchr('2');
 	{
 		int	*mptr = mem;
 		unsigned fill;
@@ -169,7 +174,7 @@ void	memchk(int *mem, int *end, unsigned seed) {
 	*_spio = 0x0e04;
 	// }}}
 #endif
-	timestamps[3] = z_m.c_ck;
+	timestamps[3] = _zip->z_m.ac_ck;
 	// }}}
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -178,6 +183,7 @@ void	memchk(int *mem, int *end, unsigned seed) {
 	////////////////////////////////////////////////////////////////////////
 	//
 	//
+	txchr('3');
 	if (1) {
 		int	*mptr = mem;
 		unsigned fill;
@@ -234,7 +240,7 @@ void	memchk(int *mem, int *end, unsigned seed) {
 	*_spio = 0x0e06;
 	// }}}
 #endif
-	timestamps[4] = z_m.c_ck;
+	timestamps[4] = _zip->z_m.ac_ck;
 	// }}}
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -243,6 +249,7 @@ void	memchk(int *mem, int *end, unsigned seed) {
 	////////////////////////////////////////////////////////////////////////
 	//
 	//
+	txchr('4');
 	if (1) {
 		char	*mcptr;
 		unsigned fill;
@@ -299,7 +306,7 @@ void	memchk(int *mem, int *end, unsigned seed) {
 	*_spio = 0x0e08;
 	// }}}
 #endif
-	timestamps[5] = z_m.c_ck;
+	timestamps[5] = _zip->z_m.ac_ck;
 	// }}}
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -308,6 +315,7 @@ void	memchk(int *mem, int *end, unsigned seed) {
 	////////////////////////////////////////////////////////////////////////
 	//
 	//
+	txchr('5');
 	{
 		int	*mptr = mem;
 		unsigned afill, dfill, amsk, initial_afill;
@@ -347,12 +355,13 @@ void	memchk(int *mem, int *end, unsigned seed) {
 	*_spio = 0x0e0a;
 	// }}}
 #endif
-	timestamps[6] = z_m.c_ck;
+	timestamps[6] = _zip->z_m.ac_ck;
 	// }}}
 	////////////////////////////////////////////////////////////////////////
 	//
 	// #7, ZipDMA high speed extended throughput check
 	// {{{
+	txchr('x');
 #ifdef	_BOARD_HAS_SPIO
 	// {{{
 	// Fourth test done
@@ -364,7 +373,8 @@ void	memchk(int *mem, int *end, unsigned seed) {
 	*_spio = ((*_spio&0x1)^0x1)|0x0100;
 	// }}}
 #endif
-	timestamps[8] = z_m.c_ck;
+	timestamps[8] = _zip->z_m.ac_ck;
+	txchr('?');
 	// }}}
 }
 // }}}
