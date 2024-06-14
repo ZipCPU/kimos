@@ -361,7 +361,37 @@ void	memchk(int *mem, int *end, unsigned seed) {
 	//
 	// #7, ZipDMA high speed extended throughput check
 	// {{{
+#ifdef	_HAVE_ZIPSYS_DMA
+	unsigned	ln = (endc + cmem)/2;
+	char	*const	midc = &cmem[ln];
+
+	_zip->z_dma.d_rd = cmem;
+	_zip->z_dma.d_wr = midc;
+	_zip->z_dma.d_len= ln;
+	_wbperf->p_control = WBPERF_START | WBPERF_CLEAR;
+	_zip->z_dma.d_ctrl = DMACOPY;
+	if (_wbperf->p_control == 0)
+		txstr("-- NO START\n");
+	while(_zip->z_dma.d_ctrl & DMA_BUSY)
+		;
+	_wbperf->p_control = WBPERF_STOP;
+	txstr("6\n0x"); txhex(_wbperf->p_active); txstr(", ");
+	txstr("0x"); txhex(_wbperf->p_stb); txchr(", ");
+	txstr("0x"); txhex(_wbperf->p_stall); txchr(", ");
+	txstr("0x"); txhex(_wbperf->p_stb_ack); txchr("\n");
+
+	txstr("0x"); txhex(_wbperf->p_stall_ack); txstr(", ");
+	txstr("0x"); txhex(_wbperf->p_simple_acks); txchr(", ");
+	txstr("0x"); txhex(_wbperf->p_wait); txchr(", ");
+	txstr("0x"); txhex(_wbperf->p_hold); txchr("\n");
+
+	txstr("0x"); txhex(_wbperf->p_tail); txstr(", ");
+	txstr("0x"); txhex(_wbperf->p_bytes); txchr(", ");
+	txstr("0x"); txhex(_wbperf->p_write_bytes); txchr(", ");
+	txstr("0x"); txhex(_wbperf->p_write_beats); txchr("\n");
+#else
 	txchr('x');
+#endif
 #ifdef	_BOARD_HAS_SPIO
 	// {{{
 	// Fourth test done
@@ -386,7 +416,7 @@ void	runtest(void) {
 	int	counts = 0;
 	int	*const mem = (int *)_sdram;
 	int	*const end = (int *)(&_sdram[sizeof(_sdram)]);
-	unsigned const BLKSIZE = (1u<<20); // 512kB, for 1<<21 < TAPS < 1<<22
+	unsigned const BLKSIZE = (4u<<20); // 512kB, for 1<<21 < TAPS < 1<<22
 
 #ifdef	_BOARD_HAS_SPIO
 	// Clear any/all LED's

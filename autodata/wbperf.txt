@@ -1,0 +1,95 @@
+################################################################################
+##
+## Filename:	autodata/wbperf.txt
+## {{{
+## Project:	KIMOS, a Mercury KX2 demonstration project
+##
+## Purpose:	
+##
+## Creator:	Dan Gisselquist, Ph.D.
+##		Gisselquist Technology, LLC
+##
+################################################################################
+## }}}
+## Copyright (C) 2024, Gisselquist Technology, LLC
+## {{{
+## This file is part of the KIMOS project.
+##
+## The KIMOS project is free software and gateware: you can redistribute it
+## and/or modify it under the terms of the GNU General Public License as
+## published by the Free Software Foundation, either version 3 of the License,
+## or (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+## target there if the PDF file isn't present.)  If not, see
+## <http://www.gnu.org/licenses/> for a copy.
+## }}}
+## License:	GPL, v3, as defined and found on www.gnu.org,
+## {{{
+##		http://www.gnu.org/licenses/gpl.html
+##
+################################################################################
+##
+## }}}
+@PREFIX=wbperf
+@DEVID=WBPERF
+@NADDR=16
+@ACCESS=@$(DEVID)_ACCESS
+@SLAVE.TYPE=DOUBLE
+@SLAVE.BUS=wb32
+@MONBUS=wbwide_ddr3
+@BUS=wbwide
+@MAIN.INSERT=
+	////////////////////////////////////////////////////////////////////////
+	//
+	// @$(DEVID)
+	// {{{
+
+	wbperf	#(
+		.DW(@$(BUS.WIDTH))
+	) u_@$(PREFIX) (
+		// {{{
+		.i_clk(@$(SLAVE.BUS.CLOCK.WIRE)), .i_reset(@$(SLAVE.BUS.CLOCK.RESET)),
+		@$(SLAVE.ANSIPORTLIST),
+		.i_mon_cyc(@$(MONBUS)_cyc),
+		.i_mon_stb(@$(MONBUS)_stb),
+		.i_mon_we(@$(MONBUS)_we),
+		.i_mon_sel(@$(MONBUS)_sel),
+		.i_mon_stall(@$(MONBUS)_stall),
+		.i_mon_ack(@$(MONBUS)_ack),
+		.i_mon_err(@$(MONBUS)_err)
+		// }}}
+	);
+
+	// }}}
+@REGS.N=16
+## @REGS.0= 0 R_@$(DEVID) @$(DEVID) GPI GPO
+@BDEF.DEFN=
+#define	@$(DEVID)_H
+
+#define	@$(DEVID)_START		1
+#define	@$(DEVID)_STOP		0
+#define	@$(DEVID)_CLEAR		2
+#define	@$(DEVID)_TRIGGERED	4
+#define	@$(DEVID)_ERR		8
+
+typedef	struct @$(DEVID)_S {
+	unsigned	p_active, p_stb, p_stall, p_stb_ack, p_stall_ack,
+			p_simple_acks, p_wait, p_hold, p_tail, p_buserr,
+			p_busabort, p_bytes, p_write_bytes, p_write_beats;
+	unsigned	p_unused;
+	unsigned	p_control;
+} @$(DEVID);
+
+@BDEF.IONAME=	_@$(PREFIX)
+@BDEF.IOTYPE=	unsigned
+@BDEF.OSDEF=	_BOARD_HAS_@$(DEVID)
+@BDEF.OSVAL=	static volatile @$(BDEF.IOTYPE) *const @$(BDEF.IONAME) = ((@$BDEF.IOTYPE *)@$[0x%08x](REGBASE));
+@RTL.MAKE.FILES=wbperf.v
+@RTL.MAKE.GROUP=@$(DEVID)
