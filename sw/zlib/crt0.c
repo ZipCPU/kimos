@@ -115,7 +115,7 @@
 //		http://www.gnu.org/licenses/gpl.html
 //
 ////////////////////////////////////////////////////////////////////////////////
-// }}}
+//
 // }}}
 #include "zipcpu.h"
 #include "board.h"		// Our current board support file

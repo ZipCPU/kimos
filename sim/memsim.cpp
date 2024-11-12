@@ -125,7 +125,7 @@ void	MEMSIM::apply(const uchar wb_cyc, const uchar wb_stb, const uchar wb_we,
 	const uint32_t	*sp = &wb_data[NWRDWIDTH-1];
 	uint32_t	*dp = &o_data[NWRDWIDTH-1];
 	uint64_t	wbsel = ((uint64_t)wb_sel);//&0xfffffffffffffffful;
-	bool		DEBUG = true;
+	bool		DEBUG = false;
 
 	if (!wb_cyc) {
 		// {{{

@@ -215,7 +215,10 @@ module	wbperf #(
 	reg	[LGCNT-1:0]	total_stb, total_stall, total_stb_ack,
 				total_stall_ack, simple_acks, wait_count,
 				tail_count, tail_count_aux, bus_errs,
-				bus_aborts, write_bytes, write_beats, hold_count;
+				bus_aborts, write_bytes, write_beats,
+				hold_count, num_cyc;
+	reg			last_cyc;
+
 	reg	[LGCNT-1:0]	mon_outstanding;
 	reg			mon_zero;
 	// }}}
@@ -312,6 +315,7 @@ module	wbperf #(
 				o_wb_data[LGCNT-1:0] <= byte_count[LGCNT-1:0];
 		4'hc: o_wb_data[LGCNT-1:0] <= write_bytes;
 		4'hd: o_wb_data[LGCNT-1:0] <= write_beats;
+		4'he: o_wb_data[LGCNT-1:0] <= num_cyc;
 		4'hf: o_wb_data <= {
 				// pending_idle,
 				// pending_first_burst,
@@ -340,7 +344,7 @@ module	wbperf #(
 	// }}}
 	////////////////////////////////////////////////////////////////////////
 	//
-	// WB performance counters
+	// Trigger control & activity counting
 	// {{{
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -389,7 +393,7 @@ module	wbperf #(
 			perf_err <= 1;
 	end
 	// }}}
-
+	// }}}
 	////////////////////////////////////////////////////////////////////////
 	//
 	// Statistics
@@ -512,6 +516,19 @@ module	wbperf #(
 	else if (triggered && i_mon_stb && !i_mon_stall && i_mon_we)
 		write_beats <= write_beats + 1;
 	// }}}
+
+	// num_cyc : Number of times Cyc is activated
+	// {{{
+	always @(posedge i_clk)
+		last_cyc <= i_mon_cyc;
+
+	always @(posedge i_clk)
+	if (i_reset || clear_request)
+		num_cyc <= 0;
+	else if (triggered && i_mon_cyc && !last_cyc)
+		num_cyc <= num_cyc + 1;
+	// }}}
+
 
 	// }}}
 	////////////////////////////////////////////////////////////////////////

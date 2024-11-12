@@ -784,11 +784,15 @@ module	sdcmd #(
 	always @(posedge i_clk)
 	if (i_reset)
 		f_busy <= 1'b0;
-	else if (i_cmd_request && !o_busy)
+	else if (lcl_accept) // i_cmd_request && !o_busy)
 		f_busy <= 1'b1;
 	else if (o_done)
 		f_busy <= 1'b0;
 
+
+	always @(*)
+	if (!OPT_EMMC)
+		assume(!i_cmd_selfreply);
 
 	always @(*)
 	if (!i_reset && i_cmd_selfreply)
@@ -1085,9 +1089,12 @@ module	sdcmd #(
 		cover(i_cmd_type == R_R2 && o_err && o_ercode== ECODE_FRAMEERR);
 	end
 
-	always @(posedge i_clk)
-	if (!i_reset && r_busy && i_cmd_selfreply)
-		cover(!o_busy);
+	generate if (OPT_EMMC)
+	begin : EMMC_CVR
+		always @(posedge i_clk)
+		if (!i_reset && r_busy && i_cmd_selfreply)
+			cover(!o_busy);
+	end endgenerate
 
 	// }}}
 	////////////////////////////////////////////////////////////////////////

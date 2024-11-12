@@ -289,6 +289,7 @@
 		.BA_BITS(@$(DEVID)BA_BITS),	//width of bank address
 		.DQ_BITS(@$(DEVID)DQ_BITS),	//width of DQ
 		.LANES(@$(DEVID)BYTE_LANES),		// byte lanes
+		.tRFC(260_000),
 		.AUX_WIDTH(@$(DEVID)AUX_WIDTH),	//width of aux line (must be >= 4) 
 		.WB2_ADDR_BITS(7), 		//width of 2nd wishbone address bus 
             	.WB2_DATA_BITS(32),  		//width of 2nd wishbone data bus

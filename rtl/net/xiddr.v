@@ -38,13 +38,20 @@
 //
 `default_nettype	none
 // }}}
-module	xiddr(i_clk, i_pin, o_v);
-	input	wire		i_clk;
-	input	wire		i_pin;
-	output	wire	[1:0]	o_v;
+module	xiddr (
+		input	wire		i_clk,
+		input	wire		i_pin,
+		output	wire	[1:0]	o_v
+	);
+
+	// Local declarations
+	// {{{
+	wire	tmp_pedge, nedge;
+	reg	pedge;
+	// }}}
 
 	IDDR #(
-		.DDR_CLK_EDGE("SAME_EDGE_PIPELINED"),
+		.DDR_CLK_EDGE("SAME_EDGE"),
 		.SRTYPE("SYNC")
 	) IDDRi(
 		.C(i_clk),
@@ -54,7 +61,14 @@ module	xiddr(i_clk, i_pin, o_v);
 		.CE(1'b1),
 		//
 		.D(i_pin),
-		.Q1(o_v[0]),
-		.Q2(o_v[1]));
+		// .Q1(o_v[0]),	// SAME_EDGE_PIPELINED
+		.Q1(tmp_pedge),	// SAME_EDGE
+		.Q2(nedge)
+	);
+
+	always @(posedge i_clk)
+		pedge <= tmp_pedge;
+
+	assign	o_v = { nedge, pedge };
 
 endmodule

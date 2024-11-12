@@ -82,13 +82,13 @@
 typedef	struct @$(DEVID)_S {
 	unsigned	p_active, p_stb, p_stall, p_stb_ack, p_stall_ack,
 			p_simple_acks, p_wait, p_hold, p_tail, p_buserr,
-			p_busabort, p_bytes, p_write_bytes, p_write_beats;
-	unsigned	p_unused;
+			p_busabort, p_bytes, p_write_bytes, p_write_beats,
+			p_numcyc;
 	unsigned	p_control;
 } @$(DEVID);
 
 @BDEF.IONAME=	_@$(PREFIX)
-@BDEF.IOTYPE=	unsigned
+@BDEF.IOTYPE=	@$(DEVID)
 @BDEF.OSDEF=	_BOARD_HAS_@$(DEVID)
 @BDEF.OSVAL=	static volatile @$(BDEF.IOTYPE) *const @$(BDEF.IONAME) = ((@$BDEF.IOTYPE *)@$[0x%08x](REGBASE));
 @RTL.MAKE.FILES=wbperf.v

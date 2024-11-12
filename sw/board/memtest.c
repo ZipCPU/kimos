@@ -69,9 +69,9 @@ void	memchk(int *mem, int *end, unsigned seed) {
 	// const	int	TAPS = 0x07fffdf;	// 8Gb
 	char	*const cmem= (char *)mem;
 	char	*const endc= (char *)end;
-	unsigned	timestamps[9];
+	unsigned	timestamps[12];
 
-	for(int i=0; i<9; i++)
+	for(int i=0; i<12; i++)
 		timestamps[i] = 0;
 	timestamps[0] = _zip->z_m.ac_ck;
 
@@ -142,7 +142,7 @@ void	memchk(int *mem, int *end, unsigned seed) {
 	//
 	//
 	txchr('2');
-	{
+	if (1) {
 		int	*mptr = mem;
 		unsigned fill;
 
@@ -315,8 +315,9 @@ void	memchk(int *mem, int *end, unsigned seed) {
 	////////////////////////////////////////////////////////////////////////
 	//
 	//
+
 	txchr('5');
-	{
+	if (1) {
 		int	*mptr = mem;
 		unsigned afill, dfill, amsk, initial_afill;
 
@@ -362,33 +363,46 @@ void	memchk(int *mem, int *end, unsigned seed) {
 	// #7, ZipDMA high speed extended throughput check
 	// {{{
 #ifdef	_HAVE_ZIPSYS_DMA
-	unsigned	ln = (endc + cmem)/2;
+	unsigned	ln = (endc - cmem)/2;
 	char	*const	midc = &cmem[ln];
+	volatile WBPERF	*const perf = _wbperf;
+	unsigned	ttim, ncyc, nbeat;
 
+	perf->p_control = WBPERF_CLEAR;
 	_zip->z_dma.d_rd = cmem;
 	_zip->z_dma.d_wr = midc;
 	_zip->z_dma.d_len= ln;
-	_wbperf->p_control = WBPERF_START | WBPERF_CLEAR;
-	_zip->z_dma.d_ctrl = DMACOPY;
-	if (_wbperf->p_control == 0)
+	perf->p_control = WBPERF_START;
+	_zip->z_dma.d_ctrl = DMACCOPY;
+	if (perf->p_control == 0)
 		txstr("-- NO START\n");
 	while(_zip->z_dma.d_ctrl & DMA_BUSY)
 		;
-	_wbperf->p_control = WBPERF_STOP;
-	txstr("6\n0x"); txhex(_wbperf->p_active); txstr(", ");
-	txstr("0x"); txhex(_wbperf->p_stb); txchr(", ");
-	txstr("0x"); txhex(_wbperf->p_stall); txchr(", ");
-	txstr("0x"); txhex(_wbperf->p_stb_ack); txchr("\n");
+	perf->p_control = WBPERF_STOP;
+	// txstr("6\n0x"); txhex(perf->p_active);		txstr(", ");
+	// txstr("0x"); txhex(perf->p_stb);		txstr(", ");
+	// txstr("0x"); txhex(perf->p_stall);		txstr(", ");
+	// txstr("0x"); txhex(perf->p_stb_ack);		txchr('\n');
 
-	txstr("0x"); txhex(_wbperf->p_stall_ack); txstr(", ");
-	txstr("0x"); txhex(_wbperf->p_simple_acks); txchr(", ");
-	txstr("0x"); txhex(_wbperf->p_wait); txchr(", ");
-	txstr("0x"); txhex(_wbperf->p_hold); txchr("\n");
+	// txstr("0x"); txhex(perf->p_stall_ack);		txstr(", ");
+	// txstr("0x"); txhex(perf->p_simple_acks);	txstr(", ");
+	// txstr("0x"); txhex(perf->p_wait);		txstr(", ");
+	// txstr("0x"); txhex(perf->p_hold);		txchr('\n');
 
-	txstr("0x"); txhex(_wbperf->p_tail); txstr(", ");
-	txstr("0x"); txhex(_wbperf->p_bytes); txchr(", ");
-	txstr("0x"); txhex(_wbperf->p_write_bytes); txchr(", ");
-	txstr("0x"); txhex(_wbperf->p_write_beats); txchr("\n");
+	// txstr("0x"); txhex(perf->p_tail);		txstr(", ");
+	// txstr("0x"); txhex(perf->p_bytes);		txstr(", ");
+	// txstr("0x"); txhex(perf->p_write_bytes);	txstr(", ");
+	// txstr("0x"); txhex(perf->p_write_beats);	txchr('\n');
+	// txstr("0x"); txhex(perf->p_numcyc);	txchr('\n');
+
+	ttim = perf->p_stb + perf->p_stall + perf->p_simple_acks + perf->p_wait;
+	nbeat = perf->p_stb;
+	ncyc = perf->p_numcyc;
+
+	txstr("\n0x"); txhex(ttim); txstr(" = (0x"); txhex(ncyc);
+		txstr(" * L) + (0x"); txhex(nbeat); txstr(" * T)\n");
+
+	perf->p_control = WBPERF_CLEAR;
 #else
 	txchr('x');
 #endif
@@ -404,7 +418,126 @@ void	memchk(int *mem, int *end, unsigned seed) {
 	// }}}
 #endif
 	timestamps[8] = _zip->z_m.ac_ck;
-	txchr('?');
+	// }}}
+	////////////////////////////////////////////////////////////////////////
+	//
+	// #8, ZipDMA high speed extended throughput check, smaller buffer
+	// {{{
+#ifdef	_HAVE_ZIPSYS_DMA
+	// unsigned	ln = (endc - cmem)/2;
+	// char	*const	midc = &cmem[ln];
+	// volatile WBPERF	*const perf = _wbperf;
+
+	perf->p_control = WBPERF_CLEAR;
+	_zip->z_dma.d_rd = cmem;
+	_zip->z_dma.d_wr = midc;
+	_zip->z_dma.d_len= ln;
+	perf->p_control = WBPERF_START;
+	_zip->z_dma.d_ctrl = DMACCOPY + 512;
+	if (perf->p_control == 0)
+		txstr("-- NO START\n");
+	while(_zip->z_dma.d_ctrl & DMA_BUSY)
+		;
+	perf->p_control = WBPERF_STOP;
+	// txstr("7\nH: 0x"); txhex(perf->p_active);	txstr(", ");
+	// txstr("0x"); txhex(perf->p_stb);		txstr(", ");
+	// txstr("0x"); txhex(perf->p_stall);		txstr(", ");
+	// txstr("0x"); txhex(perf->p_stb_ack);		txchr('\n');
+
+	// txstr("H: 0x"); txhex(perf->p_stall_ack);	txstr(", ");
+	// txstr("0x"); txhex(perf->p_simple_acks);	txstr(", ");
+	// txstr("0x"); txhex(perf->p_wait);		txstr(", ");
+	// txstr("0x"); txhex(perf->p_hold);		txchr('\n');
+
+	// txstr("H: 0x"); txhex(perf->p_tail);		txstr(", ");
+	// txstr("0x"); txhex(perf->p_bytes);		txstr(", ");
+	// txstr("0x"); txhex(perf->p_write_bytes);	txstr(", ");
+	// txstr("0x"); txhex(perf->p_write_beats);	txchr('\n');
+	// txstr("H: 0x"); txhex(perf->p_numcyc);	txchr('\n');
+
+	ttim = perf->p_stb + perf->p_stall + perf->p_simple_acks + perf->p_wait;
+	nbeat = perf->p_stb;
+	ncyc = perf->p_numcyc;
+
+	txstr("0x"); txhex(ttim); txstr(" = (0x"); txhex(ncyc);
+		txstr(" * L) + (0x"); txhex(nbeat); txstr(" * T)\n");
+
+	perf->p_control = WBPERF_CLEAR;
+#else
+	txchr('x');
+#endif
+#ifdef	_BOARD_HAS_SPIO
+	// {{{
+	// Fourth test done
+	*_spio = 0x0e0c;
+
+	// Toggle bit 0 (0x01) as well--since we just finished another
+	// round.  This way the toggling bit will be the indication
+	// that the memory controller has been successful.
+	*_spio = ((*_spio&0x1)^0x1)|0x0100;
+	// }}}
+#endif
+	timestamps[9] = _zip->z_m.ac_ck;
+	// }}}
+	////////////////////////////////////////////////////////////////////////
+	//
+	// #9, ZipDMA high speed extended throughput check, even smaller buffer
+	// {{{
+#ifdef	_HAVE_ZIPSYS_DMA
+	// unsigned	ln = (endc - cmem)/2;
+	// char	*const	midc = &cmem[ln];
+	// volatile WBPERF	*const perf = _wbperf;
+
+	perf->p_control = WBPERF_CLEAR;
+	_zip->z_dma.d_rd = cmem;
+	_zip->z_dma.d_wr = midc;
+	_zip->z_dma.d_len= ln;
+	perf->p_control = WBPERF_START;
+	_zip->z_dma.d_ctrl = DMACCOPY + 256;
+	if (perf->p_control == 0)
+		txstr("-- NO START\n");
+	while(_zip->z_dma.d_ctrl & DMA_BUSY)
+		;
+	perf->p_control = WBPERF_STOP;
+	// txstr("7\nH: 0x"); txhex(perf->p_active);	txstr(", ");
+	// txstr("0x"); txhex(perf->p_stb);		txstr(", ");
+	// txstr("0x"); txhex(perf->p_stall);		txstr(", ");
+	// txstr("0x"); txhex(perf->p_stb_ack);		txchr('\n');
+
+	// txstr("H: 0x"); txhex(perf->p_stall_ack);	txstr(", ");
+	// txstr("0x"); txhex(perf->p_simple_acks);	txstr(", ");
+	// txstr("0x"); txhex(perf->p_wait);		txstr(", ");
+	// txstr("0x"); txhex(perf->p_hold);		txchr('\n');
+
+	// txstr("H: 0x"); txhex(perf->p_tail);		txstr(", ");
+	// txstr("0x"); txhex(perf->p_bytes);		txstr(", ");
+	// txstr("0x"); txhex(perf->p_write_bytes);	txstr(", ");
+	// txstr("0x"); txhex(perf->p_write_beats);	txchr('\n');
+	// txstr("H: 0x"); txhex(perf->p_numcyc);	txchr('\n');
+
+	ttim = perf->p_stb + perf->p_stall + perf->p_simple_acks + perf->p_wait;
+	nbeat = perf->p_stb;
+	ncyc = perf->p_numcyc;
+
+	txstr("0x"); txhex(ttim); txstr(" = (0x"); txhex(ncyc);
+		txstr(" * L) + (0x"); txhex(nbeat); txstr(" * T)\n");
+
+	perf->p_control = WBPERF_CLEAR;
+#else
+	txchr('x');
+#endif
+#ifdef	_BOARD_HAS_SPIO
+	// {{{
+	// Fourth test done
+	*_spio = 0x0e0c;
+
+	// Toggle bit 0 (0x01) as well--since we just finished another
+	// round.  This way the toggling bit will be the indication
+	// that the memory controller has been successful.
+	*_spio = ((*_spio&0x1)^0x1)|0x0100;
+	// }}}
+#endif
+	timestamps[10] = _zip->z_m.ac_ck;
 	// }}}
 }
 // }}}
@@ -416,8 +549,11 @@ void	runtest(void) {
 	int	counts = 0;
 	int	*const mem = (int *)_sdram;
 	int	*const end = (int *)(&_sdram[sizeof(_sdram)]);
-	unsigned const BLKSIZE = (4u<<20); // 512kB, for 1<<21 < TAPS < 1<<22
+	unsigned const BLKSIZE = (1u<<24); // 512kB, for 1<<21 < TAPS < 1<<22
 
+	txstr("+------------------------------+\n");
+	txstr("|-        MEMORY TEST         -|\n");
+	txstr("+------------------------------+\n");
 #ifdef	_BOARD_HAS_SPIO
 	// Clear any/all LED's
 	*_spio = 0x0ff00;

@@ -112,6 +112,37 @@ design.h: main.v builddate.v
 	@echo "#endif // DESIGN_H" >> $@
 ## }}}
 
+.PHONY: yosys
+## {{{
+yosys: kimos.json
+kimos.json: $(VFLIST)
+	yosys -s build.ys
+## }}}
+
+.PHONY: nextpnr
+## {{{
+PART = xc7k160tffg676-2
+DBPART = $(shell echo ${PART} | sed -e 's/-[0-9]//g')
+SPEEDGRADE = $(shell echo ${PART} | sed -e 's/.*\-\([0-9]\)/\1/g')
+# DBDIR := ${HOME}/.../tools/prjxray/database
+
+chipdb/${DBPART}.bin:
+	mkdir -p chipdb
+	pypy3 bbaexport.py --device ${PART} --bba ${DBPART}.bba
+	bbasm -l ${DBPART}.bba chipdb/${DBPART}.bin
+	rm -f ${DBPART}.bba
+
+.PHONY: nextpnr
+nextpnr: kimos.fasm
+kimos.fasm: kimos.json chipdb/${DBPART}.bin board.xdc
+	nextpnr-xilinx --chipdb chipdb/${DBPART}.bin --xdc board.xdc --json kimos.json --fasm kimos.fasm # PNR_ARGS PNR_DEBUG
+## }}}
+
+.PHONY: bitgen
+bitgen: kimos.bit
+	fasm2frames --part PART --db-root ${DBDIR}/kintex7 kimos.fasm > kimos.frames
+	xc7frames2bit --part_file ${DBDIR}/kintex7/${PART}/part.yaml --part_name ${PART} --frm_file kimos.frames --output_file kimos.bit
+
 .PHONY: archive
 ## {{{
 archive:

@@ -192,6 +192,7 @@ module	zipwb #(
 	//
 	wire			pf_cyc, pf_stb, pf_stall, pf_ack, pf_err;
 	wire [AW-1:0]		pf_addr;
+	wire	[BUS_WIDTH/8-1:0]	pf_sel;
 	// verilator coverage_off
 	// Since we aren't writing, these values will be constants
 	wire			pf_we;
@@ -319,6 +320,7 @@ module	zipwb #(
 
 	generate if (OPT_LGICACHE <= 1)
 	begin : SINGLE_FETCH
+		assign	pf_sel = {(BUS_WIDTH/8){1'b1}};
 
 		prefetch	#(
 			// {{{
@@ -353,6 +355,7 @@ module	zipwb #(
 
 	end else if (OPT_LGICACHE <= 2)
 	begin : DBLFETCH
+		assign	pf_sel = {(BUS_WIDTH/8){1'b1}};
 
 		dblfetch #(
 			// {{{
@@ -386,6 +389,7 @@ module	zipwb #(
 		);
 
 	end else begin : PFCACHE
+		assign	pf_sel = {(BUS_WIDTH/8){1'b1}};
 
 		pfcache #(
 			// {{{
@@ -576,7 +580,7 @@ module	zipwb #(
 				.i_b_stb_a(pf_stb), .i_b_stb_b(1'b0),
 				.i_b_we(pf_we), .i_b_adr(pf_addr),
 				.i_b_dat(mem_data),
-				.i_b_sel({(BUS_WIDTH/8){1'b1}}),
+				.i_b_sel(pf_sel),
 				.o_b_stall(pf_stall), .o_b_ack(pf_ack),
 				.o_b_err(pf_err),
 			// Common wires, in and out, of the arbiter
@@ -605,7 +609,7 @@ module	zipwb #(
 				.i_a_stb_a(pf_stb), .i_a_stb_b(1'b0),
 				.i_a_we(pf_we), .i_a_adr(pf_addr),
 				.i_a_dat(mem_data),
-				.i_a_sel({(BUS_WIDTH/8){1'b1}}),
+				.i_a_sel(pf_sel),
 				.o_a_stall(pf_stall), .o_a_ack(pf_ack),
 				.o_a_err(pf_err),
 			// Memory access to the arbiter
