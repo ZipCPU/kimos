@@ -14,7 +14,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 // }}}
-// Copyright (C) 2024, Gisselquist Technology, LLC
+// Copyright (C) 2024-2025, Gisselquist Technology, LLC
 // {{{
 // This file is part of the KIMOS project.
 //
@@ -56,7 +56,7 @@ module	xsdserdes8x #(
 		// {{{
 		input	wire		i_clk,
 					i_hsclk,
-		// input	wire		i_reset,
+		input	wire		i_reset,
 		//
 		input	wire		i_en,
 		input	wire	[7:0]	i_data,
@@ -81,23 +81,24 @@ module	xsdserdes8x #(
 		r_last <= { r_last[0], i_data };
 
 	always @(posedge i_clk)
-		r_mine <= r_last;
+		r_mine <= r_last[8:1];
 
 	assign	o_mine = r_mine;
 
 `ifdef OPENSIM
 	// {{{
 	reg		last_ck;
-	reg	[7:0]	ir_wide, or_wide, rx_wide;
+	reg	[7:0]	ir_wide, rx_wide;
+	reg	[14:0]	or_wide;	// Output register
 
 	always @(posedge i_hsclk or negedge i_hsclk)
 		last_ck <= i_clk;
 
 	always @(posedge i_hsclk or negedge i_hsclk)
 	if (i_clk && !last_ck)
-		or_wide <= i_data;
+		or_wide <= { or_wide[13:7], i_data };
 	else
-		or_wide <= { or_wide[6:0], 1'b0 };
+		or_wide <= { or_wide[13:0], 1'b0 };
 
 	always @(posedge i_hsclk or negedge i_hsclk)
 		ir_wide <= { ir_wide[6:0], i_pin !== 1'b0 };
@@ -106,7 +107,7 @@ module	xsdserdes8x #(
 		rx_wide <= ir_wide;
 
 	assign	io_tristate = !i_en;
-	assign	o_pin = or_wide[7];
+	assign	o_pin = or_wide[14];
 	assign	o_wide = rx_wide;
 	assign	o_raw = i_pin;
 
@@ -114,13 +115,13 @@ module	xsdserdes8x #(
 	// {{{
 	// Verilator lint_off UNUSED
 	wire	unused;
-	assign	unused = &{ 1'b0 };
+	assign	unused = &{ 1'b0, i_reset };
 	// Verilator lint_on  UNUSED
 	// }}}
 	// }}}
 `else
 	wire	w_pin, w_in, w_reset, high_z, fabric_return;
-	assign	w_reset = 1'b0;	// Active high reset
+	assign	w_reset = i_reset;	// Active high reset
 
 	OSERDESE2 #(
 		// {{{

@@ -14,7 +14,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 // }}}
-// Copyright (C) 2024, Gisselquist Technology, LLC
+// Copyright (C) 2024-2025, Gisselquist Technology, LLC
 // {{{
 // This file is part of the KIMOS project.
 //
@@ -48,6 +48,9 @@ module	sdcmd #(
 		// parameter [0:0]	OPT_LITTLE_ENDIAN = 1'b0,
 		parameter [0:0]	OPT_EMMC = 1'b1,
 		parameter [0:0]	OPT_DS = (OPT_EMMC),
+		// OPT_SERDES=1 delays the engagement of any tristate control
+		// by a clock period
+		parameter [0:0]	OPT_SERDES = 1'b0,
 		parameter	LGTIMEOUT = 26,	// 500ms expected
 		parameter	LGLEN = 9,
 		parameter	MW = 32
@@ -58,6 +61,7 @@ module	sdcmd #(
 		// Configuration bits
 		input	wire			i_cfg_ds,	// Use ASYNC
 		input	wire			i_cfg_dbl,	// 2Bits/Clk
+		input	wire			i_cfg_pp,	// Push/Pull
 		input	wire			i_ckstb,
 		// Controller interface
 		// {{{
@@ -77,6 +81,7 @@ module	sdcmd #(
 		output	wire			o_cmd_en,
 		// output	wire		o_pp_cmd,	// From CFG reg
 		output	wire	[1:0]		o_cmd_data,
+		output	wire			o_cmd_tristate,
 		// }}}
 		// Receive from the front end
 		// {{{
@@ -106,8 +111,8 @@ module	sdcmd #(
 	// {{{
 	localparam [1:0]	R_NONE = 2'b00,
 				R_R1   = 2'b01,
-				R_R2   = 2'b10;
-				// R_R1b  = 2'b11;
+				R_R2   = 2'b10,
+				R_R1b  = 2'b11;
 
 	localparam [1:0]	ECODE_TIMEOUT = 2'b00,
 				ECODE_OKAY    = 2'b01,
@@ -118,7 +123,8 @@ module	sdcmd #(
 
 	reg		active;
 	reg	[5:0]	srcount;
-	reg	[47:0]	tx_sreg;
+	reg	[47:0]	tx_sreg, tx_tristate;
+	reg		last_tristate, cmd_tristate;
 
 	reg		waiting_on_response, cfg_ds, cfg_dbl, r_frame_err,
 			response_active;
@@ -180,7 +186,7 @@ module	sdcmd #(
 			srcount <= srcount - 1;
 		end
 	end
-	
+
 	always @(posedge i_clk)
 	if (i_reset)
 		tx_sreg <= 48'hffff_ffff_ffff;
@@ -198,9 +204,51 @@ module	sdcmd #(
 			tx_sreg <= { tx_sreg[46:0], 1'b1 };
 	end
 
+	// The "current" tristate would nominally be tx_tristate[47].  However,
+	// our IO elements don't necessarily tristate on a dime, hence the
+	// reason why we have last_tristate and cmd_tristate--to guarantee that
+	// any tristate operation 1) drops tristate immediately if necessary,
+	// and 2) lags by one clock cycle when attempting to enable tristate.
+	always @(posedge i_clk)
+	if (i_reset)
+	begin
+		tx_tristate <= 48'hffff_ffff_ffff;
+		last_tristate <= 1'b1;
+		cmd_tristate  <= 1'b1;
+	end else if (OPT_EMMC && active && i_cmd_collision)
+	begin
+		tx_tristate <= 48'hffff_ffff_ffff;
+		last_tristate <= 1'b1;
+		cmd_tristate  <= 1'b1;
+	end else if (lcl_accept)
+	begin
+		if (i_cfg_pp || i_cfg_dbl)
+			tx_tristate <= 48'h0;
+		else
+			tx_tristate <= { 1'b0, i_cmd, i_arg,
+				CMDCRC({ 1'b0, i_cmd, i_arg }), 1'b1 };
+		last_tristate <= 1'b0;
+		cmd_tristate  <= 1'b0;
+	end else if (i_ckstb)
+	begin
+		last_tristate <= tx_tristate[47];
+		if (cfg_dbl)
+		begin
+			tx_tristate   <= { tx_tristate[45:0], 2'b11 };
+			tx_tristate[47] <= &tx_tristate[45:44];
+			cmd_tristate  <= (&tx_tristate[45:44]) && (!OPT_SERDES || last_tristate);
+		end else begin
+			tx_tristate <= { tx_tristate[46:0], 1'b1 };
+			cmd_tristate  <= tx_tristate[46] && (!OPT_SERDES || last_tristate);
+		end
+	end else begin
+		last_tristate <= tx_tristate[47];
+		cmd_tristate  <= tx_tristate[47] && (!OPT_SERDES || last_tristate);
+	end
+
 	assign	o_cmd_en = active;
 	assign	o_cmd_data = (cfg_dbl) ? tx_sreg[47:46] : {(2){tx_sreg[47]}};
-
+	assign	o_cmd_tristate = cmd_tristate;
 	// }}}
 	////////////////////////////////////////////////////////////////////////
 	//
@@ -253,7 +301,7 @@ module	sdcmd #(
 		begin
 			if (S_ASYNC_VALID)
 				resp_count <= resp_count + 2;
-		end else if (cmd_type[0])
+		end else if (cmd_type == R_R1 || cmd_type == R_R1b)
 		begin
 			if (resp_count + (i_cmd_strb[1] ? 1:0)
 					+ (i_cmd_strb[0] ? 1:0) >= 48)
@@ -297,7 +345,7 @@ module	sdcmd #(
 	begin
 		if (S_ASYNC_VALID)
 			rx_sreg <= { rx_sreg[37:0], S_ASYNC_DATA[1:0] };
-	end else if (cmd_type[0])
+	end else if (cmd_type == R_R1 || cmd_type == R_R1b)
 	begin
 		if (resp_count < 47 && i_cmd_strb[1])
 		begin
@@ -321,7 +369,7 @@ module	sdcmd #(
 
 	assign	w_done = waiting_on_response
 			&&((cmd_type == R_R2 && o_mem_valid && o_mem_addr >= 3)
-			|| (cmd_type[0] && resp_count == 48));
+			|| ((cmd_type == R_R1 || cmd_type == R_R1b) && resp_count == 48));
 
 	assign	w_no_response = (active && cmd_type == R_NONE && i_ckstb
 						// Verilator lint_off WIDTH
@@ -334,7 +382,7 @@ module	sdcmd #(
 	always @(posedge i_clk)
 	if (i_reset || !waiting_on_response || cmd_type == R_NONE || o_cmd_response)
 		o_cmd_response <= 1'b0;
-	else if (!cmd_type[1])
+	else if (cmd_type == R_R1 || cmd_type == R_R1b)
 		o_cmd_response <= (resp_count == 48) && !r_done;
 	else // if (cmd_type == R_R2)
 		o_cmd_response <= (resp_count == 136) && !r_done;
@@ -427,9 +475,10 @@ module	sdcmd #(
 		r_frame_err <= 1'b0;
 	else if (resp_count == 2 && rx_sreg[1:0] != 2'b00)
 		r_frame_err <= 1'b1;
-	
+
 	assign	frame_err = r_frame_err || (waiting_on_response
-			&&((cmd_type[1] && !rx_sreg[0] && resp_count == 48)
+			&&(((cmd_type == R_R1 || cmd_type == R_R1b)
+				 && !rx_sreg[0] && resp_count == 48)
 			||((cmd_type==R_R2&& !rx_sreg[0] && resp_count == 136))));
 	// }}}
 
@@ -573,7 +622,7 @@ module	sdcmd #(
 	always @(posedge i_clk)
 	if (i_reset || !waiting_on_response || o_cmd_en)
 		crc_fill <= 0;
-	else if (cmd_type[0] || resp_count > 7)
+	else if (cmd_type == R_R1 || cmd_type == R_R1b || resp_count > 7)
 	begin
 		if (OPT_DS && cfg_ds && S_ASYNC_VALID)
 			crc_fill <= STEPCRC(STEPCRC(crc_fill,
@@ -739,7 +788,7 @@ module	sdcmd #(
 ////////////////////////////////////////////////////////////////////////////////
 `ifdef	FORMAL
 	(* anyconst *) reg f_nvr_request, f_nvr_collision;
-	reg	f_past_valid, f_busy;
+	reg		f_past_valid, f_busy, f_cfg_pp;
 	reg	[7:0]	f_last_resp_count;
 	reg	[47:0]	f_tx_reg, f_tx_now;
 	wire	[5:0]	f_txshift;
@@ -841,6 +890,13 @@ module	sdcmd #(
 	always @(posedge i_clk)
 	if (!i_reset && $past(o_cmd_response))
 		assert(!o_cmd_response);
+
+	always @(posedge i_clk)
+	if (i_reset)
+		f_cfg_pp <= 5'b0;
+	else if (lcl_accept)
+		f_cfg_pp <= i_cfg_pp;
+	// }}}
 
 	// }}}
 	////////////////////////////////////////////////////////////////////////
@@ -988,6 +1044,56 @@ module	sdcmd #(
 		end
 
 	end
+
+	// Tristate checks
+	// {{{
+	reg	[47:0]	f_tristate, f_tristate_p1, f_tristate_msk,
+			f_tristate_active;
+	always @(*)
+	begin
+		f_tristate_p1 = tx_tristate + 1;
+		f_tristate = (~tx_tristate) + f_tristate_p1;
+
+		f_tristate_msk = (tx_tristate << srcount) + (48'h1 << srcount);
+		f_tristate_active = tx_tristate >> (48-srcount);
+	end
+
+	always @(*)
+	if (!i_reset && o_cmd_en)
+	begin
+		assert(tx_tristate == (tx_tristate & tx_sreg));
+		assert(f_tristate == 0);
+		assert(f_tristate_msk == 48'h0);
+		if (f_cfg_pp || cfg_dbl)
+		begin
+			assert(f_tristate_active == 0);
+		end else begin
+			assert(tx_tristate == tx_sreg);
+		end
+	end
+
+	always @(*)
+	if (!i_reset && !o_cmd_en)
+		assert(&tx_tristate);
+
+	always @(*)
+	if (!i_reset && o_cmd_en)
+	begin
+		if (f_cfg_pp || cfg_dbl)
+		begin
+			assert(!o_cmd_tristate);
+		end else if (o_cmd_data != 2'b11)
+		begin
+			assert(!o_cmd_tristate);
+		end else if (!OPT_SERDES)
+			assert(o_cmd_tristate);
+	end
+
+	always @(posedge i_clk)
+	if (!i_reset && OPT_SERDES && $past(!i_reset && o_cmd_en
+					&& (o_cmd_data != 2'b11 || f_cfg_pp)))
+		assert(!o_cmd_tristate);
+	// }}}
 
 	always @(*)
 		assert(srcount <= 48);

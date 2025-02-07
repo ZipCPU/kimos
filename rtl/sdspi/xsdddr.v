@@ -15,7 +15,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 // }}}
-// Copyright (C) 2024, Gisselquist Technology, LLC
+// Copyright (C) 2024-2025, Gisselquist Technology, LLC
 // {{{
 // This file is part of the KIMOS project.
 //
@@ -143,24 +143,16 @@ module	xsdddr #(
 
 		assign	o_wide = r_in;
 `else
-		wire	tmp_pedge, nedge;
-		reg	pedge;
-	
 		IDDR #(
-			.DDR_CLK_EDGE("SAME_EDGE"),
+			.DDR_CLK_EDGE("SAME_EDGE_PIPELINED"),
 			.INIT_Q1(1'b1),
 			.INIT_Q2(1'b1),
 			.SRTYPE("SYNC")
 		) u_iddr (
-			.Q1(tmp_pedge), .Q2(nedge),
+			.Q1(o_wide[1]), .Q2(o_wide[0]),
 			.C(i_clk), .CE(1'b1), .D(i_pin),
 			.R(1'b0), .S(1'b0)
 		);
-
-		always @(posedge i_clk)
-			pedge <= tmp_pedge;
-
-		assign	o_wide = { pedge, nedge };
 `endif
 		// }}}
 	end else begin : GEN_OUTPUT

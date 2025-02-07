@@ -14,7 +14,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 // }}}
-// Copyright (C) 2022-2024, Gisselquist Technology, LLC
+// Copyright (C) 2022-2025, Gisselquist Technology, LLC
 // {{{
 // This file is part of the KIMOS project.
 //
@@ -200,9 +200,8 @@ module	sddma_mm2s #(
 			SZ_BUS: begin
 				nxtstb_size = (DW/8);
 				if (DW/8 > rdstb_len - rdstb_size)
-					nxtstb_size =
-						{ 1'b0, rdstb_len[WBLSB:0] }
-						-{ 1'b0, rdstb_size[WBLSB:0]};
+					nxtstb_size= { 1'b0,rdstb_len[WBLSB:0] }
+						- { 1'b0, rdstb_size[WBLSB:0]};
 				end
 			// Verilator lint_on  WIDTH
 			endcase
@@ -428,8 +427,8 @@ module	sddma_mm2s #(
 		end else begin
 			// {{{
 			case(i_size)
-			SZ_BYTE: ibase_sel= {1'h1, {(DW/8-1){1'b0}} } << i_addr[WBLSB-1:0];
-			SZ_16B: ibase_sel = {2'h3, {(DW/8-2){1'b0}} } << {i_addr[WBLSB-1:1], 1'b0 };
+			SZ_BYTE: ibase_sel= {1'h1, {(DW/8-1){1'b0}} } >> i_addr[WBLSB-1:0];
+			SZ_16B: ibase_sel = {2'h3, {(DW/8-2){1'b0}} } >> {i_addr[WBLSB-1:1], 1'b0 };
 			default: ibase_sel = {(DW/8){1'b1}};
 			endcase
 			// }}}
@@ -637,9 +636,9 @@ module	sddma_mm2s #(
 		wb_outstanding <= 0;
 		// wb_pipeline_full <= 1'b0;
 	else case({ (o_rd_stb && !i_rd_stall), i_rd_ack })
-		2'b10: wb_outstanding <= wb_outstanding + 1;
-		2'b01: wb_outstanding <= wb_outstanding - 1;
-		default: begin end
+	2'b10: wb_outstanding <= wb_outstanding + 1;
+	2'b01: wb_outstanding <= wb_outstanding - 1;
+	default: begin end
 	endcase
 	// }}}
 
@@ -735,14 +734,11 @@ module	sddma_mm2s #(
 	if (i_reset || !o_busy)
 		m_valid <= 1'b0;
 	else begin
-		// Verilator lint_off WIDTH
 		m_valid <= 0;
 		if ((!m_valid || !m_last) && rdack_len == 0 && fill > 0)
 			m_valid <= 1;
 		else if (o_rd_cyc && i_rd_ack)
-			m_valid <= 1'b1; // ((next_fill >= DW/8)
-			// || (rdack_len <= { {(LGLENGTH-1){1'b0}}, rdack_size }));
-		// Verilator lint_on  WIDTH
+			m_valid <= 1'b1;
 	end
 	// }}}
 
@@ -758,22 +754,22 @@ module	sddma_mm2s #(
 	end else if (o_rd_cyc && i_rd_ack)
 	begin
 		case(r_size)
-			SZ_BYTE: pre_shift <= pre_shift + (r_inc ? 1 : 0);
-			SZ_16B:  begin
-				// {{{
-				pre_shift <= pre_shift + (r_inc ? 2 : 0);
-				pre_shift[0] <= 1'b0;
-				end
-				// }}}
-			SZ_32B:  begin
-				// {{{
-				// Verilator lint_off WIDTH
-				pre_shift <= pre_shift + (r_inc ? 4 : 0);
-				// Verilator lint_on  WIDTH
-				pre_shift[1:0] <= 2'b0;
-				end
-				// }}}
-			SZ_BUS:  pre_shift <= 0;
+		SZ_BYTE: pre_shift <= pre_shift + (r_inc ? 1 : 0);
+		SZ_16B:  begin
+			// {{{
+			pre_shift <= pre_shift + (r_inc ? 2 : 0);
+			pre_shift[0] <= 1'b0;
+			end
+			// }}}
+		SZ_32B:  begin
+			// {{{
+			// Verilator lint_off WIDTH
+			pre_shift <= pre_shift + (r_inc ? 4 : 0);
+			// Verilator lint_on  WIDTH
+			pre_shift[1:0] <= 2'b0;
+			end
+			// }}}
+		SZ_BUS:  pre_shift <= 0;
 		endcase
 	end
 
@@ -880,20 +876,21 @@ module	sddma_mm2s #(
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 `ifdef	FORMAL
-	localparam [0:0] CONTRACT = 1'b1,
+	// localparam [0:0] CONTRACT = 1'b1;
 	localparam	F_LGDEPTH = LGLENGTH+1-WBLSB;
 	localparam	F_LGCOUNT = LGLENGTH+1;
 	reg	f_past_valid;
 	wire	[F_LGDEPTH-1:0]	fwb_nreqs, fwb_nacks, fwb_outstanding;
-	(* anyconst *)	reg		f_cfg_inc;
-	(* anyconst *)	reg	[1:0]	f_cfg_size;
+	(* anyconst *)	reg				f_cfg_inc;
+	(* anyconst *)	reg	[1:0]			f_cfg_size;
 	(* anyconst *)	reg	[ADDRESS_WIDTH-1:0]	f_cfg_addr;
 	(* anyconst *)	reg	[LGLENGTH:0]		f_cfg_len;
 	reg [DW/8-1:0] 		f_base_sel;
 	reg	[F_LGCOUNT-1:0]	f_rcvd, f_sent;
 	reg	[WBLSB:0]	f_ack_size, f_stb_size;
-	reg [F_LGCOUNT-1:0] f_outstanding_bytes;
-	reg f_stb_first, f_stb_last, f_ack_first, f_ack_last;
+	reg [F_LGCOUNT-1:0]	f_outstanding_bytes;
+	reg			f_stb_first, f_stb_last,
+				f_ack_first, f_ack_last;
 	(* keep *) reg [WBLSB-1:0] f_excess_last_return, lower_len_bits;
 
 	initial	f_past_valid = 0;
@@ -1114,24 +1111,18 @@ module	sddma_mm2s #(
 		f_outstanding_bytes = 0;
 	else case(r_size)
 	SZ_BYTE: f_outstanding_bytes = wb_outstanding;
-	SZ_16B: begin
-		if (!f_ack_first)
+	SZ_16B: if (!f_ack_first)
 			f_outstanding_bytes = wb_outstanding * 2;
 		else
 			f_outstanding_bytes = wb_outstanding * 2 - f_cfg_addr[0];
-		end
-	SZ_32B: begin
-		if (!f_ack_first)
+	SZ_32B: if (!f_ack_first)
 			f_outstanding_bytes = wb_outstanding * 4;
 		else
 			f_outstanding_bytes = wb_outstanding * 4 - f_cfg_addr[1:0];
-		end
-	SZ_BUS: begin
-		if (!f_ack_first)
+	SZ_BUS: if (!f_ack_first)
 			f_outstanding_bytes = wb_outstanding * (DW/8);
 		else
-				f_outstanding_bytes = wb_outstanding * (DW/8) - f_cfg_addr[WBLSB-1:0];
-		end
+			f_outstanding_bytes = wb_outstanding * (DW/8) - f_cfg_addr[WBLSB-1:0];
 	endcase
 
 	always @(*)
@@ -1400,36 +1391,36 @@ module	sddma_mm2s #(
 	//
 	//
 
-	always @(*) begin
-		if (!i_reset && o_busy && !o_err && o_rd_cyc) begin
-			if (!f_stb_first) begin
-				case(r_size)	// Check the rdstb_len whether is odd or even
-					SZ_16B: begin
-						if (f_cfg_len > 2 && rdstb_len != 0) begin
-							assert(rdstb_len[0] == (f_cfg_addr[0] ^ f_cfg_len[0]));
-						end
-					end
-					SZ_32B: begin
-						if (f_cfg_len > 4 && rdstb_len != 0) begin
-							lower_len_bits = f_cfg_len - (4 - f_cfg_addr[1:0]);
-							assert(rdstb_len[1:0] == ((f_cfg_addr[1:0] == 2'b00) ? f_cfg_len[1:0] : lower_len_bits[1:0]));
-						end
-					end
-					SZ_BUS: begin
-						if (f_cfg_len > DW/8 && rdstb_len != 0) begin
-							lower_len_bits = f_cfg_len - (DW/8 - f_cfg_addr[WBLSB-1:0]);
-							assert(rdstb_len[WBLSB-1:0] == ((f_cfg_addr[WBLSB-1:0] == 0) ? f_cfg_len[WBLSB-1:0] : lower_len_bits[WBLSB-1:0]));
-						end
-					end
-				endcase
-				if (f_stb_last) begin
-					case(r_size)
-						SZ_BYTE: begin assert(rdstb_len == 1); end
-						SZ_16B:  begin assert(rdstb_len == 2 - f_excess_last_return[0]); end
-						SZ_32B:  begin assert(rdstb_len == 4 - f_excess_last_return[1:0]); end
-						SZ_BUS:  begin assert(rdstb_len == (DW/8) - f_excess_last_return[WBLSB-1:0]); end
-					endcase
+	always @(*)
+	if (!i_reset && o_busy && !o_err && o_rd_cyc)
+	begin
+		if (!f_stb_first)
+		begin
+			case(r_size)	// Check the rdstb_len whether is odd or even
+			SZ_16B: if (f_cfg_len > 2 && rdstb_len != 0)
+				begin
+					assert(rdstb_len[0] == (f_cfg_addr[0] ^ f_cfg_len[0]));
 				end
+			SZ_32B: if (f_cfg_len > 4 && rdstb_len != 0)
+				begin
+					lower_len_bits = f_cfg_len - (4 - f_cfg_addr[1:0]);
+					assert(rdstb_len[1:0] == ((f_cfg_addr[1:0] == 2'b00) ? f_cfg_len[1:0] : lower_len_bits[1:0]));
+				end
+			SZ_BUS: if (f_cfg_len > DW/8 && rdstb_len != 0)
+				begin
+					lower_len_bits = f_cfg_len - (DW/8 - f_cfg_addr[WBLSB-1:0]);
+					assert(rdstb_len[WBLSB-1:0] == ((f_cfg_addr[WBLSB-1:0] == 0) ? f_cfg_len[WBLSB-1:0] : lower_len_bits[WBLSB-1:0]));
+				end
+			endcase
+
+			if (f_stb_last)
+			begin
+				case(r_size)
+				SZ_BYTE: assert(rdstb_len == 1);
+				SZ_16B:  assert(rdstb_len == 2 - f_excess_last_return[0]);
+				SZ_32B:  assert(rdstb_len == 4 - f_excess_last_return[1:0]);
+				SZ_BUS:  assert(rdstb_len == (DW/8) - f_excess_last_return[WBLSB-1:0]);
+				endcase
 			end
 
 			if (!f_ack_first)
@@ -1588,6 +1579,7 @@ module	sddma_mm2s #(
 	////////////////////////////////////////////////////////////////////////
 	//
 	//
+// `define	CONTRACT
 `ifdef CONTRACT
 	(* anyconst *)	reg			fc_check;
 	(* anyconst *)	reg	[F_LGCOUNT-1:0]	fc_posn;

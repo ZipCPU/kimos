@@ -12,7 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 // }}}
-// Copyright (C) 2024, Gisselquist Technology, LLC
+// Copyright (C) 2024-2025, Gisselquist Technology, LLC
 // {{{
 // This file is part of the KIMOS project.
 //
@@ -41,9 +41,14 @@
 `default_nettype	none
 // }}}
 module	sdtxframe #(
+		// {{{
 		parameter		NCRC = 16,
-		parameter [0:0]		OPT_SERDES = 1'b1,
+		// OPT_SERDES=1 delays the invocation of tristate by a clock
+		// cycle.  This is in an attempt to match Xilinx's 8x SERDES.
+		parameter [0:0]		OPT_SERDES = 1'b0,
+		parameter [0:0]		OPT_CRCTOKEN = 1'b0,
 		parameter [NCRC-1:0]	CRC_POLYNOMIAL  = 16'h1021
+		// }}}
 	) (
 		// {{{
 		input	wire			i_clk, i_reset,
@@ -51,6 +56,11 @@ module	sdtxframe #(
 		input	wire	[7:0]		i_cfg_spd,
 		input	wire	[1:0]		i_cfg_width,
 		input	wire			i_cfg_ddr,
+		input	wire			i_cfg_pp,
+		input	wire			i_cfg_expect_ack,
+		//
+		input	wire			i_cfg_clk90,
+		input	wire	[7:0]		i_ckwide,
 		//
 		input	wire			i_en, i_ckstb, i_hlfck,
 		//
@@ -61,7 +71,14 @@ module	sdtxframe #(
 		//
 		output	wire			tx_valid,
 		// input wire			tx_ready,
-		output	wire	[31:0]		tx_data
+		output	wire	[31:0]		tx_data,
+		output	wire			tx_tristate,
+		//
+		input	wire			i_crcack,
+		input	wire			i_crcnak,
+		output	wire			o_done,
+		output	wire			o_err,
+		output	wire			o_ercode
 		// }}}
 	);
 
@@ -80,7 +97,7 @@ module	sdtxframe #(
 				P_2D = 2'b01,
 				P_4D = 2'b10;
 
-	reg		cfg_ddr;
+	reg		cfg_ddr, cfg_pp;
 	reg	[1:0]	cfg_width, cfg_period;
 
 
@@ -96,15 +113,22 @@ module	sdtxframe #(
 	reg	[NCRC- 1:0]	crc_1w_reg;
 	reg	[NCRC* 2-1:0]	di_crc_2w, nxt_crc_2w, new_crc_2w, crc_2w_reg;
 	reg	[NCRC* 4-1:0]	di_crc_4w, nxt_crc_4w, new_crc_4w, crc_4w_reg;
+	reg	[NCRC* 8-1:0]	di_crc_4d, nxt_crc_4d, new_crc_4d, crc_4d_reg;
 	reg	[NCRC* 8-1:0]	di_crc_8w, nxt_crc_8w, new_crc_8w, crc_8w_reg;
 	reg	[NCRC*16-1:0]	di_crc_8d, nxt_crc_8d, new_crc_8d, crc_8d_reg;
 
-	reg		ck_valid;
+	reg		ck_valid, ck_tristate, ck_stop_bit;
+	reg		r_tristate;
+
 	reg	[4:0]	ck_counts;
 	reg	[31:0]	ck_data, ck_sreg;
+
+	reg		r_done;
+	reg	[3:0]	r_timeout;
+
 	// }}}
 	// Steps: #1, Packetizer: breaks incoming signal into wires
-	// 	#2, add CRC
+	//	#2, add CRC
 	//	#3, split across clocks
 	//
 	////////////////////////////////////////////////////////////////////////
@@ -134,6 +158,12 @@ module	sdtxframe #(
 
 	always @(posedge i_clk)
 	if (i_reset)
+		cfg_pp <= 1'b0;
+	else if (pstate == P_IDLE)
+		cfg_pp <= i_cfg_pp;
+
+	always @(posedge i_clk)
+	if (i_reset)
 		cfg_ddr <= 1'b0;
 	else if (pstate == P_IDLE)
 		cfg_ddr <= i_cfg_ddr;
@@ -160,7 +190,36 @@ module	sdtxframe #(
 		// {{{
 		pstate <= P_IDLE;
 		pre_valid <= 0;
-		pre_data <= (S_VALID) ? S_DATA : {(32){1'b1}};
+		// pre_data <= (S_VALID) ? S_DATA : {(32){1'b1}};
+		if (!S_VALID)
+			pre_data <= {(32){1'b1}};
+		else if (!i_cfg_ddr || i_cfg_width == WIDTH_8W)
+			pre_data <= S_DATA;
+		else if (i_cfg_width == WIDTH_4W)
+			pre_data <= {
+				S_DATA[31:28], S_DATA[23:20],
+				S_DATA[27:24], S_DATA[19:16],
+				S_DATA[15:12], S_DATA[ 7: 4],
+				S_DATA[11: 8], S_DATA[ 3: 0] };
+		else
+			pre_data <= {
+				S_DATA[31], S_DATA[23],
+				S_DATA[30], S_DATA[22],
+				S_DATA[29], S_DATA[21],
+				S_DATA[28], S_DATA[20],
+				S_DATA[27], S_DATA[19],
+				S_DATA[26], S_DATA[18],
+				S_DATA[25], S_DATA[17],
+				S_DATA[24], S_DATA[16],
+				S_DATA[15], S_DATA[ 7],
+				S_DATA[14], S_DATA[ 6],
+				S_DATA[13], S_DATA[ 5],
+				S_DATA[12], S_DATA[ 4],
+				S_DATA[11], S_DATA[ 3],
+				S_DATA[10], S_DATA[ 2],
+				S_DATA[ 9], S_DATA[ 1],
+				S_DATA[ 8], S_DATA[ 0] };
+
 		if (start_packet)
 		begin
 			pstate    <= (S_LAST) ? P_CRC : P_DATA;
@@ -172,7 +231,35 @@ module	sdtxframe #(
 		begin
 			pstate <= P_DATA;
 			pre_valid <= 1;
-			pre_data <= S_DATA;
+
+			if (!cfg_ddr || cfg_width == WIDTH_8W)
+				pre_data <= S_DATA;
+			else if (cfg_width == WIDTH_4W)
+			begin
+				pre_data <= {
+					S_DATA[31:28], S_DATA[23:20],
+					S_DATA[27:24], S_DATA[19:16],
+					S_DATA[15:12], S_DATA[ 7: 4],
+					S_DATA[11: 8], S_DATA[ 3: 0] };
+			end else begin
+				pre_data <= {
+					S_DATA[31], S_DATA[23],
+					S_DATA[30], S_DATA[22],
+					S_DATA[29], S_DATA[21],
+					S_DATA[28], S_DATA[20],
+					S_DATA[27], S_DATA[19],
+					S_DATA[26], S_DATA[18],
+					S_DATA[25], S_DATA[17],
+					S_DATA[24], S_DATA[16],
+					S_DATA[15], S_DATA[ 7],
+					S_DATA[14], S_DATA[ 6],
+					S_DATA[13], S_DATA[ 5],
+					S_DATA[12], S_DATA[ 4],
+					S_DATA[11], S_DATA[ 3],
+					S_DATA[10], S_DATA[ 2],
+					S_DATA[ 9], S_DATA[ 1],
+					S_DATA[ 8], S_DATA[ 0] };
+			end
 
 			if (S_LAST)
 				pstate <= P_CRC;
@@ -191,7 +278,7 @@ module	sdtxframe #(
 				else
 				pre_data <= { crc_1w_reg[NCRC-1:0], 16'hffff };
 			WIDTH_4W: if (cfg_ddr)
-				pre_data <= crc_8w_reg[8*NCRC-1:8*NCRC-32];
+				pre_data <= crc_4d_reg[8*NCRC-1:8*NCRC-32];
 				else
 				pre_data <= crc_4w_reg[4*NCRC-1:4*NCRC-32];
 			WIDTH_8W: if (cfg_ddr)
@@ -213,6 +300,11 @@ module	sdtxframe #(
 			pstate <= P_IDLE;
 		end
 	endcase
+`ifdef	FORMAL
+	always @(*)
+	if (!i_reset && !pre_valid && pstate != P_IDLE)
+		assert(&pre_data);
+`endif
 
 	initial	pre_count = 0;
 	always @(posedge i_clk)
@@ -269,6 +361,12 @@ module	sdtxframe #(
 			for(jk=0; jk<4; jk=jk+1)
 				di_crc_4w[jk*NCRC+ik] = crc_4w_reg[ik*4+jk];
 
+			for(jk=0; jk<4; jk=jk+1)
+			begin
+				di_crc_4d[(2*jk  )*NCRC+ik] = crc_4d_reg[2*ik*4  +jk];
+				di_crc_4d[(2*jk+1)*NCRC+ik] = crc_4d_reg[2*ik*4+4+jk];
+			end
+
 			for(jk=0; jk<8; jk=jk+1)
 				di_crc_8w[jk*NCRC+ik] = crc_8w_reg[ik*8+jk];
 
@@ -279,35 +377,56 @@ module	sdtxframe #(
 
 		// Advance the CRCs based on S_DATA
 		// {{{
-		for(ik=0; ik<2; ik=ik+1)
-		begin
-			new_crc_2w[ik*NCRC +: NCRC] =
-				APPLYCRC16(di_crc_2w[ik*NCRC +: NCRC],
-			  		{ S_DATA[30+ik],S_DATA[28+ik],
-						S_DATA[26+ik],S_DATA[24+ik],
-						S_DATA[22+ik],S_DATA[20+ik],
-						S_DATA[18+ik],S_DATA[16+ik],
-						S_DATA[14+ik],S_DATA[12+ik],
-						S_DATA[10+ik],S_DATA[ 8+ik],
-						S_DATA[ 6+ik],S_DATA[ 4+ik],
-						S_DATA[ 2+ik],S_DATA[   ik] });
-		end
+		new_crc_2w[1*NCRC +: NCRC] =
+			APPLYCRC16(di_crc_2w[1*NCRC +: NCRC],
+				{ S_DATA[31],S_DATA[30],
+					S_DATA[29],S_DATA[28],
+					S_DATA[27],S_DATA[26],
+					S_DATA[25],S_DATA[24],
+					S_DATA[15],S_DATA[14],
+					S_DATA[13],S_DATA[12],
+					S_DATA[11],S_DATA[10],
+					S_DATA[ 9],S_DATA[ 8] });
+
+		new_crc_2w[0*NCRC +: NCRC] =
+			APPLYCRC16(di_crc_2w[0*NCRC +: NCRC],
+				{ S_DATA[23],S_DATA[22],
+					S_DATA[21],S_DATA[20],
+					S_DATA[19],S_DATA[18],
+					S_DATA[17],S_DATA[16],
+					S_DATA[ 7],S_DATA[ 6],
+					S_DATA[ 5],S_DATA[ 4],
+					S_DATA[ 3],S_DATA[ 2],
+					S_DATA[ 1],S_DATA[ 0] });
 
 		for(ik=0; ik<4; ik=ik+1)
 		begin
 			new_crc_4w[ik*NCRC +: NCRC] =
 				APPLYCRC8(di_crc_4w[ik*NCRC +: NCRC],
-			  		{ S_DATA[28+ik],S_DATA[24+ik],
+					{ S_DATA[28+ik],S_DATA[24+ik],
 						S_DATA[20+ik],S_DATA[16+ik],
 						S_DATA[12+ik],S_DATA[ 8+ik],
 						S_DATA[ 4+ik],S_DATA[   ik] });
+		end
+
+		for(ik=0; ik<4; ik=ik+1)
+		begin
+			new_crc_4d[(2*ik+1)*NCRC +: NCRC] =
+				APPLYCRC4(di_crc_4d[(2*ik+1)*NCRC +: NCRC],
+					{ S_DATA[28+ik], S_DATA[24+ik],
+					  S_DATA[12+ik], S_DATA[ 8+ik] });
+
+			new_crc_4d[2*ik*NCRC +: NCRC] =
+				APPLYCRC4(di_crc_4d[2*ik*NCRC +: NCRC],
+					{ S_DATA[20+ik], S_DATA[16+ik],
+					  S_DATA[ 4+ik], S_DATA[   ik] });
 		end
 
 		for(ik=0; ik<8; ik=ik+1)
 		begin
 			new_crc_8w[ik*NCRC +: NCRC] =
 				APPLYCRC4(di_crc_8w[ik*NCRC +: NCRC],
-			  		{ S_DATA[24+ik], S_DATA[16+ik],
+					{ S_DATA[24+ik], S_DATA[16+ik],
 						S_DATA[8+ik], S_DATA[ik] });
 		end
 
@@ -315,7 +434,7 @@ module	sdtxframe #(
 		begin
 			new_crc_8d[ik*NCRC +: NCRC] =
 				APPLYCRC2(di_crc_8d[ik*NCRC +: NCRC],
-			  		{ S_DATA[16+ik], S_DATA[ik] });
+					{ S_DATA[16+ik], S_DATA[ik] });
 		end
 		// }}}
 
@@ -327,6 +446,11 @@ module	sdtxframe #(
 				nxt_crc_2w[ik*2+jk] = new_crc_2w[jk*NCRC+ik];
 			for(jk=0; jk<4; jk=jk+1)
 				nxt_crc_4w[ik*4+jk] = new_crc_4w[jk*NCRC+ik];
+			for(jk=0; jk<4; jk=jk+1)
+			begin
+				nxt_crc_4d[2*ik*4  +jk] = new_crc_4d[(2*jk  )*NCRC+ik];
+				nxt_crc_4d[2*ik*4+4+jk] = new_crc_4d[(2*jk+1)*NCRC+ik];
+			end
 			for(jk=0; jk<8; jk=jk+1)
 				nxt_crc_8w[ik*8+jk] = new_crc_8w[jk*NCRC+ik];
 			for(jk=0; jk<16; jk=jk+1)
@@ -344,6 +468,7 @@ module	sdtxframe #(
 		crc_1w_reg <= 0;
 		crc_2w_reg <= 0;
 		crc_4w_reg <= 0;
+		crc_4d_reg <= 0;
 		crc_8w_reg <= 0;
 		crc_8d_reg <= 0;
 	end else if (S_VALID && S_READY)
@@ -351,6 +476,7 @@ module	sdtxframe #(
 		crc_1w_reg <= {(NCRC   ){1'b1}};
 		crc_2w_reg <= {(NCRC* 2){1'b1}};
 		crc_4w_reg <= {(NCRC* 4){1'b1}};
+		crc_4d_reg <= {(NCRC* 8){1'b1}};
 		crc_8w_reg <= {(NCRC* 8){1'b1}};
 		crc_8d_reg <= {(NCRC*16){1'b1}};
 
@@ -360,7 +486,7 @@ module	sdtxframe #(
 			else
 				crc_1w_reg <= APPLYCRC32(crc_1w_reg, S_DATA);
 		WIDTH_4W: if (cfg_ddr)
-				crc_8w_reg <= nxt_crc_8w;
+				crc_4d_reg <= nxt_crc_4d;
 			else
 				crc_4w_reg <= nxt_crc_4w;
 		WIDTH_8W: if (cfg_ddr)
@@ -374,6 +500,7 @@ module	sdtxframe #(
 		crc_1w_reg <= {(NCRC){1'b1}};
 		crc_2w_reg <= {(2*NCRC){1'b1}};
 		crc_4w_reg <= { crc_4w_reg[ 4*NCRC-32-1:0], 32'hffff_ffff };
+		crc_4d_reg <= { crc_4d_reg[ 8*NCRC-32-1:0], 32'hffff_ffff };
 		crc_8w_reg <= { crc_8w_reg[ 8*NCRC-32-1:0], 32'hffff_ffff };
 		crc_8d_reg <= { crc_8d_reg[16*NCRC-32-1:0], 32'hffff_ffff };
 	end
@@ -462,8 +589,6 @@ module	sdtxframe #(
 	// Clock divider, data shift register
 	// {{{
 
-	reg	ck_stop_bit;
-
 	// ck_valid
 	// {{{
 	initial	ck_valid = 0;
@@ -487,6 +612,12 @@ module	sdtxframe #(
 	always @(*)
 	if (!i_reset && (ck_stop_bit || pre_valid))
 		assert(ck_valid);
+	always @(*)
+	if (!i_reset && ck_valid && pre_valid)
+		assert(ck_stop_bit);
+	always @(*)
+	if (!i_reset && !ck_stop_bit && !pre_valid)
+		assert(!ck_valid || (&tx_data));
 `endif
 	// }}}
 
@@ -687,6 +818,69 @@ module	sdtxframe #(
 			endcase end
 		endcase
 	end
+`ifdef	FORMAL
+	always @(*)
+	if (!i_reset && ck_valid && !pre_valid && !ck_stop_bit)
+		assert(&ck_sreg);
+`endif
+
+	initial {r_tristate, ck_tristate } = 2'h3;
+	always @(posedge i_clk)
+	if (i_reset) // pstate == P_IDLE)
+	begin
+		ck_tristate <= 1'b1;
+		r_tristate <= 1'b1;
+	end else if (i_ckstb && pre_valid && ck_counts == 0) // && tx_ready
+	begin
+		if (cfg_pp || cfg_period != P_1D)
+		begin
+			ck_tristate <= 1'b0;
+			r_tristate <= 1'b0;
+		end else case(cfg_width) // One clock period of data
+		WIDTH_1W: begin
+			ck_tristate <= pre_data[31];
+			r_tristate <= pre_data[31] && (!OPT_SERDES || ck_tristate);
+			end
+		WIDTH_4W: begin
+			ck_tristate <= (&pre_data[31:28]);
+			r_tristate <= (&pre_data[31:28]) && (!OPT_SERDES || ck_tristate);
+			end
+		default:  begin
+			ck_tristate <= (&pre_data[31:24]);
+			r_tristate <= (&pre_data[31:24]) && (!OPT_SERDES || ck_tristate);
+			end
+		endcase
+	end else if ((i_ckstb || (i_hlfck && cfg_ddr)) && ck_counts > 0)
+	begin
+		if (cfg_pp || cfg_period != P_1D)
+		begin
+			ck_tristate <= 1'b0;
+			r_tristate <= 1'b0;
+		end else case(cfg_width) // One clock period of data
+		WIDTH_1W: begin
+			ck_tristate <= ck_sreg[31];
+			r_tristate <= ck_sreg[31] && (!OPT_SERDES || ck_tristate);
+			end
+		WIDTH_4W: begin
+			ck_tristate <= (&ck_sreg[31:28]);
+			r_tristate <= (&ck_sreg[31:28]) && (!OPT_SERDES || ck_tristate);
+			end
+		default:  begin
+			ck_tristate <= (&ck_sreg[31:24]);
+			r_tristate <= (&ck_sreg[31:24]) && (!OPT_SERDES || ck_tristate);
+			end
+		endcase
+	end else if (i_ckstb && ck_counts == 0)
+	begin
+		ck_tristate <= 1'b1;
+		r_tristate <= (!OPT_SERDES || ck_tristate);
+		if (start_packet)
+		begin
+			ck_tristate <= 1'b0;
+			r_tristate <= 1'b0;
+		end
+	end else
+		r_tristate <= ck_tristate;
 
 	assign	pre_ready = (ck_counts == 0) && i_ckstb; // && tx_ready;
 	// }}}
@@ -697,6 +891,82 @@ module	sdtxframe #(
 	assign	tx_valid = ck_valid;
 	// assign ck_ready = (i_ckstb || (i_hlfck && cfg_ddr)); // && tx_ready;
 	assign	tx_data  = ck_data;
+	assign	tx_tristate = r_tristate;
+	// }}}
+	////////////////////////////////////////////////////////////////////////
+	//
+	// Status feedback
+	// {{{
+
+	// r_timeout
+	// {{{
+	// Insist on at least 10 clocks (2 + CRC) after any transmission before
+	// declaring ourselves done.  The eMMC specification requires at least
+	// 2 such clocks, together with the number of clocks required for an
+	// ACK/NACK sequence (5).  Here, we round that number up to 15 for good
+	// measure.
+	initial	r_timeout = (OPT_CRCTOKEN) ? 4'd15 : 4'h0;
+	always @(posedge i_clk)
+	if (!OPT_CRCTOKEN)
+		r_timeout <= 0;
+	else if (i_reset || S_VALID || tx_valid || !i_en)
+	begin
+		r_timeout <= 15;
+	end else if (i_ckstb && (r_timeout != 0))
+		r_timeout <= r_timeout - 1;
+	// }}}
+
+	// o_done
+	// {{{
+	initial	r_done = 1'b0;
+	always @(posedge i_clk)
+	if (i_reset || S_VALID || tx_valid || !i_en)
+		r_done <= 1'b0;
+	else if (!r_done && ((i_ckstb && (!OPT_CRCTOKEN || r_timeout <= 1))
+			|| i_crcack || i_crcnak))
+		// Once set, r_done will stay set until i_en drops
+		r_done <= 1'b1;
+
+	assign	o_done = r_done;
+	// }}}
+
+	// o_err, o_ercode
+	// {{{
+	generate if (OPT_CRCTOKEN)
+	begin : GEN_CRCERR
+		reg	r_ackd, r_err, r_ercode;
+
+		initial	r_ackd = 1'b0;
+		always @(posedge i_clk)
+		if (i_reset || (i_en && S_VALID) || tx_valid || !i_en)
+			r_ackd <= 1'b0;
+		else if (!r_done && i_crcack)
+			r_ackd <= 1'b1;
+
+		initial	{ r_err, r_ercode } = 2'b00;
+		always @(posedge i_clk)
+		if (i_reset || (i_en && S_VALID) || tx_valid || !i_en)
+		begin
+			{ r_err, r_ercode } <= 2'b00;
+		end else if (i_en && !r_done && !o_err && !r_ackd)
+		begin
+			if (r_timeout <= 1 && i_cfg_expect_ack)
+				{ r_err, r_ercode } <= 2'b10;
+			if (i_crcnak && !i_crcack)
+				{ r_err, r_ercode } <= 2'b11;
+		end
+
+		assign	{ o_err, o_ercode } = { r_err, r_ercode };
+	end else begin : NO_CRCTOKEN
+		assign	{ o_err, o_ercode } = 2'b00;
+
+		// Verilator lint_off UNUSED
+		wire	unused_token;
+		assign	unused_token = &{ 1'b0, i_cfg_expect_ack };
+		// Verilator lint_on  UNUSED
+	end endgenerate
+	// }}}
+
 	// }}}
 
 	//
@@ -704,8 +974,8 @@ module	sdtxframe #(
 	// {{{
 	// verilator coverage_off
 	// verilator lint_off UNUSED
-	// wire	unused;
-	// assign	unused = i_wb_cyc;
+	wire	unused;
+	assign	unused = &{ 1'b0, i_ckwide, i_cfg_clk90 };
 	// verilator lint_on  UNUSED
 	// verilator coverage_on
 	// }}}
@@ -719,7 +989,12 @@ module	sdtxframe #(
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 `ifdef	FORMAL
+	// These first sets of properties may be used in simulation as well
+	// as formal proofs.  They are useful for verifying assumptions.
+	// {{{
 	// Verilator lint_off UNUSED
+	wire		f_pending_half, f_pending_reset;
+	reg		f_past_tx_valid, f_past_tick, f_ck_started;
 	reg	f_ckstb, f_hlfck;
 	(* keep *)	reg	[9+5:0]	fb_count, fd_offset, fd_count,
 					f_loaded_count;
@@ -800,6 +1075,13 @@ module	sdtxframe #(
 		default: fb_count <= fb_count + 32;
 		endcase end
 	endcase
+
+	always @(*)
+	if (!i_reset && (tx_valid || fb_count > 0))
+	begin
+		assert(i_en);
+		// assert(i_ckstb || f_ck_started);
+	end
 	// }}}
 
 	initial	fs_last = 0;
@@ -851,7 +1133,88 @@ module	sdtxframe #(
 		fd_count = 0;
 	// }}}
 
-	reg	f_past_valid, f_pending_half;
+	// Configuration assumptions
+	// {{{
+	always @(posedge i_clk)
+		f_past_tx_valid <= tx_valid;
+
+	always @(posedge i_clk)
+	if (!i_reset && f_past_tx_valid)
+		assume(i_en);
+
+	always @(*)
+	if (!i_reset)
+		assume(i_cfg_width != 2'b11);
+
+	// }}}
+
+	// Clock assumptions
+	// {{{
+	fclk #(
+		.OPT_SERDES(OPT_SERDES), .OPT_DDR(1'b1)
+	) u_clock (
+		.i_clk(i_clk), .i_reset(i_reset),
+		.i_en(i_en), .i_ckspd(i_cfg_spd), .i_clk90(i_cfg_clk90),
+		.i_ckstb(i_ckstb), .i_hlfck(i_hlfck),
+			.i_ckwide(i_ckwide),
+		.f_pending_reset(f_pending_reset),
+		.f_pending_half(f_pending_half)
+	);
+
+	always @(posedge i_clk)
+	if (!i_reset && i_en && i_cfg_ddr)
+		assume(i_cfg_clk90);
+
+	// always @(*)
+	// if (i_en && i_cfg_spd == 2 && !f_pending_reset)
+	//	assume({ i_ckstb, i_hlfck } == (f_pending_half ? 2'b01:2'b10));
+
+	/*
+	always @(posedge i_clk)
+	if (i_reset || !i_en)
+		f_ck_started <= 0;
+	else if (i_ckstb)
+		f_ck_started <= 1;
+
+	always @(*)
+	if (f_ck_started)
+	begin
+		if (i_cfg_spd < 2)
+			assume(i_ckstb && i_hlfck);
+		else if (i_cfg_spd == 2)
+			assume(i_ckstb ^ i_hlfck);
+	end else if (i_en && i_cfg_spd == 0 && i_ckstb)
+		assume(i_hlfck);
+	*/
+
+	generate if (OPT_SERDES)
+	begin : GEN_SERDES_CLK
+
+		always @(posedge i_clk)
+		if (!i_reset && i_en && i_cfg_spd < 2 && !f_pending_reset)
+		begin
+			if (f_ck_started)
+			begin
+				assert(!f_pending_half);
+				assume(i_ckstb && i_hlfck);
+			end else if (f_pending_half)
+			begin
+				assume(!i_ckstb);
+				assert(!f_ck_started);
+			end else begin
+				// Clk might also be off
+				assume(i_ckstb == i_hlfck);
+			end
+		end
+
+	end endgenerate
+
+	// }}}
+	// }}}
+// `ifdef	FORMAL
+	// The rest of the properties are for formal verification only.
+	// {{{
+	reg	f_past_valid;
 	(* anyconst *)	reg	[9:0]	fc_posn;
 	(* anyconst *)	reg	[31:0]	fc_data;
 	wire	[9:0]	fp_count;
@@ -864,31 +1227,32 @@ module	sdtxframe #(
 	always @(*)
 	if (!f_past_valid)
 		assume(i_reset);
+	// }}}
 	////////////////////////////////////////////////////////////////////////
 	//
 	// Configuraion interface
 	// {{{
+	(* anyconst *)	reg	[7:0]	f_cfg_spd;
+	(* anyconst *)	reg	[1:0]	f_cfg_width;
+	(* anyconst *)	reg		f_cfg_ddr, f_cfg_pp;
 
 	always @(*)
-	if (!OPT_SERDES)
 	begin
-		assume(!i_cfg_ddr || i_cfg_spd > 1);
-		assume(i_cfg_spd > 0);
+		assume(i_cfg_spd == f_cfg_spd);
+		if (i_en)
+		begin
+			assume(i_cfg_width == f_cfg_width);
+			assume(i_cfg_ddr == f_cfg_ddr);
+			assume(i_cfg_pp  == f_cfg_pp);
+		end
+
+		case(f_cfg_width)
+		WIDTH_1W: begin end
+		WIDTH_4W: begin end
+		WIDTH_8W: begin end
+		default: assume(0);
+		endcase
 	end
-
-	always @(*)
-	if (!i_reset)
-		assume(i_cfg_width != 2'b11);
-
-	////////
-
-	always @(*)
-	if (!i_reset)
-		assert(cfg_period <= P_4D);
-
-	always @(posedge i_clk)
-	if (!i_reset && $past(tx_valid))
-		assume(i_en);
 
 	always @(posedge i_clk)
 	if (!i_reset && (i_en || $past(i_en)))
@@ -897,6 +1261,16 @@ module	sdtxframe #(
 		assume($stable(i_cfg_spd));
 		assume($stable(i_cfg_width));
 	end
+
+	always @(posedge i_clk)
+	if (!OPT_SERDES)
+		assume(i_cfg_spd >= 1);
+
+	////////
+
+	always @(*)
+	if (!i_reset)
+		assert(cfg_period <= P_4D);
 
 	always @(posedge i_clk)
 	if (!i_reset && i_en)
@@ -918,17 +1292,20 @@ module	sdtxframe #(
 	end
 
 	always @(posedge i_clk)
-	if (!i_reset && i_en)
+	if (!f_past_valid || $past(i_reset) || !OPT_SERDES)
+	begin
+		assert(cfg_period == P_1D);
+	end else if (!i_reset && (i_en || $past(i_en)))
 	begin
 		if (i_cfg_ddr && i_cfg_spd == 0)
 		begin
-			assert(cfg_period == 2'b10);
+			assert(OPT_SERDES && cfg_period == P_4D);
 		end else if ((i_cfg_ddr && i_cfg_spd == 1)
-			||(!i_cfg_ddr && i_cfg_spd == 0))
+				||(!i_cfg_ddr && i_cfg_spd == 0))
 		begin
-			assert(cfg_period == 2'b01);
+			assert(cfg_period == P_2D);
 		end else begin
-			assert(cfg_period == 2'b00);
+			assert(cfg_period == P_1D);
 		end
 	end
 
@@ -937,47 +1314,28 @@ module	sdtxframe #(
 	//
 	// Clock interface
 	// {{{
-
 	always @(*)
-	if (!OPT_SERDES)
-		assume(!i_ckstb || !i_hlfck);
+	if (i_en)
+		assume(!f_pending_reset);
 
-	initial	f_pending_half = 1'b0;
 	always @(posedge i_clk)
-	if (i_reset)
-		f_pending_half <= 1'b0;
-	else if (i_ckstb)
-		f_pending_half <= !i_hlfck;
-	else if (i_hlfck)
-		f_pending_half <= 1'b0;
-
-	always @(*)
-	if (i_en) case(i_cfg_spd)
-	0: assume(i_ckstb && i_hlfck);
-	1: assume(i_ckstb && i_hlfck);
-	2: assume(i_ckstb ^ i_hlfck);
-	default: assume(!i_ckstb || !i_hlfck);
-	endcase
-
-	always @(*)
-	if (i_en && i_cfg_spd == 2)
-		assume({ i_ckstb, i_hlfck } == (f_pending_half ? 2'b01:2'b10));
-
-	always @(*)
-	if (f_pending_half)
-		assume(!i_ckstb);
-	else if (i_hlfck)
-		assume(i_ckstb);
-
-	always @(*)
-	if (!i_reset)
+	if (!i_reset && i_en && (fb_count > 0 || pstate != P_IDLE))
 	begin
-		if (cfg_period == P_1D)
+		if (!OPT_SERDES)
 		begin
-			assume(!i_ckstb || (!cfg_ddr || !i_hlfck));
-		end else
-			assume(i_ckstb && i_hlfck);	// On every clock period
+			assert(cfg_period == P_1D);
+		end else if (f_cfg_ddr && f_cfg_spd == 0)
+		begin
+			assert(cfg_period == P_4D);
+		end else if ((f_cfg_ddr && f_cfg_spd == 1)
+				||(!f_cfg_ddr && f_cfg_spd == 0))
+		begin
+			assert(cfg_period == P_2D);
+		end else begin
+			assert(cfg_period == P_1D);
+		end
 	end
+
 
 	// }}}
 	////////////////////////////////////////////////////////////////////////
@@ -1164,10 +1522,10 @@ module	sdtxframe #(
 		P_2D: case(cfg_width)
 			WIDTH_1W: assert({ tx_data[24], tx_data[16], tx_data[8], tx_data[0] }
 					== (cfg_ddr) ? 4'b0000 : 4'b1100);
-			WIDTH_4W:	assert({ tx_data[27:24], tx_data[19:16],
+			WIDTH_4W: assert({ tx_data[27:24], tx_data[19:16],
 					tx_data[11:8], tx_data[3:0] }
-					== (cfg_ddr) ? 16'h00 : 16'hff00);
-			WIDTH_8W:	assert(tx_data == (cfg_ddr) ? 32'h00 : 32'hffff_0000);
+				    == (cfg_ddr) ? 16'h00 : 16'hff00);
+			WIDTH_8W: assert(tx_data == (cfg_ddr) ? 32'h00 : 32'hffff_0000);
 			default: begin end
 			endcase
 		P_4D: case(cfg_width)
@@ -1189,7 +1547,38 @@ module	sdtxframe #(
 	begin
 		assert(pstate != P_IDLE);
 		if (fp_count == fc_posn && pstate == P_DATA)
-			assert(pre_data == fc_data);
+		begin
+			if (!f_cfg_ddr || f_cfg_width == WIDTH_8W)
+			begin
+				assert(pre_data == fc_data);
+			end else if (f_cfg_width == WIDTH_4W)
+			begin
+				assert(pre_data == {
+					fc_data[31:28], fc_data[23:20],
+					fc_data[27:24], fc_data[19:16],
+					fc_data[15:12], fc_data[ 7: 4],
+					fc_data[11: 8], fc_data[ 3: 0] });
+			end else if (f_cfg_width == WIDTH_1W)
+			begin
+				assert(pre_data == {
+					fc_data[31], fc_data[23],
+					fc_data[30], fc_data[22],
+					fc_data[29], fc_data[21],
+					fc_data[28], fc_data[20],
+					fc_data[27], fc_data[19],
+					fc_data[26], fc_data[18],
+					fc_data[25], fc_data[17],
+					fc_data[24], fc_data[16],
+					fc_data[15], fc_data[ 7],
+					fc_data[14], fc_data[ 6],
+					fc_data[13], fc_data[ 5],
+					fc_data[12], fc_data[ 4],
+					fc_data[11], fc_data[ 3],
+					fc_data[10], fc_data[ 2],
+					fc_data[ 9], fc_data[ 1],
+					fc_data[ 8], fc_data[ 0] });
+			end
+		end
 	end else begin
 		assert(pstate == P_IDLE || pstate == P_LAST);
 	end
@@ -1385,111 +1774,266 @@ module	sdtxframe #(
 	end
 	// }}}
 
+	always @(*)
+	if (!i_reset && tx_valid && fb_count > 0)
+		assert(!f_pending_reset);
+
+	// Tristate checks
+	// {{{
+	always @(*)
+	if (!tx_valid && !OPT_SERDES)
+		assert(tx_tristate);
+
+	always @(posedge i_clk)
+	if (0&&OPT_SERDES && !tx_valid && f_past_valid && !$past(tx_valid))
+		assert(tx_tristate);
+
+	always @(*)
+	if (!i_reset && tx_valid)
+	begin
+		if (cfg_pp || cfg_period != P_1D)
+		begin
+			assert(!tx_tristate || !ck_stop_bit);
+		end else case(cfg_width) // One clock period of data
+		WIDTH_1W: begin
+			assert(ck_data[ 7: 1] == 7'h7f);
+			assert(ck_data[31:24] == { 7'h7f, ck_data[ 0] });
+			assert(ck_data[23:16] == { 7'h7f, ck_data[ 0] });
+			assert(ck_data[15: 8] == { 7'h7f, ck_data[ 0] });
+			if (!OPT_SERDES)
+			begin
+				assert(tx_tristate == tx_data[24]);
+			end else if (!tx_data[24])
+			begin
+				assert(!tx_tristate);
+			end end
+		WIDTH_4W: begin
+			assert(ck_data[ 7: 4] == 4'hf);
+			assert(ck_data[31:24] == { 4'hf, ck_data[3:0] });
+			assert(ck_data[23:16] == { 4'hf, ck_data[3:0] });
+			assert(ck_data[15: 8] == { 4'hf, ck_data[3:0] });
+			if (!OPT_SERDES)
+			begin
+				assert(tx_tristate == (&tx_data[27:24]));
+			end else if (!(&tx_data[27:24]))
+			begin
+				assert(!tx_tristate);
+			end end
+		WIDTH_8W: begin
+			assert(ck_data[31:24] == ck_data[7:0]);
+			assert(ck_data[23:16] == ck_data[7:0]);
+			assert(ck_data[15: 8] == ck_data[7:0]);
+			if (!OPT_SERDES)
+			begin
+				assert(tx_tristate == (&tx_data[31:24]));
+			end else if (!&(tx_data[31:24]))
+			begin
+				assert(!tx_tristate);
+			end end
+		default: assert(0);
+		endcase
+	end
+
+	always @(posedge i_clk)
+	if (OPT_SERDES && f_past_valid && !$past(i_reset) && $past(tx_valid))
+	begin
+		if ($past(cfg_pp || cfg_period != P_1D))
+		begin
+			if ($past(ck_stop_bit))
+				assert(!tx_tristate);
+		end else case(cfg_width) // One clock period of data
+		WIDTH_1W: if (!$past(tx_data[24]))
+				assert(!tx_tristate);
+		WIDTH_4W: if (!$past(&tx_data[27:24]))
+				assert(!tx_tristate);
+		WIDTH_8W: if (!$past(&tx_data[31:24]))
+				assert(!tx_tristate);
+		default: assert(0);
+		endcase
+	end
+
+	// always @(posedge i_clk)
+	// if (!i_reset && OPT_SERDES && $past(!i_reset && tx_valid && (cfg_pp || cfg_period != P_1D || !(&tx_data))))
+	//	assert(!tx_tristate);
+	// }}}
+
 	// }}}
 	////////////////////////////////////////////////////////////////////////
 	//
 	// Cover checks
 	// {{{
 
-	// Pre-contract cover check: Can we start a packet in each mode?
-	// {{{
+	reg	[3:0]	cvr_ckticks;
+
+	initial	cvr_ckticks = 0;
 	always @(posedge i_clk)
-	if (!i_reset && !$past(i_reset) && tx_valid)
+	if (i_reset)
+		cvr_ckticks <= 0;
+	else if (!(&cvr_ckticks) && i_ckstb)
+		cvr_ckticks <= cvr_ckticks + 1;
+
+	always @(posedge i_clk)
+	if (!i_reset && !$past(i_reset))
 	begin
-		case(cfg_period)
-		P_1D: case(cfg_width)
-			// {{{
+		cover($past(i_ckstb));
+		cover($past(i_hlfck));
+
+		cover(cvr_ckticks > 4);
+		cover(f_cfg_spd == 2 && cvr_ckticks > 4);
+		cover(f_cfg_spd == 3 && cvr_ckticks > 4);
+		cover(f_cfg_spd == 4 && cvr_ckticks > 4);
+	end
+
+	generate if (OPT_SERDES)
+	begin : CVR_SERDES_CLK
+		always @(posedge i_clk)
+		if (!i_reset && !$past(i_reset))
+		begin
+			cover(i_ckstb && i_hlfck);
+
+			cover(f_cfg_spd == 0 && cvr_ckticks > 4);
+			cover(f_cfg_spd == 1 && cvr_ckticks > 4);
+		end
+	end endgenerate
+
+
+	generate if (OPT_SERDES)
+	begin : GEN_CVR_SERDES
+		// Pre-contract cover check: Can we start a packet in each mode?
+		// {{{
+		always @(posedge i_clk)
+		if (!i_reset && !$past(i_reset) && tx_valid)
+		begin
+			case(cfg_period)
+			P_1D: case(cfg_width)
+				// {{{
+				WIDTH_1W: cover(1);		//
+				WIDTH_4W: cover(1);		//
+				WIDTH_8W: cover(1);		//
+				default: begin end
+				endcase
+				// }}}
+			P_2D: if(cfg_ddr)
+				// {{{
+				begin
+					// && spd == 1 && ddr
+					case(cfg_width)
+					WIDTH_1W: cover(1);	// !!!
+					WIDTH_4W: cover(1);	// !!!
+					WIDTH_8W: cover(1);	// !!!
+					default: begin end
+					endcase
+				end else begin
+					// && spd == 0 && !ddr
+					case(cfg_width)
+					WIDTH_1W: cover(1);
+					WIDTH_4W: cover(1);
+					WIDTH_8W: cover(1);
+					default: begin end
+					endcase
+				end
+				// }}}
+			P_4D: case(cfg_width)
+				// {{{
+				// spd == 0 && ddr
+				WIDTH_1W: cover(1);
+				WIDTH_4W: begin
+					cover(1);
+					cover(fs_count == 1);
+					cover(fs_count == 2);
+					cover(fs_count == 3);
+					cover(fs_count == 4);
+					cover(S_VALID && S_LAST);
+					cover(!S_VALID);
+					cover($fell(pre_valid));
+					cover(pstate == P_CRC);
+					cover(pstate == P_LAST);
+					cover(!pre_valid);
+					end
+				WIDTH_8W: cover(1);
+				default: begin end
+				endcase
+				// }}}
+			endcase
+		end
+		// }}}
+
+		// Contract covers: can we complete a packet in the first place?
+		// {{{
+		always @(posedge i_clk)
+		if (!i_reset && !$past(i_reset) && $fell(tx_valid))
+		begin
+			case(cfg_period)
+			P_1D: case(cfg_width)
+				// {{{
+				WIDTH_1W: cover(1);		//
+				WIDTH_4W: cover(1);		//
+				WIDTH_8W: cover(1);		//
+				default: begin end
+				endcase
+				// }}}
+			P_2D: if(cfg_ddr)
+				// {{{
+				begin
+					case(cfg_width)
+					WIDTH_1W: cover(1);
+					WIDTH_4W: cover(1);
+					WIDTH_8W: cover(1);
+					default: begin end
+					endcase
+				end else begin
+					case(cfg_width)
+					WIDTH_1W: cover(1);
+					WIDTH_4W: cover(1);
+					WIDTH_8W: cover(1);
+					default: begin end
+					endcase
+				end
+				// }}}
+			P_4D: case(cfg_width)
+				// {{{
+				WIDTH_1W: cover(1);
+				WIDTH_4W: cover(1);
+				WIDTH_8W: cover(1);
+				default: begin end
+				endcase
+				// }}}
+			endcase
+		end
+		// }}}
+	end else begin : NO_CVR_SERDES
+		always @(posedge i_clk)
+		if (!i_reset)
+			assert(cfg_period == P_1D);
+
+		// Pre-contract cover check: Can we start a packet in each mode?
+		// {{{
+		always @(posedge i_clk)
+		if (!i_reset && !$past(i_reset) && tx_valid)
+		begin
+			case(cfg_width)
 			WIDTH_1W: cover(1);
 			WIDTH_4W: cover(1);
 			WIDTH_8W: cover(1);
 			default: begin end
 			endcase
-			// }}}
-		P_2D: if(cfg_ddr)
-			// {{{
-			begin
-				case(cfg_width)
-				WIDTH_1W: cover(1);
-				WIDTH_4W: cover(1);
-				WIDTH_8W: cover(1);
-				default: begin end
-				endcase
-			end else begin
-				case(cfg_width)
-				WIDTH_1W: cover(1);
-				WIDTH_4W: cover(1);
-				WIDTH_8W: cover(1);
-				default: begin end
-				endcase
-			end
-			// }}}
-		P_4D: case(cfg_width)
-			// {{{
-			WIDTH_1W: cover(1);
-			WIDTH_4W: begin
-				cover(1);
-				cover(fs_count == 1);
-				cover(fs_count == 2);
-				cover(fs_count == 3);		// !!!
-				cover(fs_count == 4);		// !!!
-				cover(S_VALID && S_LAST);
-				cover(!S_VALID);
-				cover($fell(pre_valid));
-				cover(pstate == P_CRC);
-				cover(pstate == P_LAST);	// !!!
-				cover(!pre_valid);		// !!!
-				end
-			WIDTH_8W: cover(1);
-			default: begin end
-			endcase
-			// }}}
-		endcase
-	end
-	// }}}
+		end
+		// }}}
 
-	// Contract covers: can we complete a packet in the first place?
-	// {{{
-	always @(posedge i_clk)
-	if (!i_reset && !$past(i_reset) && $fell(tx_valid))
-	begin
-		case(cfg_period)
-		P_1D: case(cfg_width)
-			// {{{
-			WIDTH_1W: cover(1);		// !!!
-			WIDTH_4W: cover(1);		// !!!
-			WIDTH_8W: cover(1);		// !!!
-			default: begin end
-			endcase
-			// }}}
-		P_2D: if(cfg_ddr)
-			// {{{
-			begin
-				case(cfg_width)
-				WIDTH_1W: cover(1);		// !!!
-				WIDTH_4W: cover(1);
-				WIDTH_8W: cover(1);
-				default: begin end
-				endcase
-			end else begin
-				case(cfg_width)
-				WIDTH_1W: cover(1);		// !!!
-				WIDTH_4W: cover(1);
-				WIDTH_8W: cover(1);
-				default: begin end
-				endcase
-			end
-			// }}}
-		P_4D: case(cfg_width)
-			// {{{
-			WIDTH_1W: cover(1);		// !!!
-			WIDTH_4W: cover(1);		// !!!
+		// Contract covers: can we complete a packet in the first place?
+		// {{{
+		always @(posedge i_clk)
+		if (!i_reset && !$past(i_reset) && $fell(tx_valid))
+		begin
+			case(cfg_width)
+			WIDTH_1W: cover(1);
+			WIDTH_4W: cover(1);
 			WIDTH_8W: cover(1);
 			default: begin end
 			endcase
-			// }}}
-		endcase
-	end
-	// }}}
+		end
+		// }}}
+	end endgenerate
 
 	// }}}
 	////////////////////////////////////////////////////////////////////////
