@@ -40,3 +40,4 @@
 @PREFIX=migperf
 @INCLUDEFILE=wbperf.txt
 @MONBUS=wbwide_sdram
+@BDEF.IONAME=_wbperf
