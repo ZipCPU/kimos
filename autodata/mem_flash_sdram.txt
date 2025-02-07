@@ -58,7 +58,6 @@ SECTIONS
        .rocode @$[0x%08x](zip.RESET_ADDRESS) : ALIGN(4) {
                _boot_address = .;
                *(.start) *(.boot)
-               *(.text.startup)
        } > flash
        _kram_start = . ;
        .kernel : ALIGN_WITH_INPUT {
