@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 // }}}
-// Copyright (C) 2023-2024, Gisselquist Technology, LLC
+// Copyright (C) 2023-2025, Gisselquist Technology, LLC
 // {{{
 // This file is part of the KIMOS project.
 //
@@ -71,10 +71,9 @@ unsigned	zip_cc(void);
 void		zip_save_context(void *);
 void		zip_halt(void);
 
-
-void	txchr(char v);
-void	txstr(const char *str);
-void	txhex(int num);
+extern	void	txchr(char v);
+extern	void	txstr(const char *str);
+extern	void	txhex(int num);
 void	tx4hex(int num);
 
 #ifdef	COUNTER
@@ -1407,6 +1406,14 @@ void	wait(unsigned int msk) {
 
 asm("\n\t.text\nidle_task:\n\tWAIT\n\tBRA\tidle_task\n");
 
+void	wait_for_uart_idle(void) {
+	// {{{
+	while(TXBUSY)	// While the transmitter is non-idle
+		;
+}
+// }}}
+
+#ifdef	LOCAL_TX
 __attribute__((noinline))
 void	txchr(char v) {
 	// {{{
@@ -1414,13 +1421,6 @@ void	txchr(char v) {
 		;
 	uint8_t c = v;
 	_uart->u_tx = (unsigned)c;
-}
-// }}}
-
-void	wait_for_uart_idle(void) {
-	// {{{
-	while(TXBUSY)	// While the transmitter is non-idle
-		;
 }
 // }}}
 
@@ -1448,6 +1448,35 @@ void	txhex(int num) {
 }
 // }}}
 
+void	txunsigned(unsigned uv) {
+	// {{{
+	unsigned	i, d;
+	char		str[32];
+
+	if (uv == 0)
+		txchr('0');
+	else {
+		for(i=0; i<31 && (d = (uv % 10)); i++) {
+			str[i] = '0'+d;
+			uv /= 10;
+		} for(d=0; d<i; d++)
+			txchr(str[i-d-1]);
+	}
+}
+// }}}
+
+void	txdecimal(int val) {
+	// {{{
+	if (val < 0) {
+		txchr('-');
+		txunsigned((unsigned)-val);
+	} else
+		txunsigned((unsigned)val);
+}
+// }}}
+
+#endif
+
 __attribute__((noinline))
 void	tx4hex(int num) {
 	// {{{
@@ -1473,33 +1502,6 @@ void	txreg(const char *name, int val) {
 	txstr("0x");	// 2 characters
 	txhex(val);	// 8 characters
 	txstr("    ");	// 4 characters
-}
-// }}}
-
-void	txunsigned(unsigned uv) {
-	// {{{
-	unsigned	i, d;
-	char		str[32];
-
-	if (uv == 0)
-		txchr('0');
-	else {
-		for(i=0; i<31 && (d = (uv % 10)); i++) {
-			str[i] = '0'+d;
-			uv /= 10;
-		} for(d=0; d<i; d++)
-			txchr(str[i-d-1]);
-	}
-}
-// }}}
-
-void	txdecimal(int val) {
-	// {{{
-	if (val < 0) {
-		txchr('-');
-		txunsigned((unsigned)-val);
-	} else
-		txunsigned((unsigned)val);
 }
 // }}}
 

@@ -11,7 +11,7 @@
 ##
 ################################################################################
 ## }}}
-## Copyright (C) 2023-2024, Gisselquist Technology, LLC
+## Copyright (C) 2023-2025, Gisselquist Technology, LLC
 ## {{{
 ## This file is part of the KIMOS project.
 ##
@@ -103,9 +103,9 @@ $(OBJDIR)/cputestcis.o: cputest.c board.h
 $(OBJDIR)/cputest.s: cputest.c
 	$(CC) $(CFLAGS) -S -Wa,-cis -fno-builtin $< -o $@
 
-cputest: $(OBJDIR)/cputestcis.o board.ld $(LIB)
+cputest: $(OBJDIR)/cputestcis.o $(OBJDIR)/txfns.o board.ld $(LIB)
 	# $(CC) $(CFLAGS) $(LFLAGS) $< $(LIBS) -o $@
-	$(CC) $(CFLAGS) $(LBKRAM) $< $(LIBS) -o $@
+	$(CC) $(CFLAGS) $(LBKRAM) $< $(OBJDIR)/txfns.o $(LIBS) -o $@
 ## }}}
 
 ## Hello World
@@ -128,6 +128,11 @@ sdinfo: $(OBJDIR)/sdinfo.o $(OBJDIR)/txfns.o board.ld $(LIB) $(FAT)
 
 memtest: $(OBJDIR)/memtest.o $(OBJDIR)/txfns.o bkram.ld $(LIB)
 	$(CC) $(CFLAGS) $(LBKRAM) $< $(OBJDIR)/txfns.o $(LIBS) -o $@
+
+$(OBJDIR)/memstartup.o: memstartup.s
+	zip-as $< -o $@
+memstartup: $(OBJDIR)/memstartup.o bkram.ld
+	$(CC) $(CFLAGS) $(LBKRAM) $< -o $@
 
 ## mk-objdir
 ## {{{
