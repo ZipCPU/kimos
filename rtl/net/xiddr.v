@@ -11,7 +11,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 // }}}
-// Copyright (C) 2024, Gisselquist Technology, LLC
+// Copyright (C) 2024-2025, Gisselquist Technology, LLC
 // {{{
 // This file is part of the KIMOS project.
 //
@@ -51,7 +51,7 @@ module	xiddr (
 	// }}}
 
 	IDDR #(
-		.DDR_CLK_EDGE("SAME_EDGE"),
+		.DDR_CLK_EDGE("SAME_EDGE_PIPELINED"),
 		.SRTYPE("SYNC")
 	) IDDRi(
 		.C(i_clk),
@@ -61,14 +61,8 @@ module	xiddr (
 		.CE(1'b1),
 		//
 		.D(i_pin),
-		// .Q1(o_v[0]),	// SAME_EDGE_PIPELINED
-		.Q1(tmp_pedge),	// SAME_EDGE
-		.Q2(nedge)
+		.Q1(o_v[0]),	// SAME_EDGE_PIPELINED
+		.Q2(o_v[1])
 	);
-
-	always @(posedge i_clk)
-		pedge <= tmp_pedge;
-
-	assign	o_v = { nedge, pedge };
 
 endmodule
