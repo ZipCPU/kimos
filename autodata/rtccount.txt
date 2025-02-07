@@ -12,7 +12,7 @@
 ##
 ################################################################################
 ## }}}
-## Copyright (C) 2024, Gisselquist Technology, LLC
+## Copyright (C) 2024-2025, Gisselquist Technology, LLC
 ## {{{
 ## This file is part of the KIMOS project.
 ##
@@ -39,6 +39,7 @@
 ##
 ## }}}
 @PREFIX=rtccount
+@DEVID=RTCCOUNT
 @NADDR=1
 @CLOCK.NAME=clk
 @SLAVE.TYPE=SINGLE
@@ -68,3 +69,8 @@
 	// }}}
 @REGS.N=1
 @REGS.0= 0 R_RTCCOUNT RTCCOUNT
+@BDEF.IONAME=_@$(PREFIX)
+@BDEF.IOTYPE=unsigned
+@BDEF.OSDEF=_BOARD_HAS_@$(DEVID)
+@BDEF.OSVAL=static volatile @$(BDEF.IOTYPE) *const @$(BDEF.IONAME) = ((@$(BDEF.IOTYPE) *)@$[0x%08x](REGBASE));
+@LD.DEFNS=@$(BDEF.IONAME) = @$[0x%08x](REGBASE);
