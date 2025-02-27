@@ -61,6 +61,8 @@
 
 #include "llcomms.h"
 
+const char LOCALHOSTSTR[] = "localhost";
+
 LLCOMMSI::LLCOMMSI(void) {
 	m_fdw = -1;
 	m_fdr = -1;
@@ -139,6 +141,7 @@ TTYCOMMS::TTYCOMMS(const char *dev) {
 NETCOMMS::NETCOMMS(const char *host, const int port) {
 	struct sockaddr_in serv_addr; 
 	struct	hostent	*hp;
+	const	char	*hostp = host;
 
 	if ((m_fdr = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		printf("\n Error : Could not create socket \n");
@@ -147,9 +150,13 @@ NETCOMMS::NETCOMMS(const char *host, const int port) {
 
 	memset(&serv_addr, '0', sizeof(serv_addr)); 
 
-	hp = gethostbyname(host);
+	if (host == NULL || host[0] == '\0')
+		hostp = LOCALHOSTSTR;
+	else
+		hostp = host;
+	hp = gethostbyname(hostp);
 	if (hp == NULL) {
-		printf("Could not get host entity for %s\n", host);
+		printf("Could not get host entity for %s\n", hostp);
 		perror("O/S Err:");
 		exit(-1);
 	}

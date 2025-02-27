@@ -59,7 +59,7 @@
 	// Virilator lint_off UNUSED
 	wire	@$(PREFIX)_int;
 	// Virilator lint_on  UNUSED
-@MAIN.INSERT=
+@WBSCOPE.INSERT=
 	@$(CORE) #(
 		// {{{
 		.LGMEM(@$(LOG_CAPTURE_SIZE)),
@@ -75,6 +75,8 @@
 		.o_interrupt(@$(PREFIX)_int)
 		// }}}
 	);
+@MAIN.INSERT=
+@$(WBSCOPE.INSERT)
 @MAIN.ALT=
 @REGS.NOTE=// @$(PREFIX) scope
 @REGS.N=2

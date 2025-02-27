@@ -24,6 +24,7 @@ design.h
 octave-workspace
 core
 *.aux
+*.dvi
 *.log
 *.out
 *.ps
@@ -43,3 +44,4 @@ xtim-*.txt
 /20*.bit
 ft232.bin
 relicense
+/kimos.bit

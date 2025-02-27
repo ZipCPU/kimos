@@ -68,7 +68,7 @@
 	);
 
 	// }}}
-@REGS.N=16
+## @REGS.N=16
 ## @REGS.0= 0 R_@$(DEVID) @$(DEVID) GPI GPO
 @BDEF.DEFN=
 #define	@$(DEVID)_H

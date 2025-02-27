@@ -1,0 +1,332 @@
+################################################################################
+##
+## Filename:	autodata/sata.txt
+## {{{
+## Project:	KIMOS, a Mercury KX2 demonstration project
+##
+## Purpose:	To describe how to interact with the UberSATA device controller
+##		(wbsata).
+##
+## Creator:	Dan Gisselquist, Ph.D.
+##		Gisselquist Technology, LLC
+##
+################################################################################
+## }}}
+## Copyright (C) 2025, Gisselquist Technology, LLC
+## {{{
+## This file is part of the KIMOS project.
+##
+## The KIMOS project is free software and gateware: you can redistribute it
+## and/or modify it under the terms of the GNU General Public License as
+## published by the Free Software Foundation, either version 3 of the License,
+## or (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+## target there if the PDF file isn't present.)  If not, see
+## <http://www.gnu.org/licenses/> for a copy.
+## }}}
+## License:	GPL, v3, as defined and found on www.gnu.org,
+## {{{
+##		http://www.gnu.org/licenses/gpl.html
+##
+################################################################################
+##
+## }}}
+@PREFIX=sata
+@DEVID=SATA
+@NADDR=8
+@NAME=UberSATA
+@SLAVE.TYPE=OTHER
+@SLAVE.BUS=wb32
+@ACCESS=@$(DEVID)_ACCESS
+@INT.SATA.WIRE=@$(PREFIX)_int
+@INT.SATA.PIC=buspic
+@SLAVE.BUS=wbflash
+@MASTER.TYPE=DMA
+@MASTER.BUS=wbwide
+@MASTER.ANSPREFIX=dma_
+@TOP.PORTLIST=
+		// @$(DEVID) interface
+		i_@$(REFCK)_p, i_@$(REFCK)_n,
+		i_@$(PREFIX)_p, i_@$(PREFIX)_n,
+		o_@$(PREFIX)_p, o_@$(PREFIX)_n
+@TOP.IODECL=
+	// @$(DEVID) interface
+	input	wire		i_@$(REFCK)_p, i_@$(REFCK)_n;
+	input	wire		i_@$(PREFIX)_p, i_@$(PREFIX)_n;
+	output	wire		o_@$(PREFIX)_p, o_@$(PREFIX)_n;
+@TOP.DEFNS=
+	// SATA / @$(PREFIX) definitions
+	// {{{
+	wire	@$(PREFIX)_phy_ready, @$(PREFIX)_init_err;
+	// SATA / @$(PREFIX) DRP Control
+	// {{{
+	wire	@$(PREFIX)_drp_cyc, @$(PREFIX)_drp_stb, @$(PREFIX)_drp_we;
+	wire	[8:0]	@$(PREFIX)_drp_addr;
+	wire	[31:0]	@$(PREFIX)_drp_data;
+	wire	[3:0]	@$(PREFIX)_drp_sel;
+	wire		@$(PREFIX)_drp_stall, @$(PREFIX)_drp_ack;
+	wire	[31:0]	@$(PREFIX)_drp_idata;
+	// }}}
+	// SATA / @$(PREFIX) TX Control
+	// {{{
+	wire		@$(PREFIX)_tx_clk, @$(PREFIX)_tx_ready,
+			@$(PREFIX)_tx_elecidle, @$(PREFIX)_tx_cominit,
+			@$(PREFIX)_tx_comwake, @$(PREFIX)_tx_comfinish;
+	//
+	wire		@$(PREFIX)_tx_primitive;
+	wire	[31:0]	@$(PREFIX)_tx_data;
+	// }}}
+	// SATA / @$(PREFIX) RX Control
+	// {{{
+	wire		@$(PREFIX)_rx_clk, @$(PREFIX)_rx_primitive,
+			@$(PREFIX)_rx_error, @$(PREFIX)_syncd,
+			@$(PREFIX)_rx_elecidle, @$(PREFIX)_rx_cominit_detect,
+			@$(PREFIX)_rx_comwake_detect, @$(PREFIX)_rx_cdrhold;
+	wire	[31:0]	@$(PREFIX)_rx_data;
+	//
+	// }}}
+	// }}}
+@TOP.MAIN=
+		// SATA / @$(PREFIX) connections
+		////////////////////////////////
+		// SATA / @$(PREFIX) DRP Control
+		// {{{
+		@$(PREFIX)_drp_cyc, @$(PREFIX)_drp_stb, @$(PREFIX)_drp_we,
+		@$(PREFIX)_drp_addr,
+		@$(PREFIX)_drp_data,
+		@$(PREFIX)_drp_sel,
+		@$(PREFIX)_drp_stall, @$(PREFIX)_drp_ack,
+		@$(PREFIX)_drp_idata,
+		// }}}
+		// SATA / @$(PREFIX) TX Control
+		// {{{
+		@$(PREFIX)_tx_clk, @$(PREFIX)_tx_ready,
+		@$(PREFIX)_tx_elecidle, @$(PREFIX)_tx_cominit,
+		@$(PREFIX)_tx_comwake, @$(PREFIX)_tx_comfinish,
+	//
+		@$(PREFIX)_tx_primitive,
+		@$(PREFIX)_tx_data,
+		// }}}
+		// SATA / @$(PREFIX) RX Control
+		// {{{
+		@$(PREFIX)_rx_clk,
+		@$(PREFIX)_rx_primitive,
+		@$(PREFIX)_rx_data,
+		//
+		@$(PREFIX)_rx_error, @$(PREFIX)_syncd,
+		@$(PREFIX)_rx_elecidle, @$(PREFIX)_rx_cominit_detect,
+		@$(PREFIX)_rx_comwake_detect,
+		@$(PREFIX)_rx_cdrhold, @$(PREFIX)_rx_cdrlock,
+		// }}}
+		@$(PREFIX)_phy_ready, @$(PREFIX)_init_err
+@TOP.INSERT=
+	sata_phy #(
+	) u_@$(PREFIX) (
+		// {{{
+		.i_wb_clk(s_clk), .i_reset(s_reset), .i_ref_clk200(s_clk200),
+		//
+		.i_sata_ref_p(i_@$(REFCK)_p), .i_sata_ref_n(i_@$(REFCK)_n),
+		//
+		.o_ready(@$(PREFIX)_phy_ready),.o_init_err(@$(PREFIX)_init_err),
+		// DRP Control
+		// {{{
+		.i_wb_cyc(@$(PREFIX)_drp_cyc), .i_wb_stb(@$(PREFIX)_drp_stb),
+			.i_wb_we(@$(PREFIX)_drp_we),
+		.i_wb_addr(@$(PREFIX)_drp_addr), .i_wb_data(@$(PREFIX)_drp_data),
+			.i_wb_sel(@$(PREFIX)_drp_sel),
+		.o_wb_stall(@$(PREFIX)_drp_stall), .o_wb_ack(@$(PREFIX)_drp_ack),
+			.o_wb_data(@$(PREFIX)_drp_idata),
+		// }}}
+		// SATA TX Control
+		// {{{
+		.o_tx_clk(@$(PREFIX)_tx_clk),
+		.o_tx_ready(@$(PREFIX)_tx_ready),
+		.i_tx_elecidle(@$(PREFIX)_tx_elecidle),
+		.i_tx_cominit(@$(PREFIX)_tx_cominit),
+		.i_tx_comwake(@$(PREFIX)_tx_comwake),
+		.o_tx_comfinish(@$(PREFIX)_tx_comfinish),
+		//
+		.i_tx_primitive(@$(PREFIX)_tx_primitive),
+		.i_tx_data(@$(PREFIX)_tx_data),
+		// }}}
+		// SATA RX Control
+		// {{{
+		.o_rx_clk(@$(PREFIX)_rx_clk),
+		.o_rx_primitive(@$(PREFIX)_rx_primitive),
+		.o_rx_data(@$(PREFIX)_rx_data),
+		.o_rx_error(@$(PREFIX)_rx_error),
+		.o_syncd(@$(PREFIX)_syncd),
+		//
+		.o_rx_elecidle(@$(PREFIX)_rx_elecidle),
+		.o_rx_cominit_detect(@$(PREFIX)_rx_cominit_detect),
+		.o_rx_comwake_detect(@$(PREFIX)_rx_comwake_detect),
+		.i_rx_cdrhold(@$(PREFIX)_rx_cdrhold),
+		.o_rx_cdrlock(@$(PREFIX)_rx_cdrlock),
+		// }}}
+		.o_tx_p(o_@$(PREFIX)_p), .o_tx_n(o_@$(PREFIX)_n),
+		.i_rx_p(i_@$(PREFIX)_p), .i_rx_n(i_@$(PREFIX)_n)
+		// }}}
+	);
+@MAIN.PORTLIST=
+		// SATA / @$(PREFIX) connections
+		////////////////////////////////
+		// SATA / @$(PREFIX) DRP Control
+		// {{{
+		o_@$(PREFIX)_drp_cyc, o_@$(PREFIX)_drp_stb, o_@$(PREFIX)_drp_we,
+		o_@$(PREFIX)_drp_addr,
+		o_@$(PREFIX)_drp_data,
+		o_@$(PREFIX)_drp_sel,
+		// Verilator lint_off UNUSED
+		i_@$(PREFIX)_drp_stall, i_@$(PREFIX)_drp_ack,
+		i_@$(PREFIX)_drp_data,
+		// Verilator lint_on  UNUSED
+		// }}}
+		// SATA / @$(PREFIX) TX Control
+		// {{{
+		i_@$(PREFIX)_tx_clk, i_@$(PREFIX)_tx_ready,
+		o_@$(PREFIX)_tx_elecidle, o_@$(PREFIX)_tx_cominit,
+		o_@$(PREFIX)_tx_comwake, i_@$(PREFIX)_tx_comfinish,
+	//
+		o_@$(PREFIX)_tx_primitive,
+		o_@$(PREFIX)_tx_data,
+		// }}}
+		// SATA / @$(PREFIX) RX Control
+		// {{{
+		i_@$(PREFIX)_rx_clk,
+		//
+		i_@$(PREFIX)_rx_primitive,
+		i_@$(PREFIX)_rx_data,
+		//
+		i_@$(PREFIX)_rx_error, i_@$(PREFIX)_syncd,
+		i_@$(PREFIX)_rx_elecidle,
+		i_@$(PREFIX)_rx_cominit, i_@$(PREFIX)_rx_comwake,
+		o_@$(PREFIX)_rx_cdrhold, i_@$(PREFIX)_rx_cdrlock,
+		// }}}
+		o_@$(PREFIX)_phy_reset,
+		i_@$(PREFIX)_phy_ready, i_@$(PREFIX)_init_err
+@MAIN.IODECL=
+	// SATA / @$(PREFIX) - @$(DEVID) interface
+	////////////////////////////////
+	// SATA / @$(PREFIX) DRP Control
+	// {{{
+	output	wire		o_@$(PREFIX)_drp_cyc, o_@$(PREFIX)_drp_stb,
+				o_@$(PREFIX)_drp_we;
+	output	wire	[8:0]	o_@$(PREFIX)_drp_addr;
+	output	wire	[31:0]	o_@$(PREFIX)_drp_data;
+	output	wire	[3:0]	o_@$(PREFIX)_drp_sel;
+		// Verilator lint_off UNUSED
+	input	wire		i_@$(PREFIX)_drp_stall, i_@$(PREFIX)_drp_ack;
+	input	wire	[31:0]	i_@$(PREFIX)_drp_data;
+	// Verilator lint_on  UNUSED
+	// }}}
+	// SATA / @$(PREFIX) TX Control
+	// {{{
+	input	wire		i_@$(PREFIX)_tx_clk,
+				i_@$(PREFIX)_tx_ready;
+	output	wire		o_@$(PREFIX)_tx_elecidle,
+				o_@$(PREFIX)_tx_cominit,
+				o_@$(PREFIX)_tx_comwake;
+	input	wire		i_@$(PREFIX)_tx_comfinish;
+	//
+	output	wire		o_@$(PREFIX)_tx_primitive;
+	output	wire	[31:0]	o_@$(PREFIX)_tx_data;
+	// }}}
+	// SATA / @$(PREFIX) RX Control
+	// {{{
+	input	wire		i_@$(PREFIX)_rx_clk,
+				i_@$(PREFIX)_rx_primitive;
+	input	wire	[31:0]	i_@$(PREFIX)_rx_data;
+		// Verilator lint_off UNUSED
+	input	wire		i_@$(PREFIX)_rx_error;
+		// Verilator lint_on  UNUSED
+	input	wire		i_@$(PREFIX)_syncd,
+				i_@$(PREFIX)_rx_elecidle,
+				i_@$(PREFIX)_rx_cominit,
+				i_@$(PREFIX)_rx_comwake;
+	output	wire		o_@$(PREFIX)_rx_cdrhold;
+	input	wire		i_@$(PREFIX)_rx_cdrlock;
+	// }}}
+	output	wire		o_@$(PREFIX)_phy_reset;	// ERR: Unconnected
+	input	wire		i_@$(PREFIX)_phy_ready;
+		// Verilator lint_off UNUSED
+	input	wire		i_@$(PREFIX)_init_err;
+		// Verilator lint_on  UNUSED
+@MAIN.DEFNS=
+	// Verilator lint_off UNUSED
+	// wire	w_@$(PREFIX)_link_up, w_@$(PREFIX)_link_ready;
+	// Verilator lint_on  UNUSED
+@MAIN.INSERT=
+	sata_controller #(
+		.OPT_LITTLE_ENDIAN(1'b0),	// WB is little endian
+		.DW(@$(MASTER.BUS.WIDTH)),
+		.AW(@$(MASTER.BUS.AWID))
+	) u_@$(PREFIX) (
+		// {{{
+		.i_clk(@$(SLAVE.BUS.CLOCK.WIRE)), .i_reset(i_reset),
+		@$(SLAVE.ANSIPORTLIST),
+		@$(MASTER.ANSIPORTLIST),
+		.o_int(@$(PREFIX)_int),
+		// Link <-> PHY interface
+		// {{{
+		.i_rxphy_clk(i_@$(PREFIX)_rx_clk),
+		.i_txphy_clk(i_@$(PREFIX)_tx_clk),
+		//
+		.i_rxphy_valid(!i_@$(PREFIX)_rx_elecidle
+					&& i_@$(PREFIX)_syncd
+					&& i_@$(PREFIX)_rx_cdrlock),
+		.i_rxphy_data({i_@$(PREFIX)_rx_primitive,i_@$(PREFIX)_rx_data}),
+		//
+		.i_txphy_ready(i_@$(PREFIX)_tx_ready),
+		.o_txphy_primitive(o_@$(PREFIX)_tx_primitive),
+		.o_txphy_data(o_@$(PREFIX)_tx_data),
+		//
+		.o_txphy_elecidle(o_@$(PREFIX)_tx_elecidle),
+		.o_txphy_cominit(o_@$(PREFIX)_tx_cominit),
+		.o_txphy_comwake(o_@$(PREFIX)_tx_comwake),
+		.i_txphy_comfinish(i_@$(PREFIX)_tx_comfinish),
+		//
+		.i_rxphy_elecidle(i_@$(PREFIX)_rx_elecidle),
+		.i_rxphy_cominit(i_@$(PREFIX)_rx_cominit),
+		.i_rxphy_comwake(i_@$(PREFIX)_rx_comwake),
+		.o_rxphy_cdrhold(o_@$(PREFIX)_rx_cdrhold),
+		.i_rxphy_cdrlock(i_@$(PREFIX)_rx_cdrlock),
+		//
+		.o_phy_reset(o_@$(PREFIX)_phy_reset),
+		.i_phy_ready(i_@$(PREFIX)_phy_ready)
+		// }}}
+		//, .o_link_up(w_@$(PREFIX)_link_up),
+		//  .o_link_ready(w_@$(PREFIX)_link_ready)
+		// }}}
+	);
+
+	// Tie off the SATA / @$(PREFIX) DRP port
+	// {{{
+	assign	o_@$(PREFIX)_drp_cyc  = 1'b0;
+	assign	o_@$(PREFIX)_drp_stb  = 1'b0;
+	assign	o_@$(PREFIX)_drp_we   = 1'h0;
+	assign	o_@$(PREFIX)_drp_addr = 9'h0;
+	assign	o_@$(PREFIX)_drp_data = 32'h0;
+	assign	o_@$(PREFIX)_drp_sel  = 4'h0;
+	// }}}
+
+@MAIN.ALT=
+@REGS.N=1
+@REGS.0= 0 R_@$(DEVID) @$(DEVID)
+@BDEF.DEFN=
+typedef struct @$(DEVID)_S {
+} @$(DEVID);
+@BDEF.IONAME=_@$(PREFIX)
+@BDEF.IOTYPE=unsigned
+@BDEF.OSDEF= _BOARD_HAS_@$(DEVID)
+@BDEF.OSVAL= static volatile @$(BDEF.IOTYPE) *const @$(BDEF.IONAME) = ((@$(BDEF.IOTYPE) *)@$[0x%08x](REGBASE));
+@LD.DEFNS=@$(BDEF.IONAME) = @$[0x%08x](REGBASE);
+@RTL.MAKE.GROUP=SATA
+@RTL.MAKE.SUBD=sata
+@RTL.MAKE.FILES=

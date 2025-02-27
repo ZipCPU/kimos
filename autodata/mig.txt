@@ -43,6 +43,8 @@
 @DEVID=SDRAM
 @ACCESS=@$(DEVID)_ACCESS
 @DEPENDS=ALLCLOCKS_PRESENT
+@MAIN.INCLUDE=
+`define	MIG_ACCESS
 ## LGMEMSZ is the size of the SDRAM in bytes, 31 => 2GB
 ## @$LGMEMSZ=31		## This is the size of the Enclustra memory
 ## AutoFPGA can't yet handle 2^31 sized memory.  2^31 memory + peripherals

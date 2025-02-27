@@ -205,7 +205,7 @@ module	wbperf #(
 	//
 
 	reg		triggered, stop_request, clear_request, start_request,
-			perf_err;
+			perf_err, write_en, read_en;
 	wire		idle_bus;
 	reg	[LGCNT:0]	active_cycles;
 
@@ -269,6 +269,13 @@ module	wbperf #(
 					|| (i_wb_data[1] && !i_wb_data[0]);
 				stop_request  <= !i_wb_data[0];
 				start_request <=  i_wb_data[0] && (!stop_request);
+
+				write_en <= i_wb_data[4] && i_wb_data[0];
+				read_en  <= i_wb_data[5] && i_wb_data[0];
+				if (i_wb_data[5:4] == 2'b00)
+					{ write_en, read_en } <= 2'b11;
+				if (!i_wb_data[0])
+					{ write_en, read_en } <= 2'b00;
 				end
 			default: begin end
 			endcase
@@ -414,6 +421,10 @@ module	wbperf #(
 		simple_acks <= 0;
 		wait_count  <= 0;
 		hold_count  <= 0;
+	end else if (!i_mon_cyc || (i_mon_we && !write_en)
+				|| (!i_mon_we && !read_en))
+	begin
+		// DO NOTHING!
 	end else if (triggered && i_mon_cyc)
 	casez({ i_mon_stb, i_mon_stall, i_mon_ack, mon_zero })
 	4'b100?: total_stb   <= total_stb + 1;
@@ -468,7 +479,7 @@ module	wbperf #(
 	always @(posedge i_clk)
 	if (i_reset || clear_request)
 		tail_count <= 0;
-	else if (triggered && !i_mon_cyc)
+	else if (triggered && !i_mon_cyc && last_cyc)
 		tail_count <= tail_count + tail_count_aux;
 	// }}}
 
@@ -494,7 +505,8 @@ module	wbperf #(
 		byte_count <= 0;
 	else if (triggered && i_mon_stb && !i_mon_stall)
 	begin
-		if (!byte_count[LGCNT])
+		if (!byte_count[LGCNT]
+			&& ((i_mon_we && write_en) || (!i_mon_we && read_en)))
 		byte_count <= byte_count + $countones(i_mon_sel);
 	end
 	// }}}
@@ -520,12 +532,19 @@ module	wbperf #(
 	// num_cyc : Number of times Cyc is activated
 	// {{{
 	always @(posedge i_clk)
-		last_cyc <= i_mon_cyc;
+	if (i_reset || clear_request)
+		last_cyc <= 1'b0;
+	else if (!i_mon_cyc)
+		last_cyc <= 1'b0;
+	else if (i_mon_stb && ((i_mon_we && write_en)||(!i_mon_we && read_en)))
+		last_cyc <= 1'b1;
+	else if (write_en && read_en)
+		last_cyc <= 1'b1;
 
 	always @(posedge i_clk)
 	if (i_reset || clear_request)
 		num_cyc <= 0;
-	else if (triggered && i_mon_cyc && !last_cyc)
+	else if (triggered && !i_mon_cyc && last_cyc)
 		num_cyc <= num_cyc + 1;
 	// }}}
 

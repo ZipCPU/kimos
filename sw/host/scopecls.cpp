@@ -42,6 +42,7 @@
 // }}}
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <strings.h>
 #include <ctype.h>
@@ -356,6 +357,7 @@ void	SCOPE::define_traces(void) {}
 void	SCOPE::writevcd(FILE *fp) {
 	unsigned	alen;
 	int	offset = 0;
+	double	dstep;
 
 	if (!m_data)
 		rawread();
@@ -375,14 +377,16 @@ void	SCOPE::writevcd(FILE *fp) {
 	// Write the file header.
 	write_trace_header(fp, offset);
 
+	dstep   = 1.0/((double)m_clkfreq_hz);
+
 	// And split into two paths--one for compressed scopes (wbscopc), and
 	// the other for the more normal scopes (wbscope).
 	if(m_compressed) {
 		// {{{
 		// With compressed scopes, you need to track the address
 		// relative to the beginning.
-		unsigned long	addrv = 0;
-		unsigned long	now_ns;
+		uint64_t	addrv = 0;
+		uint64_t	now_ns;
 		double		dnow;
 		bool		last_trigger = true;
 
@@ -398,8 +402,8 @@ void	SCOPE::writevcd(FILE *fp) {
 						// need to include the change
 						// to drop it.
 						//
-						dnow   = 1.0/((double)m_clkfreq_hz) * (addrv+1);
-						now_ns = (unsigned long)(dnow * 1e9);
+						dnow   = dstep * (addrv+1);
+						now_ns = (uint64_t)(dnow * 1e9 + 0.5);
 						fprintf(fp, "#%ld\n", now_ns);
 						fprintf(fp, "0\'T\n");
 					}
@@ -412,13 +416,13 @@ void	SCOPE::writevcd(FILE *fp) {
 			// this piece of data.
 			//
 			// dnow is the current time represented as a double
-			dnow = 1.0/((double)m_clkfreq_hz) * addrv;
+			dnow   = dstep * addrv;
 			// Convert to nanoseconds, and to integers.
-			now_ns = (unsigned long)(dnow * 1e9);
+			now_ns = (uint64_t)(dnow * 1e9 + 0.5);
 
 			fprintf(fp, "#%ld\n", now_ns);
 
-			if ((int)(addrv-alen) == offset) {
+			if ((int64_t)(addrv-alen) == (int64_t)offset) {
 				fprintf(fp, "1\'T\n");
 				last_trigger = true;
 			} else if (last_trigger)
@@ -459,7 +463,7 @@ void	SCOPE::writevcd(FILE *fp) {
 			//
 
 			// Write the current (relative) time of this data word
-			dnow = 1.0/((double)m_clkfreq_hz) * i;
+			dnow = dstep * i;
 			now_ns = (unsigned)(dnow * 1e9 + 0.5);
 			fprintf(fp, "#%d\n", now_ns);
 
@@ -482,7 +486,7 @@ void	SCOPE::writevcd(FILE *fp) {
 			//
 
 			// Add half a clock period to our time
-			dnow += 1.0/((double)m_clkfreq_hz)/2.;
+			dnow += dstep/2.;
 			now_ns = (unsigned)(dnow * 1e9 + 0.5);
 			fprintf(fp, "#%d\n", now_ns);
 

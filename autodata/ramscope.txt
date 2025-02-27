@@ -1,0 +1,111 @@
+################################################################################
+##
+## Filename:	autodata/ramscope.txt
+## {{{
+## Project:	KIMOS, a Mercury KX2 demonstration project
+##
+## Purpose:	Describes how to connect a wishbone scope to the DDR3 SDRAM
+##		for profiling purposes.
+##
+## Creator:	Dan Gisselquist, Ph.D.
+##		Gisselquist Technology, LLC
+##
+################################################################################
+## }}}
+## Copyright (C) 2024, Gisselquist Technology, LLC
+## {{{
+## This file is part of the KIMOS project.
+##
+## The KIMOS project is free software and gateware: you can redistribute it
+## and/or modify it under the terms of the GNU General Public License as
+## published by the Free Software Foundation, either version 3 of the License,
+## or (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+## target there if the PDF file isn't present.)  If not, see
+## <http://www.gnu.org/licenses/> for a copy.
+## }}}
+## License:	GPL, v3, as defined and found on www.gnu.org,
+## {{{
+##		http://www.gnu.org/licenses/gpl.html
+##
+################################################################################
+##
+## }}}
+@PREFIX=ramscope
+@DEVID=RAMSCOPE
+@TARGET=ram
+@TRIGGER=@$(TARGET)_debug[31]
+@$LOG_CAPTURE_SIZE=14
+@INCLUDEFILE=wbscopc.txt
+@INT.SDIOSCOPE.PIC=altpic
+@INT.SDIOSCOPE.WIRE=@$(PREFIX)_int
+@TBUS=
+@MAIN.DEFNS=
+	wire	[31:0]	@$(TARGET)_debug;
+@MAIN.INSERT=
+@$(WBSCOPE.INSERT)
+	assign	@$(TARGET)_debug = {
+`ifdef	MIG_ACCESS
+			wbwide_sdram_ack,
+`else
+			wbwide_ddr3_ack,
+`endif
+			// For targetting the MIG, we really want to see:
+			// awvalid, awreday, wvalid, wready, bvalid, bready,
+			//	arvalid, arready, rvalid, rready => 10sigs
+			// These are necessary to check AXI transactions.
+			//   However, we have ... only 7 open spots available
+			10'h0,
+			// mig_debug[9:0],
+			// Peek at the CPU
+			// {{{
+			swic.thecpu.core.alu_pc_valid,
+			swic.thecpu.core.alu_valid,
+			//
+			swic.thecpu.core.o_mem_ce,
+			swic.thecpu.core.i_mem_busy,
+			swic.thecpu.core.i_mem_rdbusy,
+			swic.thecpu.core.i_mem_valid,
+			// }}}
+			// CPU's bus outputs
+			// {{{
+			wbwide_zip_cyc,
+			wbwide_zip_stb,
+			wbwide_zip_we,
+			wbwide_zip_stall,
+			wbwide_zip_ack,
+			// }}}
+			// SDRAM
+			// {{{
+`ifdef	MIG_ACCESS
+			wbwide_sdram_cyc,
+			wbwide_sdram_stb,
+			wbwide_sdram_we,
+			wbwide_sdram_stall,
+			wbwide_sdram_ack,
+`else
+			wbwide_ddr3_cyc,
+			wbwide_ddr3_stb,
+			wbwide_ddr3_we,
+			wbwide_ddr3_stall,
+			wbwide_ddr3_ack,
+`endif
+			// }}}
+			// DMA
+			// {{{
+			swic.dc_cyc,
+			swic.dc_stb,
+			swic.dc_we,
+			swic.dc_stall,
+			swic.dc_ack
+			// }}}
+			// cpu_prof_stb,
+			// cpu_prof_addr[9:2]
+		};

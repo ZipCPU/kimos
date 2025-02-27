@@ -83,7 +83,7 @@
 		@$(DEVID)BA_BITS  =  3,  // width of bank address
 		@$(DEVID)DQ_BITS  =  8,  // Size of one octet
 		@$(DEVID)BYTE_LANES = @$(NLANES), //8 lanes of DQ
-		@$(DEVID)AUX_WIDTH = 4, //width of aux line (must be >= 4) 
+		@$(DEVID)AUX_WIDTH = 16, //width of aux line (must be >= 4) 
 		@$(DEVID)SERDES_RATIO = $rtoi(@$(DEVID)CONTROLLER_CLK_PERIOD/DDR3_CLK_PERIOD),
 		//4 is the width of a single ddr3 command {cs_n, ras_n, cas_n, we_n} plus 3 (ck_en, odt, reset_n) plus bank bits plus row bits
 		@$(DEVID)CMD_LEN = 4 + 3 + @$(DEVID)BA_BITS + @$(DEVID)ROW_BITS;
@@ -269,10 +269,12 @@
 	output wire    o_@$(PREFIX)_leveling_calib;
 	output wire    o_@$(PREFIX)_reset;
 	// }}}
+@ERROR.WIRE=@$(PREFIX)_err
 @MAIN.DEFNS=
 	// Verilator lint_off UNUSED
 	wire	[@$(DEVID)AUX_WIDTH-1:0]	@$(PREFIX)_aux_out;
 	wire	[31:0]	@$(PREFIX)_debug;
+	wire	ign_@$(PREFIX)_calib_complete;
 	// Verilator lint_on  UNUSED
 @MAIN.INSERT=
 	////////////////////////////////////////////////////////////////////////
@@ -289,7 +291,7 @@
 		.BA_BITS(@$(DEVID)BA_BITS),	//width of bank address
 		.DQ_BITS(@$(DEVID)DQ_BITS),	//width of DQ
 		.LANES(@$(DEVID)BYTE_LANES),		// byte lanes
-		.tRFC(260_000),
+		// .tRFC(260_000),
 		.AUX_WIDTH(@$(DEVID)AUX_WIDTH),	//width of aux line (must be >= 4) 
 		.WB2_ADDR_BITS(7), 		//width of 2nd wishbone address bus 
             	.WB2_DATA_BITS(32),  		//width of 2nd wishbone data bus
@@ -330,14 +332,18 @@
 		.o_phy_bitslip(o_@$(PREFIX)_bitslip),
 		.o_phy_write_leveling_calib(o_@$(PREFIX)_leveling_calib),
 		.o_phy_reset(o_@$(PREFIX)_reset),
-		// Debug port
-		.o_debug1(@$(PREFIX)_debug),
+		.o_calib_complete(ign_@$(PREFIX)_calib_complete),
+		.i_user_self_refresh(1'b0),
+		// Debug port (unused)
+		.o_debug1(@$(PREFIX)_debug)
 		// Verilator lint_off PINCONNECTEMPTY
-		.o_debug2(),
-		.o_debug3()
+		// .o_debug2(),
+		// .o_debug3()
 		// Verilator lint_on  PINCONNECTEMPTY
 		// }}}
 	);
+
+	assign	@$(PREFIX)_err = 1'b0;
 	// }}}
 ##
 ##
