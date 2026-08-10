@@ -1,0 +1,79 @@
+################################################################################
+##
+## Filename:	autodata/satascope.txt
+## {{{
+## Project:	KIMOS, a Mercury KX2 demonstration project
+##
+## Purpose:	Describes how to connect the various debugging ports of the
+##		SATA controller to compressed wishbone scopes.
+##
+## Creator:	Dan Gisselquist, Ph.D.
+##		Gisselquist Technology, LLC
+##
+################################################################################
+## }}}
+## Copyright (C) 2025, Gisselquist Technology, LLC
+## {{{
+## This file is part of the KIMOS project.
+##
+## The KIMOS project is free software and gateware: you can redistribute it
+## and/or modify it under the terms of the GNU General Public License as
+## published by the Free Software Foundation, either version 3 of the License,
+## or (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+## target there if the PDF file isn't present.)  If not, see
+## <http://www.gnu.org/licenses/> for a copy.
+## }}}
+## License:	GPL, v3, as defined and found on www.gnu.org,
+## {{{
+##		http://www.gnu.org/licenses/gpl.html
+##
+################################################################################
+##
+## }}}
+@PREFIX=satatscope
+@DEVID=SATATSCOPE
+@DEPENDS=SATA_ACCESS
+@TARGET=w_sata_dbg_tran
+@TRIGGER=@$(TARGET)[31]
+@DEBUG=@$(TARGET)[30:0]
+@$LOG_CAPTURE_SIZE=12
+@INCLUDEFILE=wbscopc.txt
+@INT.SATATSCOPE.PIC=altpic
+@INT.SATATSCOPE.WIRE=@$(PREFIX)_int
+@MAIN.DEFNS=
+##
+@PREFIX=satalscope
+@DEVID=SATALSCOPE
+@DEPENDS=SATA_ACCESS
+@TARGET=w_sata_dbg_link
+@TRIGGER=@$(TARGET)[31]
+@DEBUG=@$(TARGET)[30:0]
+@SYNCHRONOUS=0
+@DATA_CLOCK=i_sata_txphy_clk
+@$LOG_CAPTURE_SIZE=12
+@INCLUDEFILE=wbscopc.txt
+@INT.SATALSCOPE.PIC=altpic
+@INT.SATALSCOPE.WIRE=@$(PREFIX)_int
+@MAIN.DEFNS=
+##
+@PREFIX=satarscope
+@DEVID=SATARSCOPE
+@DEPENDS=SATA_ACCESS
+@TARGET=w_sata_dbg_reset
+@TRIGGER=@$(TARGET)[31]
+@DEBUG=@$(TARGET)[30:0]
+@SYNCHRONOUS=0
+@DATA_CLOCK=i_sata_txphy_clk
+@$LOG_CAPTURE_SIZE=12
+@INCLUDEFILE=wbscopc.txt
+@INT.SATARSCOPE.PIC=altpic
+@INT.SATARSCOPE.WIRE=@$(PREFIX)_int
+@MAIN.DEFNS=

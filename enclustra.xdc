@@ -211,6 +211,24 @@ set_property -dict {PACKAGE_PIN A20   IOSTANDARD LVCMOS18  } [get_ports {o_wbu_u
 # set_property -dict { PACKAGE_PIN E22   IOSTANDARD LVCMOS18  } [get_ports {i_dp_hpd}];
 ## }}}
 
+## SATA #1
+## {{{
+# set_property -dict {PACKAGE_PIN D19   IOSTANDARD LVCMOS33  } [get_ports { o_sata_pwrdown }];
+# set_property -dict {PACKAGE_PIN E18   IOSTANDARD LVCMOS33  } [get_ports { o_sata_perst_n }];
+# set_property -dict {PACKAGE_PIN D18   IOSTANDARD LVCMOS33  } [get_ports { i_sata_pedet   }];
+# set_property -dict {PACKAGE_PIN F2  } [get_ports { o_sata_p }];	## IO Bank MGT
+# set_property -dict {PACKAGE_PIN F1  } [get_ports { o_sata_n }];	## IO Bank MGT
+# set_property -dict {PACKAGE_PIN G4  } [get_ports { i_sata_p }];	## IO Bank MGT
+# set_property -dict {PACKAGE_PIN G3  } [get_ports { i_sata_n }];	## IO Bank MGT
+# set_property -dict {PACKAGE_PIN K6  } [get_ports { i_sata_refclk_p}];	## IO Bank MGT
+# set_property -dict {PACKAGE_PIN K5  } [get_ports { i_sata_refclk_n}];	## IO Bank MGT
+## }}}
+## SATA #2 (Not connected ...)
+## {{{
+# set_property -dict {PACKAGE_PIN B17   IOSTANDARD LVCMOS33  } [get_ports { o_sata2_perst_n}];
+# set_property -dict {PACKAGE_PIN A17   IOSTANDARD LVCMOS33  } [get_ports { i_sata2_pedet}];
+## }}}
+
 ## KX2 IO Bank #0
 ## {{{
 # set_property -dict {PACKAGE_PIN V23   IOSTANDARD LVCMOS18  } [get_ports {v23}];
@@ -260,13 +278,13 @@ set_property -dict {PACKAGE_PIN A20   IOSTANDARD LVCMOS18  } [get_ports {o_wbu_u
 
 ## FMC (IO Bank #2?)
 ## {{{
-# set_property -dict {PACKAGE_PIN G4    IOSTANDARD LVCMOS18  } [get_ports {i_sata_p}];		## IO Bank MGT
-# set_property -dict {PACKAGE_PIN G3    IOSTANDARD LVCMOS18  } [get_ports {i_sata_n}];		## IO Bank MGT
-# set_property -dict {PACKAGE_PIN F2    IOSTANDARD LVCMOS18  } [get_ports {o_sata_p}];		## IO Bank MGT
-# set_property -dict {PACKAGE_PIN F1    IOSTANDARD LVCMOS18  } [get_ports {o_sata_n}];		## IO Bank MGT
-# set_property -dict {PACKAGE_PIN D19   IOSTANDARD LVCMOS18  } [get_ports {o_disable_ssdb}];	## IO Bank B15
-# set_property -dict {PACKAGE_PIN K6    IOSTANDARD LVCMOS18  } [get_ports {i_fmc_refclk_p}];	## IO Bank MGT
-# set_property -dict {PACKAGE_PIN K5    IOSTANDARD LVCMOS18  } [get_ports {i_fmc_refclk_n}];	## IO Bank MGT
+## set_property -dict {PACKAGE_PIN G4  } [get_ports {i_sata_p}];		## IO Bank MGT
+## set_property -dict {PACKAGE_PIN G3  } [get_ports {i_sata_n}];		## IO Bank MGT
+## set_property -dict {PACKAGE_PIN F2  } [get_ports {o_sata_p}];		## IO Bank MGT
+## set_property -dict {PACKAGE_PIN F1  } [get_ports {o_sata_n}];		## IO Bank MGT
+## set_property -dict {PACKAGE_PIN D19   IOSTANDARD LVCMOS18  } [get_ports {o_disable_ssdb}];	## IO Bank B15
+## set_property -dict {PACKAGE_PIN K6  } [get_ports {i_fmc_refclk_p}];	## IO Bank MGT
+## set_property -dict {PACKAGE_PIN K5  } [get_ports {i_fmc_refclk_n}];	## IO Bank MGT
 
 # set_property -dict {PACKAGE_PIN H8    IOSTANDARD LVCMOS18  } [get_ports {FMC_HA02_N}];
 # set_property -dict {PACKAGE_PIN H9    IOSTANDARD LVCMOS18  } [get_ports {FMC_HA02_P}];

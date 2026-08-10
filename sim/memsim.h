@@ -61,7 +61,7 @@ public:
 	BUSW	*m_fifo_data;
 	bool	m_cleared;
 
-	MEMSIM(const unsigned int nwords, const unsigned int delay=27);
+	MEMSIM(const unsigned int nbytes, const unsigned int delay=27);
 	~MEMSIM(void);
 	void	load(const char *fname);
 	void	load(const unsigned int addr, const char *buf,const size_t len);

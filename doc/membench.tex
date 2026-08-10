@@ -1,0 +1,33 @@
+\documentclass[11pt]{article}
+\usepackage{amssymb,bm,xcolor}
+\newcommand{\ft}{{\cal F}}
+\newcommand{\defined}{\triangleq}
+\newcommand{\dms}{\displaystyle}
+\newcommand{\sinc}{\mbox{sinc}}
+\newcommand{\mx}[1]{\mathbf #1}
+\newcommand{\unknown}[1]{\textcolor{red}{#1}}
+\begin{document}
+
+\title{Memory Benchmark Tables}
+\author{Dan Gisselquist}
+\maketitle
+
+\begin{tabular}{l|r|r|r|r|}\cline{2-5}
+& \multicolumn{2}{c|}{AMD (Xilinx) MIG} & \multicolumn{2}{c|}{UberDDR3} \\ %\cline{2-5}
+& Latency (Clocks) & Throughput & Latency (Clocks) & Throughput \\\hline\hline
+Write &  2.8	& 90 \%	&  8.2	& 92 \% \\\hline
+Read  & 27.7	& 96 \%	& 10.8	& 90 \% \\\hline
+\end{tabular}
+
+\begin{eqnarray*}
+\mbox{\tt TRANSACTION TIME} &=& \mbox{\tt \unknown{LATENCY}} + \frac{\mbox{\tt WORD COUNT}}{\mbox{\tt \unknown{THROUGHPUT}}}
+\end{eqnarray*}
+
+\begin{eqnarray*}
+\mbox{\tt LOOP TIME} = 17 + (P_{\mbox{\tiny\tt CACHE MISS}})\left(
+	\mbox{\tt LATENCY}_{\mbox{\tiny\tt OTHER}}
+	+ \mbox{\tt LATENCY}_{\mbox{\tiny\tt SDRAM}}
+		+ \frac{8 {\mbox{\tt\ WORDS}}}{\mbox{\tt THROUGHPUT}}\right)
+\end{eqnarray*}
+
+\end{document}

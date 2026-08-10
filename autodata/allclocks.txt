@@ -77,7 +77,7 @@
 	// Buffer the incoming clock
 	BUFG @$(PREFIX)clkbufi(.I(i_clk), .O(i_clk_buffered));
 	IBUFDS @$(PREFIX)io2clk (.I(i_clk200_p), .IB(i_clk200_n), .O(i_clk200));
-	BUFG @$(PREFIX)clk2bufi(.I(i_clk200), .O(i_clk200_buffered));
+	// BUFG @$(PREFIX)clk2bufi(.I(i_clk200), .O(i_clk200_buffered));
 
 	// pll_reset
 	initial	{ pll_reset, pll_reset_sreg } = -1;
@@ -97,9 +97,9 @@
 	// synchronized to it
 	PLLE2_BASE #(
 		// {{{
-		.CLKFBOUT_MULT(4),	// Multiply up to 800MHz
+		.CLKFBOUT_MULT(8),	// Multiply up to 800MHz
 		.CLKFBOUT_PHASE(0.0),
-		.CLKIN1_PERIOD(5),
+		.CLKIN1_PERIOD(10),
 		.CLKOUT0_DIVIDE(4),	// 200 MHz
 		.CLKOUT1_DIVIDE(2),	// 400 MHz
 		.CLKOUT2_DIVIDE(8),	// 100 MHz
@@ -107,7 +107,7 @@
 		// }}}
 	) gen_sysclk(
 		// {{{
-		.CLKIN1(i_clk200_buffered),
+		.CLKIN1(i_clk),
 		.CLKOUT0(s_clk_200mhz_unbuffered),
 		.CLKOUT1(s_clk_400mhz_unbuffered),
 		.CLKOUT2(s_clksync_unbuffered),
@@ -141,7 +141,7 @@
 	//   
 	PLLE2_BASE #(
 		// {{{
-		.CLKFBOUT_MULT(5),
+		.CLKFBOUT_MULT(10),
 		.CLKFBOUT_PHASE(0.0),
 		.CLKIN1_PERIOD(5),
 		.CLKOUT0_DIVIDE(8),	// 125 MHz
@@ -151,7 +151,7 @@
 		// }}}
 	) gen_netclk(
 		// {{{
-		.CLKIN1(i_clk200_buffered),
+		.CLKIN1(i_clk_buffered),
 		.CLKOUT0(s_clk_125_unbuffered),
 		.CLKOUT1(s_clk_250_unbuffered),
 		// .CLKOUT2(),

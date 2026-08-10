@@ -60,7 +60,7 @@ MEMSIM::MEMSIM(const unsigned int nbytes, const unsigned int delay) {
 	unsigned int	nxt;
 	for(nxt=1; nxt < nbytes; nxt<<=1)
 		;
-	m_len = nxt >> 2; m_mask = nxt-1;
+	m_len = nxt; m_mask = nxt-1;
 	m_mem = new BUSW[m_len];
 
 	m_delay = delay;
@@ -121,7 +121,7 @@ void	MEMSIM::apply(const uchar wb_cyc, const uchar wb_stb, const uchar wb_we,
 		const BUSW wb_addr, const uint32_t *wb_data, const uint64_t wb_sel,
 		unsigned char &o_stall, unsigned char &o_ack, uint32_t *o_data){
 	// {{{
-	unsigned	sel = 0, addr = wb_addr*NWRDWIDTH;
+	unsigned	sel = 0, addr = wb_addr*NWRDWIDTH, m_write;
 	const uint32_t	*sp = &wb_data[NWRDWIDTH-1];
 	uint32_t	*dp = &o_data[NWRDWIDTH-1];
 	uint64_t	wbsel = ((uint64_t)wb_sel);//&0xfffffffffffffffful;
@@ -158,17 +158,28 @@ void	MEMSIM::apply(const uchar wb_cyc, const uchar wb_stb, const uchar wb_we,
 	m_head++;
 	m_tail = (m_head - m_delay)&m_delay_mask;
 	m_head &= m_delay_mask;
+	m_write = (m_head - m_delay/2)&m_delay_mask;
 
-	o_stall= 0;
+	o_stall= (rand() & 0x03f)==0;	// 1 in 64
 	o_ack = m_fifo_ack[m_tail];
 	m_fifo_ack[m_head] = 0;
 
 	for(unsigned k=0; k<NWRDWIDTH; k++)
 		*dp-- = m_fifo_data[m_tail*NWRDWIDTH + k];
 
-	if (wb_cyc && wb_stb) {
+	if (wb_cyc && wb_stb && !o_stall) {
 		// {{{
-		m_fifo_ack[m_head] = 1;
+		if (wb_we) {
+			for(unsigned k= m_write; k != (m_head & m_delay_mask);
+							k=(k+1)&m_delay_mask) {
+				if (m_fifo_ack[k]) {
+					m_fifo_ack[m_head] = 1;
+					break;
+				}
+			} if (!m_fifo_ack[m_head])
+				m_fifo_ack[m_write] = 1;
+		} else
+			m_fifo_ack[m_head] = 1;
 
 		if (wb_we) { for(unsigned k=0; k<NWRDWIDTH; k++) {
 

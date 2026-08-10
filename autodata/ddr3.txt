@@ -275,6 +275,7 @@
 	wire	[@$(DEVID)AUX_WIDTH-1:0]	@$(PREFIX)_aux_out;
 	wire	[31:0]	@$(PREFIX)_debug;
 	wire	ign_@$(PREFIX)_calib_complete;
+	wire		@$(ERROR.WIRE);
 	// Verilator lint_on  UNUSED
 @MAIN.INSERT=
 	////////////////////////////////////////////////////////////////////////
